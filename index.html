@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Raspoutitsa</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#1d2126">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Raspoutitsa">
+<style>
+:root { color-scheme: light dark; --bg: #efede8; --panel: #fff; --ink: #1d2126; --muted: #646a73; --line: #d8d3ca; }
+@media (prefers-color-scheme: dark) { :root { --bg: #17191c; --panel: #22262b; --ink: #eceae6; --muted: #a3a8af; --line: #3a3f46; } }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100dvh; display: grid; place-items: center; padding: 16px; background: var(--bg); color: var(--ink); font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { width: min(460px, 100%); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 22px; }
+h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: .03em; }
+p { margin: 0 0 16px; color: var(--muted); }
+a { display: block; padding: 13px 14px; margin-top: 8px; border-radius: 8px; background: #1d5fbf; color: #fff; font-weight: 700; text-decoration: none; text-align: center; }
+a.arb { background: #3b4048; }
+</style>
+</head>
+<body>
+<main>
+  <h1>RASPOUTITSA</h1>
+  <p>Choisissez votre poste.</p>
+  <a href="joueur.html">Webapp CMI (Bleu ou Rouge)</a>
+  <a class="arb" href="arbitre.html">Poste de l'arbitre</a>
+</main>
+</body>
+</html>

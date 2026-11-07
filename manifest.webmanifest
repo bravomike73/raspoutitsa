@@ -1,0 +1,30 @@
+{
+  "name": "Raspoutitsa",
+  "short_name": "Raspoutitsa",
+  "description": "Poste du CMI du wargame Raspoutitsa",
+  "lang": "fr",
+  "start_url": "joueur.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#1d2126",
+  "theme_color": "#1d2126",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
