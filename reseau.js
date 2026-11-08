@@ -17,12 +17,17 @@
    Sans firebase-config.js rempli, RN.active reste faux et les pages restent en copier-coller. */
 (function () {
   const C = window.RASP_FB || null;
-  const EMAIL = { B: 'bleu@raspoutitsa.example', R: 'rouge@raspoutitsa.example', A: 'arbitre@raspoutitsa.example' };
+  // 8 nov. : mode duel (joueur.html?mode=duel) : comptes duel-bleu / duel-rouge, données sous duel/ (règles de la base à part)
+  const MODE = (() => { try { return new URLSearchParams(location.search).get('mode') === 'duel' ? 'duel' : 'wargame'; } catch (e) { return 'wargame'; } })();
+  const PFX = MODE === 'duel' ? 'duel/' : '';
+  const EMAIL = MODE === 'duel'
+    ? { B: 'duel-bleu@raspoutitsa.example', R: 'duel-rouge@raspoutitsa.example', A: 'arbitre@raspoutitsa.example' }
+    : { B: 'bleu@raspoutitsa.example', R: 'rouge@raspoutitsa.example', A: 'arbitre@raspoutitsa.example' };
   const roleOf = mail => Object.keys(EMAIL).find(k => EMAIL[k] === mail) || null;
   const timeout = (p, ms) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(Object.assign(new Error('délai dépassé'), { code: 'TIMEOUT' })), ms))]);
   const denied = e => /PERMISSION_DENIED|permission/i.test(String((e && (e.code || e.message)) || ''));
   const tid = t => 'T' + String(t).padStart(2, '0');
-  const RN = { active: false, role: null, timeout, denied, tid };
+  const RN = { active: false, role: null, timeout, denied, tid, mode: MODE };
   window.RN = RN;
   let B = window.RN_BACKEND || null;   // moteur de test éventuel
   if (!B) {
@@ -43,5 +48,10 @@
   RN.init = async () => { const m = await B.init(); RN.role = m ? roleOf(m) : null; return RN.role; };
   RN.login = async (role, pwd) => { await B.login(EMAIL[role], pwd); RN.role = role; return role; };
   RN.logout = async () => { await B.logout(); RN.role = null; };
-  RN.set = B.set; RN.update = B.update; RN.get = B.get; RN.on = B.on; RN.onConn = B.onConn;
+  const P = p => PFX + p;
+  RN.set = (p, v) => B.set(P(p), v);
+  RN.update = u => { const o = {}; for (const k of Object.keys(u)) o[P(k)] = u[k]; return B.update(o); };
+  RN.get = p => B.get(P(p));
+  RN.on = (p, cb, err) => B.on(P(p), cb, err);
+  RN.onConn = B.onConn;
 })();

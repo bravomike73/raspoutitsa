@@ -22,14 +22,35 @@ h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: .03em; }
 p { margin: 0 0 16px; color: var(--muted); }
 a { display: block; padding: 13px 14px; margin-top: 8px; border-radius: 8px; background: #1d5fbf; color: #fff; font-weight: 700; text-decoration: none; text-align: center; }
 a.arb { background: #3b4048; }
+details { margin-top: 12px; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+details[open] { padding-bottom: 14px; }
+summary { cursor: pointer; font-weight: 700; font-size: 17px; list-style: none; position: relative; padding-right: 22px; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "›"; position: absolute; right: 2px; top: 0; font-size: 22px; line-height: 1; color: var(--muted); transition: transform .15s; }
+details[open] summary::after { transform: rotate(90deg); }
+.sub { display: block; font-weight: 400; font-size: 14px; color: var(--muted); margin-top: 2px; }
+.note { font-size: 13px; margin: 10px 0 0; }
+.soon { opacity: .6; }
+.soon summary { cursor: default; }
 </style>
 </head>
 <body>
 <main>
   <h1>RASPOUTITSA</h1>
-  <p>Choisissez votre poste.</p>
-  <a href="joueur.html">Webapp CMI (Bleu ou Rouge)</a>
-  <a class="arb" href="arbitre.html">Poste de l'arbitre</a>
+  <p>Choisissez votre mode de jeu.</p>
+  <details>
+    <summary>Wargame<span class="sub">CO contre CO, avec un arbitre humain</span></summary>
+    <a href="joueur.html">Webapp CMI (Bleu ou Rouge)</a>
+    <a class="arb" href="arbitre.html">Poste de l'arbitre</a>
+  </details>
+  <details>
+    <summary>Duel<span class="sub">1 contre 1, arbitrage automatique</span></summary>
+    <a href="joueur.html?mode=duel">Webapp CMI en duel (Bleu ou Rouge)</a>
+    <p class="note">Les tours sont résolus automatiquement dès que les deux camps ont envoyé leurs ordres. Partie entre gens de confiance : en mode duel, un joueur qui fouille son navigateur peut voir le jeu adverse.</p>
+  </details>
+  <details class="soon" onclick="return false">
+    <summary>Solo<span class="sub">Contre un bot, bientôt disponible</span></summary>
+  </details>
 </main>
 </body>
 </html>

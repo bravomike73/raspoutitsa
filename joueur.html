@@ -2841,7 +2841,7 @@ async function validateOrders() {
 function panelCR(p) {
   p.append(el('h2', { text: `Compte rendu du tour ${S.turn}` }));
   p.append(el('div', { class: 'small' }, `Ordres du tour ${S.turn} envoyés. `, el('button', { class: 'link', onclick: () => showMsg(`Message d'ordres – tour ${S.turn}`, 'Message envoyé :', S.sent.text) }, 'Revoir le message'), RN.active ? null : ' · ', RN.active ? null : el('button', { class: 'link', onclick: () => { S.phase = 'orders'; S.sent = null; save(); refresh(); } }, 'Corriger les ordres')));
-  if (RN.active) p.append(el('div', { class: 'notice warn', text: "En attente du compte rendu de l'arbitre : il s'affichera ici automatiquement." }));
+  if (RN.active) p.append(el('div', { class: 'notice warn', text: RN.mode === 'duel' ? "En attente des ordres adverses : l'arbitrage automatique publiera le compte rendu dès qu'ils seront arrivés." : "En attente du compte rendu de l'arbitre : il s'affichera ici automatiquement." }));
   const crBox = RN.active ? el('details', { style: 'margin-top:10px' }, el('summary', { class: 'small', text: 'Secours en cas de panne réseau : coller un compte rendu reçu autrement' })) : p;
   if (RN.active) p.append(crBox);
   crBox.append(el('p', { class: 'small muted', text: "Collez ici le compte rendu complet reçu de l'arbitre, jusqu'à la ligne « RASPSYNC FIN »." }));
@@ -3021,7 +3021,7 @@ $('#fileIn').onchange = async e => {
   try { const d = JSON.parse(await f.text()); if (d.app !== 'raspoutitsa-joueur' || !d.S || !d.S.camp) throw new Error('ce fichier n\'est pas une sauvegarde de la page joueur'); if (RN.active && d.S.camp !== NET.camp) throw new Error('cette sauvegarde est celle de l\'autre camp'); S = fixState(d.S); UI.activeOrder = null; UI.mode = null; UI.sel = null; save(); start(); }
   catch (err) { ask('Fichier illisible', err.message, () => {}); }
 };
-$('#btnNew').onclick = () => ask('Nouvelle partie ?', 'La partie en cours sera remplacée dans ce navigateur. Pensez à la sauvegarder dans un fichier avant.', () => { S = null; try { localStorage.removeItem(STORE); } catch (e) {} if (RN.active) begin(NET.camp); else welcome(); });
+$('#btnNew').onclick = () => RN.active && RN.mode === 'duel' ? duelReset() : ask('Nouvelle partie ?', 'La partie en cours sera remplacée dans ce navigateur. Pensez à la sauvegarder dans un fichier avant.', () => { S = null; try { localStorage.removeItem(STORE); } catch (e) {} if (RN.active) begin(NET.camp); else welcome(); });
 $('#fxSkip').onclick = () => { clearTimeout(UI.fxT); UI.fxQ = null; UI.fx = null; $('#fxToast').style.display = 'none'; drawBoard(); if (UI.endPending) { const f = UI.endPending; UI.endPending = null; playEnd(f); } };
 // Ctrl+A dans un message (compte rendu, historique) : ne sélectionne que ce message, pas toute la page
 let lastMsg = null;
@@ -3125,7 +3125,7 @@ function refresh() {
 }
 // ------------------------------------------------------------------ échanges automatiques avec l'arbitre (Firebase)
 const NET = { camp: null, conn: false, crs: {}, session: undefined };
-const netLabel = () => { const n = $('#netState'); if (n) { n.textContent = NET.conn ? '● Connecté' : '● Connexion perdue'; n.style.color = NET.conn ? 'var(--ok)' : 'var(--err)'; } };
+const netLabel = () => { const n = $('#netState'); if (n) { n.textContent = (RN.mode === 'duel' ? 'Duel · ' : '') + (NET.conn ? '● Connecté' : '● Connexion perdue'); n.style.color = NET.conn ? 'var(--ok)' : 'var(--err)'; } };
 // envoi d'un message : renvoie false si rien n'est parti ; le message reste alors à l'écran pour le secours
 async function netSend(kind, turn, text) {
   const fail = why => { showMsg('Message non envoyé', `${why} Rétablissez la connexion puis cliquez à nouveau, ou copiez ce message pour l'arbitre.`, text); return false; };
@@ -3172,10 +3172,71 @@ function netRefus(all) {
 }
 function netSession(v) {
   if (v === NET.session) return; NET.session = v; if (v == null || !S) return;
-  if (S.session == null) { S.session = v; save(); return; }
+  if (S.session == null && (RN.mode !== 'duel' || (S.phase === 'deploy' && !S.turn))) { S.session = v; save(); return; }   // duel : la première « Nouvelle partie » remet aussi à zéro une page déjà en jeu
   if (S.session === v) return;
   S = freshState(NET.camp); S.session = v; UI.depMode = 'pions'; NET.crs = {}; save(); start();
-  ask('Nouvelle partie', "L'arbitre a ouvert une nouvelle partie : la page repart au déploiement.", () => {});
+  ask('Nouvelle partie', RN.mode === 'duel' ? "Une nouvelle partie de duel a été lancée : la page repart au déploiement." : "L'arbitre a ouvert une nouvelle partie : la page repart au déploiement.", () => {});
+}
+// ------------------------------------------------------------------ mode duel : arbitrage automatique (8 nov.)
+// Les deux pages joueurs lisent tout ce qui est sous duel/ (règles de la base). Chacune peut arbitrer :
+// le tour est résolu dès que les deux messages sont arrivés ; arbitre/tour (règle : +1 à chaque écriture) empêche une double publication.
+// Chaque page contrôle ses propres messages et les renvoie elle-même avec le motif s'ils ne sont pas jouables.
+const DU = { box: { B: {}, R: {} }, sv: undefined, busy: false, again: false, done: {} };
+function duelStart() {
+  for (const c of ['B', 'R']) RN.on('boite/' + c, v => { DU.box[c] = v || {}; duelTick(); }, () => {});
+  RN.on('arbitre/sauvegarde', v => { try { DU.sv = v ? JSON.parse(v) : null; } catch (e) { DU.sv = null; } duelTick(); }, () => {});
+}
+async function duelTick() {
+  if (DU.busy) { DU.again = true; return; }
+  if (DU.sv === undefined) return;
+  DU.busy = true;
+  try { do { DU.again = false; await duelStep(); } while (DU.again); }
+  catch (e) { console.warn('arbitrage duel', e); }
+  finally { DU.busy = false; }
+}
+const duelTry = async u => { try { await RN.timeout(RN.update(u), 10000); return true; } catch (e) { if (!RN.denied(e)) console.warn('arbitrage duel', e); return false; } };
+async function duelRefuse(c, turn, kind, motif) {
+  const id = RN.tid(turn), key = `${c}${id}${DU.box[c][id].at}`; if (DU.done[key]) return; DU.done[key] = 1;
+  await duelTry({ [`boite/${c}/${id}`]: null, [`refus/${c}/${id}`]: { turn, kind, motif, at: Date.now() } });
+}
+async function duelStep() {
+  const sv = DU.sv, me = NET.camp;
+  if (!sv || !sv.state) {   // début de partie : les deux fiches de déploiement
+    const d = { B: DU.box.B.T00, R: DU.box.R.T00 };
+    if (d[me]) { const e = R.parseDeployment(R.newState(), me, d[me].text).errs; if (e.length) return duelRefuse(me, 0, 'deploy', e.join(' ; ')); }
+    if (!d.B || !d.R) return;
+    const out = R.setupGame(undefined, d.B.text, d.R.text);
+    if (!out.ok) { if (out[me] && out[me].errs.length) await duelRefuse(me, 0, 'deploy', out[me].errs.join(' ; ')); return; }
+    const save = { app: 'raspoutitsa-arbitrage', v: 1, mode: 'duel', state: out.state, drafts: { B: '', R: '' }, excluded: { B: [], R: [] }, forced: {}, hist: [], deploy: { B: d.B.text, R: d.R.text } };
+    await duelTry({ 'arbitre/sauvegarde': JSON.stringify(save), 'arbitre/tour': 1 });
+    return;
+  }
+  const st = sv.state; if (st.ended) return;
+  const T = st.turn, id = RN.tid(T), m = { B: DU.box.B[id], R: DU.box.R[id] };
+  if (m[me]) {   // contrôle de notre propre message sur l'état réel de la partie
+    const ch = R.checkOrders(st, me, m[me].text, null);
+    const bad = ch.lines.filter(o => o.status === 'ignored');
+    if (bad.length) {
+      const motif = (ch.warns.filter(w => /tour|message/.test(w)).concat(bad.map(o => `ligne ${o.n} (${o.card || o.raw.card || '?'}) : ${o.errors.join(' ; ')}`))).join('\n') + '\nCorrigez puis renvoyez les ordres.';
+      return duelRefuse(me, T, 'orders', motif);
+    }
+  }
+  if (!m.B || !m.R) return;
+  for (const c of ['B', 'R']) if (R.checkOrders(st, c, m[c].text, null).lines.some(o => o.status === 'ignored')) return;   // l'autre page renverra ce message
+  const drafts = { B: m.B.text, R: m.R.text }, excluded = { B: [], R: [] };
+  const P = R.resolveTurn(st, drafts, excluded, {});
+  const at = Date.now();
+  const rec = { turn: T, before: st, drafts, excluded, forced: {}, text: P.text, road: P.road, journal: P.journal, dice: P.dice, savedAt: new Date(at).toISOString() };
+  const save = Object.assign({}, sv, { state: P.state, drafts: { B: '', R: '' }, excluded: { B: [], R: [] }, forced: {}, hist: (sv.hist || []).concat([rec]) });
+  const u = { 'arbitre/sauvegarde': JSON.stringify(save), 'arbitre/tour': T + 1, [`arbitre/pub/${id}`]: 1 };
+  for (const c of ['B', 'R']) u[`cr/${c}/${id}`] = { turn: T, rev: 1, text: P.text[c], at };
+  await duelTry(u);
+}
+function duelReset() {
+  ask('Nouvelle partie de duel ?', "La partie de duel en cours sera effacée pour les deux joueurs, et les deux pages repartiront au déploiement. Pensez à sauvegarder votre page dans un fichier avant.", async () => {
+    if (await duelTry({ boite: null, cr: null, refus: null, arbitre: null, session: Date.now() })) return;
+    ask('Nouvelle partie impossible', "Le serveur n'a pas répondu ou a refusé : vérifiez la connexion puis réessayez.", () => {});
+  });
 }
 function netWatch() {
   RN.onConn(v => { NET.conn = v; netLabel(); });
@@ -3184,9 +3245,10 @@ function netWatch() {
   RN.on('refus/' + NET.camp, netRefus, () => {});
 }
 function netEnter(camp) {
-  NET.camp = camp; STORE = 'rasp-joueur-v1-' + camp;
+  NET.camp = camp; STORE = (RN.mode === 'duel' ? 'rasp-joueur-duel-v1-' : 'rasp-joueur-v1-') + camp;
   S = load(); if (S && S.camp === camp) start(); else begin(camp);
   netWatch();
+  if (RN.mode === 'duel') duelStart();
 }
 function netLogin(msg) {
   document.documentElement.classList.add('noGame');
@@ -3194,7 +3256,7 @@ function netLogin(msg) {
   const pwd = el('input', { type: 'password', placeholder: 'Mot de passe du camp', style: 'width:100%;padding:10px;margin:8px 0;box-sizing:border-box' });
   const err = el('div', { class: 'small', style: 'color:var(--err)', text: msg || '' });
   const go = async camp => { err.textContent = 'Connexion…'; try { await RN.login(camp, pwd.value); err.textContent = ''; netEnter(camp); } catch (e) { err.textContent = 'Connexion refusée : vérifiez le camp et le mot de passe, ainsi que la connexion Internet.'; } };
-  st.append(el('div', { class: 'welcome' }, el('h2', { text: 'Connexion du CMI' }), el('p', { text: 'Saisissez le mot de passe de votre camp, puis choisissez ce camp.' }), pwd,
+  st.append(el('div', { class: 'welcome' }, el('h2', { text: RN.mode === 'duel' ? 'Connexion au duel' : 'Connexion du CMI' }), el('p', { text: RN.mode === 'duel' ? 'Mode duel, sans arbitre humain : saisissez le mot de passe duel de votre camp, puis choisissez ce camp.' : 'Saisissez le mot de passe de votre camp, puis choisissez ce camp.' }), pwd,
     el('div', { class: 'campPick' }, el('button', { class: 'B', onclick: () => go('B') }, 'Bleus'), el('button', { class: 'R', onclick: () => go('R') }, 'Rouges')), err));
 }
 async function netBoot() {
