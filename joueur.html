@@ -3256,12 +3256,15 @@ function netLogin(msg) {
   const pwd = el('input', { type: 'password', placeholder: 'Mot de passe du camp', style: 'width:100%;padding:10px;margin:8px 0;box-sizing:border-box' });
   const err = el('div', { class: 'small', style: 'color:var(--err)', text: msg || '' });
   const go = async camp => { err.textContent = 'Connexion…'; try { await RN.login(camp, pwd.value); err.textContent = ''; netEnter(camp); } catch (e) { err.textContent = 'Connexion refusée : vérifiez le camp et le mot de passe, ainsi que la connexion Internet.'; } };
-  st.append(el('div', { class: 'welcome' }, el('h2', { text: RN.mode === 'duel' ? 'Connexion au duel' : 'Connexion du CMI' }), el('p', { text: RN.mode === 'duel' ? 'Mode duel, sans arbitre humain : saisissez le mot de passe duel de votre camp, puis choisissez ce camp.' : 'Saisissez le mot de passe de votre camp, puis choisissez ce camp.' }), pwd,
-    el('div', { class: 'campPick' }, el('button', { class: 'B', onclick: () => go('B') }, 'Bleus'), el('button', { class: 'R', onclick: () => go('R') }, 'Rouges')), err));
+  st.append(el('div', { class: 'welcome' }, el('h2', { text: RN.mode === 'duel' ? 'Connexion au duel' : 'Connexion du CMI' }), el('p', { text: RN.mode === 'duel' ? (WANT_CAMP ? 'Mode duel, sans arbitre humain : saisissez le mot de passe duel de votre camp.' : 'Mode duel, sans arbitre humain : saisissez le mot de passe duel de votre camp, puis choisissez ce camp.') : (WANT_CAMP ? 'Saisissez le mot de passe de votre camp.' : 'Saisissez le mot de passe de votre camp, puis choisissez ce camp.') }), pwd,
+    el('div', { class: 'campPick' }, WANT_CAMP === 'R' ? null : el('button', { class: 'B', onclick: () => go('B') }, WANT_CAMP ? 'Se connecter : Bleus' : 'Bleus'), WANT_CAMP === 'B' ? null : el('button', { class: 'R', onclick: () => go('R') }, WANT_CAMP ? 'Se connecter : Rouges' : 'Rouges')), err,
+    WANT_CAMP ? el('p', { class: 'small' }, el('a', { href: 'index.html' + (RN.mode === 'duel' ? '#duel' : '#wargame') }, '‹ Changer de mode ou de camp')) : null));
 }
+// 8 nov. : camp choisi sur la page d'accueil (joueur.html?camp=B ou R)
+const WANT_CAMP = (() => { try { const c = new URLSearchParams(location.search).get('camp'); return c === 'B' || c === 'R' ? c : null; } catch (e) { return null; } })();
 async function netBoot() {
   let role = null; try { role = await RN.init(); } catch (e) {}
-  if (role === 'B' || role === 'R') netEnter(role);
+  if ((role === 'B' || role === 'R') && (!WANT_CAMP || role === WANT_CAMP)) netEnter(role);
   else { if (role) try { await RN.logout(); } catch (e) {} netLogin(); }
 }
 if (RN.active) netBoot();

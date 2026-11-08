@@ -1,9 +1,9 @@
 {
   "name": "Raspoutitsa",
   "short_name": "Raspoutitsa",
-  "description": "Poste du CMI du wargame Raspoutitsa",
+  "description": "Raspoutitsa, l'affrontement des corps d'armée",
   "lang": "fr",
-  "start_url": "joueur.html",
+  "start_url": "index.html",
   "scope": "./",
   "display": "fullscreen",
   "orientation": "landscape",
