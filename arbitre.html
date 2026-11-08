@@ -249,21 +249,23 @@ const GAUGE = {
 };
 // rev : 'always' (Conséquence), 'fail' (Risque), 'played' (dès la carte jouée), 'none'
 const CARDS = {
-  'Renseignement SAT': { ph: 'R', base: 50, mep: 1, ret: 3, g: [], rev: 'none', tgt: 'zoneEnemy', dg: [] },
-  'Renseignement drone': { ph: 'R', base: 60, mep: 1, ret: 3, g: [], rev: 'fail', tgt: 'zoneEnemy', dg: ['DSA'] },
+  'Renseignement SAT': { ph: 'R', base: 60, mep: 1, ret: 3, g: [], rev: 'none', tgt: 'zoneEnemy', dg: [] },
+  'Renseignement drone': { ph: 'R', base: 70, mep: 1, ret: 3, g: [], rev: 'fail', tgt: 'zoneEnemy', dg: ['DSA'] },
   'ROHUM': { ph: 'R', base: 80, mep: 4, ret: 7, g: ['FS'], rev: 'none', tgt: 'regionEnemy', dg: ['INF', 'MP'] },
   'Renseignement aérien': { ph: 'R', base: 60, mep: 2, ret: 5, g: ['AAE'], rev: 'none', tgt: 'zoneEnemy', dg: ['DSA'] },
+  'OSINT': { ph: 'R', base: 50, mep: 4, ret: 5, g: [], rev: 'none', tgt: 'regionEnemy', dg: ['CIMIC'] },   // 8 nov. : nouvelle carte
   'Ecoute GE': { ph: 'R', base: 80, mep: 2, ret: 4, g: [], rev: 'fail', tgt: 'fuseau', dg: ['EW'], ew: true },
   'SEAD': { ph: 'F', base: 60, mep: 2, ret: 7, g: ['AAE'], rev: 'always', tgt: 'zoneEnemy', dg: [] },
   'Frappe drone': { ph: 'F', base: 70, mep: 2, ret: 4, g: [], rev: 'always', tgt: 'slotEnemy', dg: ['DSA'] },
   'Frappe en profondeur': { ph: 'F', base: 80, mep: 1, ret: 3, g: [], rev: 'always', tgt: 'slotEnemy', dg: [] },
   'Bombardement': { ph: 'F', base: 60, mep: 3, ret: 8, g: ['AAE'], rev: 'always', tgt: 'regionEnemy', dg: ['DSA'] },
   'Raid aéro': { ph: 'F', base: 60, mep: 5, ret: 8, g: ['ALAT', 'FS'], rev: 'always', tgt: 'slotEnemy', dg: ['INF', 'DSA'] },
+  'Out of contact Attack': { ph: 'F', base: 70, mep: 2, ret: 4, g: ['ALAT'], rev: 'always', tgt: 'slotEnemyDeep', dg: ['DSA'] },   // 8 nov. : nouvelle carte (GAM) : neutralise un pion réduit, ou dégâts d'un bombardement sur un grand pion
   'Sabotage': { ph: 'F', base: 60, mep: 3, ret: 6, g: ['FS'], rev: 'always', tgt: 'slotEnemyDeep', dg: ['INF', 'MP'] },
   'Maquis de partisans': { ph: 'F', base: 50, mep: 7, ret: 14, g: ['FS'], rev: 'always', tgt: 'regionEnemy', dg: ['INF', 'MP', 'CIMIC'] },
   'Embuscade': { ph: 'F', base: 60, mep: 3, ret: 7, g: ['FS'], rev: 'always', tgt: 'corridorEnemy', dg: ['INF', 'MP'] },
   'Intox L2I': { ph: 'F', base: 30, mep: 6, ret: 7, g: [], rev: 'always', tgt: 'regionEnemy', dg: ['CIMIC'] },
-  'Déception GE': { ph: 'F', base: 60, mep: 3, ret: 4, g: [], rev: 'fail', tgt: 'slotOwnEmpty', dg: [], ew: true },
+  'Déception GE': { ph: 'F', base: 80, mep: 2, ret: 4, g: [], rev: 'fail', tgt: 'slotOwnEmpty', dg: [], ew: true },
   'Ordre à la DSA': { ph: 'M', base: 100, mep: 2, ret: 3, g: [], rev: 'none', tgt: 'disp', types: ['DSA'] },
   'Ordre à la B.ZARR': { ph: 'M', base: 100, mep: 2, ret: 3, g: [], rev: 'none', tgt: 'disp', types: ['INF', 'EW', 'GAM'] },
   'Ordre aux MP et CIMIC': { ph: 'M', base: 100, mep: 2, ret: 3, g: [], rev: 'none', tgt: 'disp', types: ['MP', 'CIMIC'] },
@@ -276,7 +278,7 @@ const CARDS = {
   'Mouvement de la DIV': { ph: 'M', base: 100, mep: 2, ret: 4, g: [], rev: 'none', tgt: 'regionOwn' },
   'Transfert à la justice': { ph: 'M', base: 60, mep: 7, ret: 10, g: [], rev: 'none', tgt: 'none' },
   'Ordre à la B.LOG': { ph: 'L', base: 100, mep: 1, ret: 3, g: [], rev: 'none', tgt: 'net' },
-  'Effort LOG': { ph: 'L', base: 80, mep: 5, ret: 7, g: [], rev: 'none', tgt: 'logEffort' },
+  'Effort LOG': { ph: 'L', base: 90, mep: 3, ret: 7, g: [], rev: 'none', tgt: 'logEffort' },
   "Ouverture d'itinéraire": { ph: 'L', base: 100, mep: 1, ret: 3, g: [], rev: 'none', tgt: 'genOwn' },
   'CAS': { ph: 'C', base: 60, mep: 2, ret: 5, g: ['AAE'], rev: 'always', tgt: 'fuseau', dg: ['DSA'] },
   'Engagement GAM': { ph: 'C', base: 60, mep: 1, ret: 4, g: ['ALAT'], rev: 'always', tgt: 'fuseau', dg: ['DSA'] },
@@ -304,37 +306,41 @@ const BIG_LOSS = { 'Frappe drone': [30, 30], 'Frappe en profondeur': [20, 20], '
 const CB_RATE = 80;                  // contre-batterie : neutralise sur 3 à 0
 const EVA_RATE = 3;                  // évasion : chaque pion ou corridor touché sur 1, 2 ou 3
 const BIGMOVE = { 'Bascule de PC': 'PC', 'Bascule BSC': 'BSC', 'Mouvement de la DIV': 'DIV+' };
-const FORT_CARDS = ['Frappe drone', 'Frappe en profondeur', 'SEAD', 'Bombardement'];
+const FORT_CARDS = ['Frappe drone', 'Frappe en profondeur', 'SEAD', 'Bombardement', 'Out of contact Attack'];
 const POW_PENALTY = ['Frappe drone', 'Frappe en profondeur', 'Bombardement'];   // tirs sur le camp de prisonniers (mémento G3-3D)
 const PH_ORDER = ['R', 'F', 'M', 'L', 'C'];
 // phase Frappes en deux temps (7 nov.) : les frappes ciblées d'abord ; les autres frappes voient ensuite leurs dangers sans les pions qu'elles ont neutralisés ou détruits
 const PRE_STRIKE = ['SEAD', 'Frappe drone', 'Frappe en profondeur', 'Sabotage', 'Contre-batterie'];
 const PH_STEPS = [['R'], ['F', 1], ['F', 2], ['M'], ['L'], ['C']];
 const PH_NOM = { R: 'Renseignement', F: 'Frappes', M: 'Mouvements', L: 'Logistique', C: 'Combat' };
-const BREAK = 40;                    // cases de curseur pour une percée
-const DIV_TH = [35, 30, 20, 10, 0, -10, -20, -30, -35];   // seuils des messages des divisions
+const BREAK = 50;                    // cases de curseur pour une percée (50 depuis le 8 nov.)
+const DIV_TH = [45, 40, 30, 20, 10, 0, -10, -20, -30, -40, -45];   // seuils des messages des divisions
 // messages des divisions au franchissement d'un seuil (textes de Ben, 5 nov.) : offensif = le curseur avance au-delà du seuil, défensif = il recule en deçà
-const DIV_OFF = {
-  35: "Nos premiers éléments sont imbriqués avec l'ENI qui mène une résistance acharnée dans son réduit défensif. Un dernier effort nous permettra de déclencher l'exploitation dans les prochains jours.",
-  30: "Avons acculé l'ENI sur un réduit défensif et sommes sur le point de percer jusqu'à la limite de notre zone d'action.",
+const DIV_OFF = {   // textes de Ben, 8 nov.
+  45: "Nos premiers éléments sont imbriqués avec l'ENI qui mène une résistance acharnée dans son réduit défensif. Un dernier effort nous permettra de déclencher l'exploitation dans les prochains jours.",
+  40: "Avons acculé l'ENI sur un réduit défensif et sommes sur le point de percer jusqu'à la limite de notre zone d'action.",
+  30: "Avons pénétré profondément au cœur du dispositif ennemi et maintenons la pression sur ses éléments.",
   20: "Avons traversé les lignes défensives de l'ENI et provoqué un repli majeur. Poursuivons notre offensive.",
   10: "Avons mené offensive couronnée de succès et forcé l'ENI à engager son deuxième échelon.",
-  0: 'Avons rejoint nos positions initiales.',
+  0: "Avons rejoint nos positions initiales.",
   '-10': "Avons contre-attaqué et repris le contrôle de nos positions défensives. Avec l'appui du corps, pourrons ramener l'ENI à ses bases de départ.",
   '-20': "Notre contre-attaque nous a permis de regagner notre seconde ligne de défense. Poursuivons notre combat pour repousser l'offensive ennemie.",
-  '-30': "Avons repoussé l'attaque de l'ENI et tenons toujours nos positions sur la dernière ligne de défense. Sommes toujours dans une situation critique.",
-  '-35': "Notre contre-attaque désespérée nous a permis de regagner une infime marge de manœuvre. Poursuivons notre combat désespéré et demandons d'urgence appuis et soutien.",
+  '-30': "Avons repris du terrain à l'ENI. Sommes toujours au contact au cœur de nos positions défensives.",
+  '-40': "Avons repoussé l'attaque de l'ENI et tenons toujours nos positions sur la dernière ligne de défense. Sommes toujours dans une situation critique.",
+  '-45': "Notre contre-attaque désespérée nous a permis de regagner une infime marge de manœuvre. Poursuivons notre combat désespéré et demandons d'urgence appuis et soutien.",
 };
 const DIV_DEF = {
-  35: "La contre-attaque désespérée de l'ENI l'a momentanément sauvé de la déroute. En reprenant l'initiative au plus vite, nous amènerons le corps à la victoire.",
-  30: "L'ENI jette ses dernières forces dans la bataille et a empêché notre attaque finale d'aboutir. Restons à portée de la victoire.",
+  45: "La contre-attaque désespérée de l'ENI l'a momentanément sauvé de la déroute. En reprenant l'initiative au plus vite, nous amènerons le corps à la victoire.",
+  40: "L'ENI jette ses dernières forces dans la bataille et a empêché notre attaque finale d'aboutir. Restons à portée de la victoire.",
+  30: "L'ENI a réagi et contre-attaqué. Nous sommes imbriqués au cœur de son dispositif et reculons en combattant pied à pied.",
   20: "La contre-attaque ENI nous a fait reculer jusqu'aux lignes défensives de l'ENI. Nous n'avons pas été en mesure d'exploiter nos succès précédents.",
   10: "L'ENI a contre-attaqué dans notre fuseau mais nous conservons un léger gain territorial depuis le début de l'offensive.",
-  0: 'La contre-attaque ENI nous a forcés à regagner nos bases de départ.',
-  '-10': 'Avons subi revers mineurs et dû engager notre deuxième échelon. Faisons face à forte opposition ENI.',
-  '-20': 'Suite à combats acharnés, avons dû abandonner nos positions pour nous replier sur une seconde ligne de défense. Demandons effort majeur à notre profit pour regagner le terrain perdu.',
-  '-30': 'Sommes dans une situation critique. Ne pouvons pas garantir que le front ne cédera pas dans les prochains jours.',
-  '-35': "Sommes acculés sur notre dernière ligne défensive et déjà imbriqués avec les éléments ENI les plus avancés. Réclamons renforts d'urgence pour ne pas être submergés. À défaut, défendrons notre position jusqu'au bout sans espoir de succès.",
+  0: "La contre-attaque ENI nous a forcés à regagner nos bases de départ.",
+  '-10': "Avons subi revers mineurs et dû engager notre deuxième échelon. Faisons face à forte opposition ENI.",
+  '-20': "Suite à combats acharnés, avons dû abandonner nos positions pour nous replier sur une seconde ligne de défense. Demandons effort majeur à notre profit pour regagner le terrain perdu.",
+  '-30': "L'ENI a pénétré profondément au cœur de notre dispositif et continue son attaque sans faiblir.",
+  '-40': "Sommes dans une situation critique. Ne pouvons pas garantir que le front ne cédera pas dans les prochains jours.",
+  '-45': "Sommes acculés sur notre dernière ligne défensive et déjà imbriqués avec les éléments ENI les plus avancés. Réclamons renforts d'urgence pour ne pas être submergés. À défaut, défendrons notre position jusqu'au bout sans espoir de succès.",
 };
 const DIV_MSG = DIV_OFF;   // ancien nom, gardé pour les pages
 // seuil franchi entre v0 et v1 (du point de vue du camp) : le plus avancé dans le sens du mouvement, ou null
@@ -600,9 +606,9 @@ function logistics(st, camp, t) {
   }
   for (const r of REG[camp]) {
     edges.push({ u: id(r + '>in'), v: id(r + '>out'), cap: INF, cost: 0, tag: null });
+    if (r === bscR) edges.push({ u: id(r + '>in'), v: id('T'), cap: BSC_NEED, cost: -2e6, tag: { bsc: 1 } });   // 8 nov. : la BSC prélève son flux majeur sur tout flux qui traverse sa région, en priorité sur les fuseaux
     if ((cons[r] || 0) > 0) {
       edges.push({ u: id(r + '>in'), v: id(r + '>loc'), cap: cons[r], cost: 0, tag: { loc: r } });
-      if (r === bscR) edges.push({ u: id(r + '>loc'), v: id('T'), cap: BSC_NEED, cost: -1e5, tag: { bsc: 1 } });
       if (r === dvR) edges.push({ u: id(r + '>loc'), v: id('T'), cap: INF, cost: -100, tag: { div: 1 } });
       edges.push({ u: id(r + '>loc'), v: id('T'), cap: INF, cost: -1, tag: { waste: r } });
     }
@@ -779,7 +785,7 @@ function checkOrders(st, camp, text, excluded) {
       if (!o.card) { o.status = 'ignored'; o.errors.push(`carte à annuler inconnue « ${am[1]} »`); return; }
       const pd = st.pending.find(q => q.camp === camp && q.card === o.card && q.effet > T && !res.lines.some(x => x.pend === q));
       if (!pd) { o.status = 'ignored'; o.errors.push(`aucun ordre ${o.card} en cours à annuler`); return; }
-      const C = CARDS[o.card]; o.status = 'cancel'; o.pend = pd; o.retour = C.once ? NEVER : T + Math.max(1, C.ret - C.mep); return;
+      const C = CARDS[o.card]; o.status = 'cancel'; o.pend = pd; o.retour = C.once ? T + 1 : T + Math.max(1, C.ret - C.mep); return;   // 8 nov. : une carte à usage unique annulée n'a pas servi, elle revient au tour suivant
     }
     if (!o.card) { o.status = 'ignored'; o.errors.push(`carte inconnue « ${L.card} »`); return; }
     const C = CARDS[o.card];
@@ -810,7 +816,7 @@ function checkOrders(st, camp, text, excluded) {
         const p = parseSlot(L.slot);
         if (!p || !['region', 'fus'].includes(p.kind)) { e(`emplacement inconnu « ${L.slot} »`); break; }
         if (p.camp !== EN[camp]) { e(`${p.name} n'est pas un emplacement ennemi`); break; }
-        if (C.tgt === 'slotEnemyDeep' && p.kind !== 'region') { e('le Sabotage vise le Deep seulement'); break; }
+        if (C.tgt === 'slotEnemyDeep' && p.kind !== 'region') { e(`${o.card} vise le Deep seulement`); break; }
         tg.slot = p.name; break;
       }
       case 'corridorEnemy': {
@@ -822,7 +828,6 @@ function checkOrders(st, camp, text, excluded) {
         if (!a || !['region', 'fus'].includes(a.kind) || a.camp !== camp) { e(`emplacement de l'ART CA en contre-batterie inconnu « ${L.prec} »`); break; }
         tg.from = a.name;
         if (z.err) { const f = fuseauOf(L.zone); if (f) { tg.fus = f; } else { e(z.err); break; } } else Object.assign(tg, z);
-        if (a.kind === 'fus' && !tg.region) e(`depuis le Close (${a.name}), l'ART CA ne surveille qu'une région du Deep`);
         break;
       }
       case 'slotOwnEmpty': {
@@ -833,7 +838,9 @@ function checkOrders(st, camp, text, excluded) {
       case 'logEffort': {
         const z = String(L.zone || L.slot || L.prec || '').trim();
         if (/^div\s*\+|^div\+|réserve|reserve/i.test(z) || deacc(z) === 'div+') { tg.divp = true; break; }
-        const f = fuseauOf(z); if (!f) e(`il faut viser un fuseau (+3 RAPLOG) ou « DIV+ » (+3 points) : « ${z} »`); else tg.fus = f; break;
+        if (/^pc$/i.test(z)) { tg.pcg = true; break; }   // 8 nov. : +30 % à la jauge du PC ou de la BSC
+        if (/^(bsc|gsc)$/i.test(z)) { tg.bscg = true; break; }
+        const f = fuseauOf(z); if (!f) e(`il faut viser un fuseau (+3 RAPLOG), « DIV+ » (+3 points), « PC » ou « BSC » (+30 %) : « ${z} »`); else tg.fus = f; break;
       }
       case 'genOwn': {   // Ouverture d'itinéraire : le GEN choisi (son emplacement, ou à défaut sa région)
         const s = String(L.slot || L.prec || L.zone || '').trim(); const ps = parseSlot(s);
@@ -879,9 +886,8 @@ function checkOrders(st, camp, text, excluded) {
     // contrôles à la réception (comme la page joueur) : ce qui ne peut pas changer d'ici l'effet
     if (o.card === 'Frappe en profondeur' && tg.from && tg.slot) {
       const a = parseSlot(tg.from), t = parseSlot(tg.slot);
-      if (a.kind === 'fus' && t.kind === 'fus') e(`depuis le Close (${tg.from}), l'ART CA ne frappe que le Deep : ${tg.slot} est hors de portée`);
     }
-    if (o.card === 'Engagement GAM' || o.card === 'Raid aéro') {
+    if (o.card === 'Engagement GAM' || o.card === 'Raid aéro' || o.card === 'Out of contact Attack') {
       const g = st.units.find(u => u.camp === camp && u.type === 'GAM');
       if (!g || g.dead) e('GAM détruit');   // GAM en réserve : vérifié au tour d'effet
     }
@@ -997,10 +1003,10 @@ function resolveTurn(st0, ordersText, excluded, forced) {
     RD(`Poser un marqueur de neutralisation sur ${desc(u)} — retrait à la fin du tour ${u.neut}`);
     const lines = [`${u.type} ENI de ${u.slot} neutralisé jusqu'à la fin du tour ${u.neut}`];
     if (u.type === 'POW' && (!card || POW_PENALTY.includes(card))) {
-      const sh = by; FUS.forEach(f => { st.fm[sh][f] = 0; }); st.fmBlock[sh] = T + 2;
-      lines.push(`tir sur le camp de prisonniers : nos divisions perdent leur marqueur FM et n'en reçoivent plus jusqu'au tour ${T + 2}`);
-      RD(`Retirer les marqueurs FM ${ADJ[sh]}s (bloqués jusqu'à la fin du tour ${T + 2})`);
-      info && info.push(`ATTENTION : votre frappe a touché le camp de prisonniers ennemi, où sont gardés nos propres soldats. Les images circulent : nos trois divisions perdent leur marqueur FM et ne pourront plus en gagner pendant 3 tours.`);
+      const sh = by; FUS.forEach(f => { st.fm[sh][f] = 0; }); st.fmBlock[sh] = T + 4;
+      lines.push(`tir sur le camp de prisonniers : nos divisions perdent leur marqueur FM et n'en reçoivent plus jusqu'au tour ${T + 4}`);
+      RD(`Retirer les marqueurs FM ${ADJ[sh]}s (bloqués jusqu'à la fin du tour ${T + 4})`);
+      info && info.push(`ATTENTION : votre frappe a touché le camp de prisonniers ennemi, où sont gardés nos propres soldats. Les images circulent : nos trois divisions perdent leur marqueur FM et ne pourront plus en gagner pendant 5 tours.`);
     }
     if (u.type === 'ART CA') endCB(u, 'neutralisée');
     return lines.join(' ; ');
@@ -1129,13 +1135,14 @@ function resolveTurn(st0, ordersText, excluded, forced) {
         else if (!active(art, T)) imp = `l'ART CA de ${p.target.from} est neutralisée`;
         else if (draw[c].includes(art.id)) imp = `l'ART CA de ${p.target.from} a déjà tiré ce tour`;
         else { const fromFus = !!zoneOfSlot(art.slot).fus; const tz = zoneOfSlot(p.target.slot);
-          if (fromFus && tz.fus) imp = 'depuis le Close, l\'ART CA frappe le Deep';
           if (!imp) { actor = st.units.find(u => u.id === art.id); imp = supplyCheck(p, actor, lo0[c]); } }
       }
-      if (!imp && (p.card === 'Raid aéro' || p.card === 'Engagement GAM')) {
+      if (!imp && (p.card === 'Raid aéro' || p.card === 'Engagement GAM' || p.card === 'Out of contact Attack')) {
         const g = st.units.find(u => u.camp === c && u.type === 'GAM' && !u.dead);
         if (!g || !zoneOfSlot(g.slot)) imp = 'GAM absent du plateau'; else if (!active(g, T)) imp = 'GAM neutralisé';
-        else { actor = g; imp = supplyCheck(p, g, lo0[c]); }
+        else { const cap = Math.max(0, 4 - g0[c].ALAT), n = draw[c].filter(id => id === g.id).length;   // 8 nov. : le GAM mène autant d'actions par tour que la jauge ALAT a de crans (4, 3, 2, 1, 0)
+          if (n >= cap) imp = `le GAM a déjà mené ${n} action${n > 1 ? 's' : ''} ce tour, le maximum avec la jauge ALAT à ${cap} cran${cap > 1 ? 's' : ''}`;
+          else { actor = g; imp = supplyCheck(p, g, lo0[c]); } }
       }
       if (!imp && C.ew) {
         // EW ami dans le fuseau visé (Ecoute, Brouillage) ou dans la zone de l'emplacement vide (Déception)
@@ -1147,7 +1154,7 @@ function resolveTurn(st0, ordersText, excluded, forced) {
         if (!imp && p.card === 'Déception GE' && unitAt(st, p.target.slot)) imp = `${p.target.slot} n'est pas vide`;
       }
       if (!imp && p.card === 'Frappe en profondeur') draw[c].push(actor.id);
-      if (!imp && (p.card === 'Raid aéro' || p.card === 'Engagement GAM')) draw[c].push(actor.id);
+      if (!imp && (p.card === 'Raid aéro' || p.card === 'Engagement GAM' || p.card === 'Out of contact Attack')) draw[c].push(actor.id);
       if (!imp && p.card === 'Ordre à la B.LOG' && st.bscg[c] < 50) imp = `jauge BSC à ${st.bscg[c]} % (il faut 50 % ou plus)`;
       if (!imp && p.card === 'Engagement de la DIV') { if (st.divp[c] <= 0) imp = 'jauge DIV+ à 0'; }
       if (!imp && p.card === 'Contre-batterie') {
@@ -1155,7 +1162,6 @@ function resolveTurn(st0, ordersText, excluded, forced) {
         if (!art || art.type !== 'ART CA') imp = `pas d'ART CA ${ADJF[c]} en ${p.target.from}`;
         else if (!active(art, T)) imp = `l'ART CA de ${p.target.from} est neutralisée`;
         else { const fromFus = !!zoneOfSlot(art.slot).fus;
-          if (fromFus && !p.target.region) imp = 'depuis le Close, l\'ART CA ne surveille que le Deep';
           actor = art; }
       }
       if (!imp && BIGMOVE[p.card]) {
@@ -1223,7 +1229,7 @@ function resolveTurn(st0, ordersText, excluded, forced) {
             u.dead = true; seeDead(c, u); eff.push(`DSA ENI de ${u.slot} détruit`); enEff.push(deadTxt(u)); RD(`Retirer définitivement le DSA ${ADJ[en]} de ${u.slot} (détruit)`);
           }
         }
-        if (p.card === 'Frappe drone' || p.card === 'Frappe en profondeur' || p.card === 'Sabotage' || p.card === 'Raid aéro') {
+        if (p.card === 'Frappe drone' || p.card === 'Frappe en profondeur' || p.card === 'Sabotage' || p.card === 'Raid aéro' || p.card === 'Out of contact Attack') {
           const u = unitAt(st, t.slot);
           if (!u || u.camp !== en) {
             const pw = big(st, en, 'POW'); const z = zoneOfSlot(t.slot);
@@ -1240,16 +1246,17 @@ function resolveTurn(st0, ordersText, excluded, forced) {
               else { const fr = fortRoll(p, u); hit = fr.hit; eff.push(`${u.slot} fortifié : ${hit ? 'action a cependant réussi' : 'l\'action n\'a pas obtenu les effets escomptés'}`); } }
             if (hit) {
               if (p.card === 'Raid aéro') { u.dead = true; eff.push(`${u.type} ENI de ${u.slot} détruit`); enEff.push(deadTxt(u)); RD(`Retirer définitivement ${desc(u)} (détruit)`); }
-              else { eff.push(neutralize(u, c, notes, p.card, half)); enEff.push(neutTxt(u)); }
+              else if (p.card === 'Out of contact Attack' && GAUGED.includes(u.type)) { eff.push(neutralize(u, c, notes, 'Bombardement', half)); enEff.push(neutTxt(u)); }   // grand pion : les dégâts d'un bombardement
+              else { eff.push(neutralize(u, c, notes, p.card === 'Out of contact Attack' ? 'Bombardement' : p.card, half)); enEff.push(neutTxt(u)); }
             }
           }
           if (u && u.dead) seeDead(c, u); else see(c, t.slot);
           if (p.card === 'Frappe en profondeur') { rep[en].enemy.push(`L'ART CA ENI qui a tiré est en ${t.from}.`); see(en, t.from); }
         }
         if (p.card === 'Bombardement' || p.card === 'Maquis de partisans' || p.card === 'Intox L2I') {
-          st.neutReg[en + '|' + t.region] = T + 2; RD(`Poser un marqueur de neutralisation sur la région ${t.region} (flux coupés) — retrait à la fin du tour ${T + 2}`);
-          eff.push(`région ${t.region} neutralisée, avec tous ses flux LOG, jusqu'à la fin du tour ${T + 2}`);
-          enEff.push(`La région ${t.region} est neutralisée jusqu'à la fin du tour ${T + 2} : ses flux LOG sont coupés.`);
+          st.neutReg[en + '|' + t.region] = T + 4; RD(`Poser un marqueur de neutralisation sur la région ${t.region} (flux coupés) — retrait à la fin du tour ${T + 4}`);
+          eff.push(`région ${t.region} neutralisée, avec tous ses flux LOG, jusqu'à la fin du tour ${T + 4}`);
+          enEff.push(`La région ${t.region} est neutralisée jusqu'à la fin du tour ${T + 4} : ses flux LOG sont coupés.`);
           for (const u of unitsInZone(st, en, { region: t.region }, T, false)) {
             if (u.type === 'POW' && p.card !== 'Bombardement') continue;
             let hit = true, half = false; if (p.card === 'Bombardement' && st.fort.includes(u.slot)) {
@@ -1259,9 +1266,9 @@ function resolveTurn(st0, ordersText, excluded, forced) {
           }
         }
         if (p.card === 'Assaut de la BP') {   // région neutralisée ; pions réduits détruits ; grand pion −50 ; aucun bonus de fortification
-          st.neutReg[en + '|' + t.region] = T + 2; RD(`Poser un marqueur de neutralisation sur la région ${t.region} (flux coupés) — retrait à la fin du tour ${T + 2}`);
-          eff.push(`région ${t.region} neutralisée, avec tous ses flux LOG, jusqu'à la fin du tour ${T + 2}`);
-          enEff.push(`La région ${t.region} est neutralisée jusqu'à la fin du tour ${T + 2} : ses flux LOG sont coupés.`);
+          st.neutReg[en + '|' + t.region] = T + 4; RD(`Poser un marqueur de neutralisation sur la région ${t.region} (flux coupés) — retrait à la fin du tour ${T + 4}`);
+          eff.push(`région ${t.region} neutralisée, avec tous ses flux LOG, jusqu'à la fin du tour ${T + 4}`);
+          enEff.push(`La région ${t.region} est neutralisée jusqu'à la fin du tour ${T + 4} : ses flux LOG sont coupés.`);
           let n = 0;
           for (const u of unitsInZone(st, en, { region: t.region }, T, false)) {
             if (GAUGED.includes(u.type) || u.type === 'POW') { eff.push(neutralize(u, c, notes, p.card)); enEff.push(neutTxt(u)); see(c, u.slot); n++; continue; }
@@ -1269,7 +1276,7 @@ function resolveTurn(st0, ordersText, excluded, forced) {
           }
           if (!n) eff.push('aucun pion ENI dans la région');
         }
-        if (p.card === 'Embuscade') { st.cut[t.cor] = T + 2; eff.push(`corridor ${t.cor} coupé jusqu'à la fin du tour ${T + 2}`); enEff.push(`Le corridor ${t.cor} est coupé jusqu'à la fin du tour ${T + 2}.`); RD(`Poser un marqueur de neutralisation sur le corridor ${t.cor} — retrait à la fin du tour ${T + 2}`); }
+        if (p.card === 'Embuscade') { st.cut[t.cor] = T + 4; eff.push(`corridor ${t.cor} coupé jusqu'à la fin du tour ${T + 4}`); enEff.push(`Le corridor ${t.cor} est coupé jusqu'à la fin du tour ${T + 4}.`); RD(`Poser un marqueur de neutralisation sur le corridor ${t.cor} — retrait à la fin du tour ${T + 4}`); }
       }
       if (p.card === 'Frappe en profondeur' && ef.actor) {
         if (!r.ok) { rep[en].enemy.push(`L'ART CA ENI qui a tiré est en ${p.target.from}.`); see(en, p.target.from); }
@@ -1297,7 +1304,8 @@ function resolveTurn(st0, ordersText, excluded, forced) {
         else { st.net[c] = p.target.net; st.netDir[c] = o.dir; st.netCons[c] = o.cons; eff.push(`nouveau réseau en place (${o.total} marqueurs)`); RD(`Réseau LOG ${ADJ[c]} : ${Object.entries(p.target.net).map(([k, v]) => k + ' ' + v).join(' · ')}`); }
       }
       if (ph === 'L' && r.ok && p.card === 'Effort LOG') {
-        if (p.target.divp) { const b = st.divp[c]; st.divp[c] = Math.min(100, b + 3); eff.push(`la DIV+ gagne ${st.divp[c] - b} points (${st.divp[c]})`); RD(`Jauge DIV+ ${ADJF[c]} : ${st.divp[c]} (Effort LOG)`); }
+        if (p.target.pcg || p.target.bscg) { const k = p.target.pcg ? 'pcg' : 'bscg', nm = p.target.pcg ? 'PC' : 'BSC'; const b = st[k][c]; st[k][c] = Math.min(100, b + 30); eff.push(`jauge ${nm} ${b} % → ${st[k][c]} %`); RD(`Jauge ${nm} ${ADJF[c]} : ${st[k][c]} % (Effort LOG)`); }
+        else if (p.target.divp) { const b = st.divp[c]; st.divp[c] = Math.min(100, b + 3); eff.push(`la DIV+ gagne ${st.divp[c] - b} points (${st.divp[c]})`); RD(`Jauge DIV+ ${ADJF[c]} : ${st.divp[c]} (Effort LOG)`); }
         else { const f = p.target.fus; bonus[c][f].raplog = (bonus[c][f].raplog || 0) + 3; bonus[c][f].src.push('Effort LOG +3 RAPLOG'); eff.push(`+3 RAPLOG à la division ${DE_FUS[f]} pour ce tour`); }
       }
       if (ph === 'L' && r.ok && p.card === "Ouverture d'itinéraire") {
@@ -1410,13 +1418,14 @@ function resolveTurn(st0, ordersText, excluded, forced) {
     const off = r1(s.rap + s.raplog + s.fm + wpot);
     const ldv = big(st, l, 'DIV+'); const k = openDistance(st, l, zoneOfSlot(ldv.slot).region, f, T);   // la DIV+ qui défend contourne les corridors coupés
     const def = k === null ? null : st.divp[l] - 5 * k;
-    perc.push({ f, w, off, def, k, kw, wp: st.divp[w], eng: engRes.some(e => e.c === w), total: def === null || off > def });
+    perc.push({ f, w, off, def, k, kw, wp: st.divp[w], eng: engRes.some(e => e.c === w), total: def === null || off > def, depth: Math.abs(st.cursor[f]) });
   }
   if (perc.length) {
-    perc.sort((a, b) => b.off - a.off);
+    // 8 nov. : deux percées au même tour → gagne celle dont le curseur est allé le plus loin, puis la plus grande force offensive
+    perc.sort((a, b) => b.depth - a.depth || b.off - a.off);
     let fin;
-    if (perc.length > 1 && perc[0].off === perc[1].off && perc[0].w !== perc[1].w) fin = { kind: 'nul', txt: 'Deux percées de même force au même tour : partie nulle.' };
-    else { const p = perc[0]; fin = { kind: p.total ? 'totale' : 'décisive', w: p.w, f: p.f, txt: `Percée ${ADJF[p.w]} dans le fuseau ${DE_FUS[p.f]}. Force offensive ${fmt1(p.off)} (${p.eng ? `DIV+ ${ADJF[p.w]} engagée ce tour : déjà à 0` : `DIV+ ${ADJF[p.w]} non engagée : moitié de ${p.wp}, à ${p.kw} corridor${p.kw > 1 ? 's' : ''}`}) contre ${p.def === null ? `aucune force défensive (DIV+ ${ADJF[EN[p.w]]} coupée du fuseau par les corridors neutralisés)` : `force défensive ${p.def} (DIV+ ${ADJF[EN[p.w]]} à ${p.k} corridor${p.k > 1 ? 's' : ''}, corridors coupés contournés)`} : victoire ${p.total ? 'totale' : 'décisive'} des ${PL[p.w]}.` }; }
+    if (perc.length > 1 && perc[0].depth === perc[1].depth && perc[0].off === perc[1].off && perc[0].w !== perc[1].w) fin = { kind: 'nul', txt: 'Deux percées de même profondeur et de même force au même tour : partie nulle.' };
+    else { const p = perc[0]; fin = { kind: p.total ? 'totale' : 'décisive', w: p.w, f: p.f, txt: `Percée ${ADJF[p.w]} dans le fuseau ${DE_FUS[p.f]}. Force offensive ${fmt1(p.off)} (${p.eng ? `DIV+ ${ADJF[p.w]} engagée ce tour : déjà à 0` : `DIV+ ${ADJF[p.w]} non engagée : moitié de ${p.wp}, à ${p.kw} corridor${p.kw > 1 ? 's' : ''}`}) contre ${p.def === null ? `aucune force défensive (DIV+ ${ADJF[EN[p.w]]} coupée du fuseau par les corridors neutralisés)` : `force défensive ${p.def} (DIV+ ${ADJF[EN[p.w]]} à ${p.k} corridor${p.k > 1 ? 's' : ''}, corridors coupés contournés)`} : victoire ${p.total ? 'totale' : 'décisive'} des ${PL[p.w]}.` }; const q = perc.find(x => x.w !== p.w); if (q) fin.txt = `Deux percées au même tour : percée ${ADJF[p.w]} dans le fuseau ${DE_FUS[p.f]} (curseur à ${p.depth} cases) et percée ${ADJF[q.w]} dans le fuseau ${DE_FUS[q.f]} (curseur à ${q.depth} cases)${p.depth === q.depth ? ', à même profondeur : la plus grande force offensive l\'emporte' : ' : la plus profonde l\'emporte'}. ` + fin.txt; }
     st.ended = fin; J('  ' + fin.txt); RD(fin.txt);
   }
   // messages de division (envoyés au prochain compte rendu)
@@ -1467,7 +1476,7 @@ function resolveTurn(st0, ordersText, excluded, forced) {
         out.dice.push({ who: w, d: y.d, k: kk, nat: y.nat, forced: y.forced, camp: c, rule: 'touché sur 1, 2 ou 3', eva: 1 });
         const hit = y.d <= EVA_RATE; let res = 'épargné';
         if (hit && it.u) { const l = neutralize(it.u, EN[c], null, 'Évasion'); res = GAUGED.includes(it.u.type) ? it.u.lastLoss : `neutralisé jusqu'à la fin du tour ${it.u.neut}`; lines.push(`notre ${it.u.type} de ${it.u.slot} ${GAUGED.includes(it.u.type) ? 'est touché (' + it.u.lastLoss + ')' : 'est neutralisé jusqu\'à la fin du tour ' + it.u.neut}`); }
-        if (hit && it.cor) { st.cut[it.cor] = Math.max(st.cut[it.cor] ?? -1, T + 2); res = `coupé jusqu'à la fin du tour ${T + 2}`; RD(`Poser un marqueur de neutralisation sur le corridor ${it.cor} — retrait à la fin du tour ${T + 2}`); lines.push(`le corridor ${it.cor} est coupé jusqu'à la fin du tour ${T + 2}`); }
+        if (hit && it.cor) { st.cut[it.cor] = Math.max(st.cut[it.cor] ?? -1, T + 4); res = `coupé jusqu'à la fin du tour ${T + 4}`; RD(`Poser un marqueur de neutralisation sur le corridor ${it.cor} — retrait à la fin du tour ${T + 4}`); lines.push(`le corridor ${it.cor} est coupé jusqu'à la fin du tour ${T + 4}`); }
         ev.rolls.push({ what: nm, slot: it.u ? it.u.slot : null, cor: it.cor || null, type: it.u ? it.u.type : null, d: y.d, k: kk, forced: y.forced, hit, res });
       }
       const p0 = st.pow[c]; st.pow[c] = Math.floor(st.pow[c] / 2); ev.powFrom = p0; ev.powTo = st.pow[c];
@@ -1796,7 +1805,7 @@ const ArbPlateau = (() => {
   const el = (t, a, ...kids) => { const e = document.createElement(t); if (a) for (const k in a) { if (k === 'class') e.className = a[k]; else if (k === 'text') e.textContent = a[k]; else if (k.startsWith('on')) e.addEventListener(k.slice(2), a[k]); else if (a[k] != null && a[k] !== false) e.setAttribute(k, a[k]); } for (const c of kids.flat()) if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(c)); return e; };
   const [IW, IH] = ZONES.image; const SLOT = ZONES.slots, COR = ZONES.corridors;
   const COL = { B: '#1d5fbf', R: '#c62828' }, CAMPW = { B: 'Bleu', R: 'Rouge' };
-  const SHORT = { 'Renseignement SAT': 'SAT', 'Renseignement drone': 'Rens. drone', 'Renseignement aérien': 'Rens. aérien', 'Frappe en profondeur': 'Frappe prof.', 'Maquis de partisans': 'Maquis', 'Mouvement de la DIV': 'Mvt DIV', 'Engagement de la DIV': 'Engag. DIV', 'Transfert à la justice': 'Transfert', 'Ordre à la B.ZARR': 'Ordre B.ZARR', 'Ordre à la DSA': 'Ordre DSA', 'Ordre aux MP et CIMIC': 'Ordre MP/CIMIC', 'Ordre à la B.GEN': 'Ordre B.GEN', 'Ordre à la B.ART': 'Ordre B.ART', 'Travaux du GEN': 'Travaux GEN', 'Engagement GAM': 'Engag. GAM', 'Brouillage GE': 'Brouillage', 'Renfort de feu': 'Renfort feu' };
+  const SHORT = { 'Out of contact Attack': 'OOC Attack', 'Renseignement SAT': 'SAT', 'Renseignement drone': 'Rens. drone', 'Renseignement aérien': 'Rens. aérien', 'Frappe en profondeur': 'Frappe prof.', 'Maquis de partisans': 'Maquis', 'Mouvement de la DIV': 'Mvt DIV', 'Engagement de la DIV': 'Engag. DIV', 'Transfert à la justice': 'Transfert', 'Ordre à la B.ZARR': 'Ordre B.ZARR', 'Ordre à la DSA': 'Ordre DSA', 'Ordre aux MP et CIMIC': 'Ordre MP/CIMIC', 'Ordre à la B.GEN': 'Ordre B.GEN', 'Ordre à la B.ART': 'Ordre B.ART', 'Travaux du GEN': 'Travaux GEN', 'Engagement GAM': 'Engag. GAM', 'Brouillage GE': 'Brouillage', 'Renfort de feu': 'Renfort feu' };
   const short = c => SHORT[c] || c;
   const V = { zoom: 1, view: 'debut', focus: null, scroll: null };
   let tipEl = null;
