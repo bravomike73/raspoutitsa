@@ -3408,7 +3408,7 @@ async function soloBoot() {
   if (info && info.id) { SO.info = info; netEnter('B'); return; }
   soloLobby();
 }
-const SOLO_PORTRAITS = { popov: 1, svietchine: 1, toukhatchevski: 1, gerasimov: 1, tchouikov: 1, rokossovski: 1 };   // portraits/<id>.gif fournis ; les autres bots ont l'étoile en attendant
+const SOLO_PORTRAITS = { popov: 1, boris: 1, ivan: 1, svietchine: 1, toukhatchevski: 1, gerasimov: 1, tchouikov: 1, rokossovski: 1, koniev: 1, joukov: 1 };   // portraits/<id>.gif (un bot sans portrait aurait l'étoile)
 function soloLobby(msg) {
   document.documentElement.classList.add('noGame');
   document.body.className = ''; const st = $('#stage'); st.replaceChildren();
