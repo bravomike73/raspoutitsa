@@ -135,7 +135,7 @@ h1 { margin: clamp(8px, 4vh, 40px) 0 0; font: 400 clamp(40px, min(10vw, 15vh), 1
   const MODES = {
     wargame: { sub: 'Mode wargame', note: "L'arbitre ouvre la partie depuis son poste. Chaque CMI se connecte avec le mot de passe de son camp.",
       camps: [['B', 'Bleus', "1er Corps d'Armée", 'joueur.html?camp=B', FLAG], ['A', 'Arbitre', 'Poste de l\'arbitre', 'arbitre.html', SCALE], ['R', 'Rouges', '3e Armée interarmes', 'joueur.html?camp=R', STAR]] },
-    duel: { sub: 'Mode duel · arbitrage automatique', note: "Partie entre camarades avec arbitrage automatique.\nConnexion avec le mot de passe duel de votre camp.",
+    duel: { sub: 'Mode duel · arbitrage automatique', note: "Partie entre camarades avec arbitrage automatique.\nCréez un duel ou rejoignez-le avec le code de votre adversaire.",
       camps: [['B', 'Bleus', "1er Corps d'Armée", 'joueur.html?mode=duel&camp=B', FLAG], ['R', 'Rouges', '3e Armée interarmes', 'joueur.html?mode=duel&camp=R', STAR]] },
   };
   const $ = s => document.querySelector(s);

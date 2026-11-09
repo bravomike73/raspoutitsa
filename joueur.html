@@ -3125,7 +3125,7 @@ function refresh() {
 }
 // ------------------------------------------------------------------ échanges automatiques avec l'arbitre (Firebase)
 const NET = { camp: null, conn: false, crs: {}, session: undefined };
-const netLabel = () => { const n = $('#netState'); if (n) { n.textContent = (RN.mode === 'duel' ? 'Duel · ' : '') + (NET.conn ? '● Connecté' : '● Connexion perdue'); n.style.color = NET.conn ? 'var(--ok)' : 'var(--err)'; } };
+const netLabel = () => { const n = $('#netState'); if (n) { n.textContent = (RN.mode === 'duel' ? `Duel ${RN.room || ''}${DU.membres && !(DU.membres.B && DU.membres.R) ? ' · adversaire attendu' : ''} · ` : '') + (NET.conn ? '● Connecté' : '● Connexion perdue'); n.style.color = NET.conn ? 'var(--ok)' : 'var(--err)'; } };
 // envoi d'un message : renvoie false si rien n'est parti ; le message reste alors à l'écran pour le secours
 async function netSend(kind, turn, text) {
   const fail = why => { showMsg('Message non envoyé', `${why} Rétablissez la connexion puis cliquez à nouveau, ou copiez ce message pour l'arbitre.`, text); return false; };
@@ -3177,12 +3177,81 @@ function netSession(v) {
   S = freshState(NET.camp); S.session = v; UI.depMode = 'pions'; NET.crs = {}; save(); start();
   ask('Nouvelle partie', RN.mode === 'duel' ? "Une nouvelle partie de duel a été lancée : la page repart au déploiement." : "L'arbitre a ouvert une nouvelle partie : la page repart au déploiement.", () => {});
 }
+// ------------------------------------------------------------------ mode duel : salles avec code (9 nov.)
+// Connexion anonyme (l'appareil garde son identifiant) ; chaque partie est rangée sous duel/<code>/ ; seuls les deux appareils inscrits y ont accès.
+const DUEL_KEY = 'rasp-duel-salle';
+function duelSaved() { try { return JSON.parse(localStorage.getItem(DUEL_KEY) || 'null'); } catch (e) { return null; } }
+function duelSave(v) { try { if (v) localStorage.setItem(DUEL_KEY, JSON.stringify(v)); else localStorage.removeItem(DUEL_KEY); } catch (e) {} }
+const duelCode = () => { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let c = ''; for (const x of crypto.getRandomValues(new Uint8Array(6))) c += A[x % A.length]; return c; };
+const duelClean = c => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+async function duelBoot() {
+  let role = null; try { role = await RN.init(); } catch (e) {}
+  if (role) { try { await RN.logout(); } catch (e) {} }
+  try { await RN.anon(); } catch (e) { return duelLobby('Connexion au serveur impossible : vérifiez la connexion Internet, puis rechargez la page.'); }
+  let url = null; try { url = duelClean(new URLSearchParams(location.search).get('salle')); } catch (e) {}
+  const sv = duelSaved(), code = url || (sv && sv.code);
+  if (code && await duelEnter(code)) return;
+  duelLobby();
+}
+// entre dans une salle dont l'appareil est déjà membre ; faux sinon
+async function duelEnter(code) {
+  RN.setRoom(code);
+  let m = null; try { m = await RN.timeout(RN.get('membres'), 10000); } catch (e) {}
+  const mine = m && ['B', 'R'].find(c => m[c] === RN.uid);
+  if (!mine) { RN.setRoom(null); return false; }
+  duelSave({ code, camp: mine }); netEnter(mine); return true;
+}
+async function duelCreate(camp, err) {
+  err.textContent = 'Création du duel…';
+  for (let i = 0; i < 5; i++) {
+    const code = duelCode(); RN.setRoom(code);
+    try { await RN.timeout(RN.update({ cree: { at: Date.now(), par: RN.uid }, [`membres/${camp}`]: RN.uid }), 10000); }
+    catch (e) { RN.setRoom(null); if (RN.denied(e)) continue; err.textContent = 'Création impossible : vérifiez la connexion Internet.'; return; }
+    duelSave({ code, camp }); netEnter(camp);
+    ask(`Duel ${code} créé`, `Transmettez ce code à votre adversaire : ${code}\nIl choisit le camp ${camp === 'B' ? 'Rouge' : 'Bleu'}, puis « Rejoindre un duel » avec ce code. Le code reste affiché en haut à droite.`, () => {});
+    return;
+  }
+  err.textContent = 'Création impossible, réessayez.';
+}
+async function duelJoin(code, camp, err) {
+  code = duelClean(code); if (code.length !== 6) { err.textContent = 'Le code compte 6 caractères.'; return; }
+  err.textContent = 'Connexion au duel…';
+  if (await duelEnter(code)) return;   // déjà inscrit dans cette salle
+  RN.setRoom(code);
+  try { await RN.timeout(RN.set(`membres/${camp}`, RN.uid), 10000); duelSave({ code, camp }); netEnter(camp); }
+  catch (e) { RN.setRoom(null); err.textContent = RN.denied(e) ? `Code inconnu, ou la place ${camp === 'B' ? 'bleue' : 'rouge'} est déjà prise dans ce duel.` : 'Connexion impossible : vérifiez la connexion Internet.'; }
+}
+function duelLobby(msg) {
+  document.documentElement.classList.add('noGame');
+  document.body.className = ''; const st = $('#stage'); st.replaceChildren();
+  let camp = WANT_CAMP;
+  const err = el('div', { class: 'small', style: 'color:var(--err);min-height:1.2em', text: msg || '' });
+  const pick = el('div', { class: 'campPick' });
+  const drawPick = () => { pick.replaceChildren(...['B', 'R'].map(c => el('button', { class: c, style: camp && camp !== c ? 'opacity:.35' : null, onclick: () => { camp = c; drawPick(); } }, c === 'B' ? 'Bleus' : 'Rouges'))); };
+  drawPick();
+  const code = el('input', { type: 'text', placeholder: 'Code à 6 caractères', maxlength: '6', autocapitalize: 'characters', autocomplete: 'off', style: 'flex:1;padding:10px;font-size:18px;letter-spacing:.2em;text-transform:uppercase;min-width:0' });
+  const need = () => { if (!camp) { err.textContent = "Choisissez d'abord votre camp."; return false; } return true; };
+  const join = () => { if (need()) duelJoin(code.value, camp, err); };
+  code.addEventListener('keydown', e => { if (e.key === 'Enter') join(); });
+  st.append(el('div', { class: 'welcome' },
+    el('h2', { text: 'Duel' }),
+    el('p', { text: "Partie entre camarades avec arbitrage automatique. Créez un duel et transmettez son code à votre adversaire, ou saisissez le code qu'il vous a donné." }),
+    WANT_CAMP ? el('p', { class: 'small', text: `Votre camp : ${WANT_CAMP === 'B' ? 'Bleus' : 'Rouges'}.` }) : el('div', {}, el('p', { class: 'small', text: 'Votre camp :' }), pick),
+    el('div', { class: 'row', style: 'margin:14px 0 6px' }, el('button', { class: 'primary', style: 'flex:1;padding:12px', onclick: () => { if (need()) duelCreate(camp, err); } }, 'Créer un duel')),
+    el('div', { class: 'row', style: 'gap:8px;margin:6px 0' }, code, el('button', { onclick: join, style: 'padding:10px 16px' }, 'Rejoindre')),
+    err,
+    el('p', { class: 'small' }, el('a', { href: 'index.html#duel' }, '‹ Changer de mode ou de camp'))));
+}
 // ------------------------------------------------------------------ mode duel : arbitrage automatique (8 nov.)
 // Les deux pages joueurs lisent tout ce qui est sous duel/ (règles de la base). Chacune peut arbitrer :
 // le tour est résolu dès que les deux messages sont arrivés ; arbitre/tour (règle : +1 à chaque écriture) empêche une double publication.
 // Chaque page contrôle ses propres messages et les renvoie elle-même avec le motif s'ils ne sont pas jouables.
 const DU = { box: { B: {}, R: {} }, sv: undefined, busy: false, again: false, done: {} };
 function duelStart() {
+  RN.on('membres', v => { DU.membres = v || {}; netLabel(); }, () => {});
+  RN.set('vu', Date.now()).catch(() => {});
+  const n = $('#netState'); if (n) { n.style.cursor = 'pointer'; n.title = 'Code du duel · cliquer pour quitter ce duel';
+    n.onclick = () => ask(`Quitter le duel ${RN.room} ?`, `La partie reste enregistrée. Pour la reprendre plus tard depuis cet appareil, choisissez « Rejoindre » et saisissez le code ${RN.room}.`, () => { duelSave(null); location.href = 'index.html#duel'; }); }
   for (const c of ['B', 'R']) RN.on('boite/' + c, v => { DU.box[c] = v || {}; duelTick(); }, () => {});
   RN.on('arbitre/sauvegarde', v => { try { DU.sv = v ? JSON.parse(v) : null; } catch (e) { DU.sv = null; } duelTick(); }, () => {});
 }
@@ -3245,7 +3314,7 @@ function netWatch() {
   RN.on('refus/' + NET.camp, netRefus, () => {});
 }
 function netEnter(camp) {
-  NET.camp = camp; STORE = (RN.mode === 'duel' ? 'rasp-joueur-duel-v1-' : 'rasp-joueur-v1-') + camp;
+  NET.camp = camp; STORE = (RN.mode === 'duel' ? 'rasp-joueur-duel-v1-' + RN.room + '-' : 'rasp-joueur-v1-') + camp;
   S = load(); if (S && S.camp === camp) start(); else begin(camp);
   netWatch();
   if (RN.mode === 'duel') duelStart();
@@ -3263,6 +3332,7 @@ function netLogin(msg) {
 // 8 nov. : camp choisi sur la page d'accueil (joueur.html?camp=B ou R)
 const WANT_CAMP = (() => { try { const c = new URLSearchParams(location.search).get('camp'); return c === 'B' || c === 'R' ? c : null; } catch (e) { return null; } })();
 async function netBoot() {
+  if (RN.mode === 'duel') return duelBoot();
   let role = null; try { role = await RN.init(); } catch (e) {}
   if ((role === 'B' || role === 'R') && (!WANT_CAMP || role === WANT_CAMP)) netEnter(role);
   else { if (role) try { await RN.logout(); } catch (e) {} netLogin(); }

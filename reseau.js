@@ -17,24 +17,23 @@
    Sans firebase-config.js rempli, RN.active reste faux et les pages restent en copier-coller. */
 (function () {
   const C = window.RASP_FB || null;
-  // 8 nov. : mode duel (joueur.html?mode=duel) : comptes duel-bleu / duel-rouge, données sous duel/ (règles de la base à part)
+  // mode duel (joueur.html?mode=duel) : 9 nov. : connexion anonyme et salles avec code ; chaque partie sous duel/<code>/
   const MODE = (() => { try { return new URLSearchParams(location.search).get('mode') === 'duel' ? 'duel' : 'wargame'; } catch (e) { return 'wargame'; } })();
-  const PFX = MODE === 'duel' ? 'duel/' : '';
-  const EMAIL = MODE === 'duel'
-    ? { B: 'duel-bleu@raspoutitsa.example', R: 'duel-rouge@raspoutitsa.example', A: 'arbitre@raspoutitsa.example' }
-    : { B: 'bleu@raspoutitsa.example', R: 'rouge@raspoutitsa.example', A: 'arbitre@raspoutitsa.example' };
+  let PFX = '';
+  const EMAIL = { B: 'bleu@raspoutitsa.example', R: 'rouge@raspoutitsa.example', A: 'arbitre@raspoutitsa.example' };
   const roleOf = mail => Object.keys(EMAIL).find(k => EMAIL[k] === mail) || null;
   const timeout = (p, ms) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(Object.assign(new Error('délai dépassé'), { code: 'TIMEOUT' })), ms))]);
   const denied = e => /PERMISSION_DENIED|permission/i.test(String((e && (e.code || e.message)) || ''));
   const tid = t => 'T' + String(t).padStart(2, '0');
-  const RN = { active: false, role: null, timeout, denied, tid, mode: MODE };
+  const RN = { active: false, role: null, timeout, denied, tid, mode: MODE, uid: null, room: null };
   window.RN = RN;
   let B = window.RN_BACKEND || null;   // moteur de test éventuel
   if (!B) {
     if (!C || !C.apiKey || /A_REMPLIR/.test(C.apiKey) || !window.firebase) return;
     const app = firebase.initializeApp(C), auth = app.auth(), db = app.database();
     B = {
-      init: () => auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).then(() => new Promise(ok => { const off = auth.onAuthStateChanged(u => { off(); ok(u ? u.email : null); }); })),
+      init: () => auth.setPersistence(MODE === 'duel' ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION).then(() => new Promise(ok => { const off = auth.onAuthStateChanged(u => { off(); ok(u ? (u.isAnonymous ? 'anon:' + u.uid : u.email) : null); }); })),
+      anon: () => auth.signInAnonymously().then(r => r.user.uid),
       login: (mail, pwd) => auth.signInWithEmailAndPassword(mail, pwd).then(r => r.user.email),
       logout: () => auth.signOut(),
       set: (p, v) => db.ref(p).set(v),
@@ -45,7 +44,10 @@
     };
   }
   RN.active = true;
-  RN.init = async () => { const m = await B.init(); RN.role = m ? roleOf(m) : null; return RN.role; };
+  RN.init = async () => { const m = await B.init(); if (m && m.startsWith('anon:')) { RN.uid = m.slice(5); RN.role = null; return null; } RN.role = m ? roleOf(m) : null; return RN.role; };
+  // duel : identifiant anonyme de l'appareil (gardé d'une visite à l'autre), puis salle
+  RN.anon = async () => { if (!RN.uid) RN.uid = await B.anon(); return RN.uid; };
+  RN.setRoom = code => { RN.room = code || null; PFX = code ? 'duel/' + code + '/' : ''; };
   RN.login = async (role, pwd) => { await B.login(EMAIL[role], pwd); RN.role = role; return role; };
   RN.logout = async () => { await B.logout(); RN.role = null; };
   const P = p => PFX + p;
