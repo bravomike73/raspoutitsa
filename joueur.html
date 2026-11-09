@@ -306,6 +306,15 @@ dialog::backdrop { background: rgba(0,0,0,.4); }
 @media (pointer: coarse) and (orientation: portrait) and (max-width: 600px) {
   #rotate { display: grid; place-items: center; position: fixed; inset: 0; z-index: 99; padding: 24px; text-align: center; background: var(--panel); font-size: 18px; font-weight: 600; }
 }
+
+/* 9 nov. : mode solo, choix de l'adversaire */
+.soloWelcome { max-width: 720px; }
+.soloBots { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; margin: 10px 0; max-height: 52vh; overflow: auto; }
+.soloBot { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; text-align: left; padding: 9px 11px; border-radius: 8px; cursor: pointer; }
+.soloBot .n { font-weight: 700; }
+.soloBot .lv { color: #c9a227; letter-spacing: 1px; white-space: nowrap; }
+.soloBot .d { grid-column: 1 / -1; font-size: 12.5px; opacity: .8; line-height: 1.35; }
+.soloBot.on { outline: 2px solid var(--ok); outline-offset: 1px; }
 </style>
 </head>
 <body>
@@ -347,8 +356,34 @@ dialog::backdrop { background: rgba(0,0,0,.4); }
 <div id="tip"></div>
 
 <script src="firebase-config.js"></script>
+<script>
+// 9 nov. : mode solo (joueur.html?mode=solo) : pas de serveur, la partie vit dans ce navigateur (même arborescence que le duel)
+(function () {
+  let m = null; try { m = new URLSearchParams(location.search).get('mode'); } catch (e) {}
+  if (m !== 'solo') return;
+  window.RASP_SOLO = true;
+  const KEY = 'rasp-solo-partie';
+  let DB = {}; try { DB = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { DB = {}; }
+  const segs = p => String(p).split('/').filter(Boolean);
+  const getP = p => segs(p).reduce((o, k) => (o == null ? null : (o[k] === undefined ? null : o[k])), DB);
+  const setP = (p, v) => { const s = segs(p); if (!s.length) { DB = v == null ? {} : JSON.parse(JSON.stringify(v)); return; } let o = DB; for (const k of s.slice(0, -1)) { if (typeof o[k] !== 'object' || o[k] == null) o[k] = {}; o = o[k]; } if (v == null) delete o[s[s.length - 1]]; else o[s[s.length - 1]] = JSON.parse(JSON.stringify(v)); };
+  const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch (e) { console.warn('sauvegarde solo', e); } };
+  const subs = [];
+  const notify = () => { for (const s of subs) { const v = JSON.stringify(getP(s.p)); if (v !== s.last) { s.last = v; setTimeout(() => s.cb(v == null ? null : JSON.parse(v)), 0); } } };
+  window.RASP_SOLO_CLEAR = () => { DB = {}; try { localStorage.removeItem(KEY); } catch (e) {} };
+  window.RN_BACKEND = {
+    init: async () => 'anon:solo', anon: async () => 'solo', login: async () => {}, logout: async () => {},
+    set: async (p, v) => { setP(p, v); persist(); notify(); },
+    update: async u => { for (const k of Object.keys(u)) setP(k, u[k]); persist(); notify(); },
+    get: async p => { const v = getP(p); return v == null ? null : JSON.parse(JSON.stringify(v)); },
+    on: (p, cb) => { subs.push({ p, cb, last: undefined }); notify(); return () => {}; },
+    onConn: cb => setTimeout(() => cb(true), 0),
+  };
+})();
+</script>
 <script src="reseau.js"></script>
-<script>window.RN = window.RN || { active: false };</script>
+<script>window.RN = window.RN || { active: false }; if (window.RASP_SOLO && RN.active) RN.mode = 'solo';</script>
+<script src="bots.js"></script>
 <script>
 // ------------------------------------------------------------------ moteur de la page d'arbitrage (copie exacte, mêmes contrôles)
 const R = (() => {
@@ -2843,7 +2878,7 @@ async function validateOrders() {
 function panelCR(p) {
   p.append(el('h2', { text: `Compte rendu du tour ${S.turn}` }));
   p.append(el('div', { class: 'small' }, `Ordres du tour ${S.turn} envoyés. `, el('button', { class: 'link', onclick: () => showMsg(`Message d'ordres – tour ${S.turn}`, 'Message envoyé :', S.sent.text) }, 'Revoir le message'), RN.active ? null : ' · ', RN.active ? null : el('button', { class: 'link', onclick: () => { S.phase = 'orders'; S.sent = null; save(); refresh(); } }, 'Corriger les ordres')));
-  if (RN.active) p.append(el('div', { class: 'notice warn', text: RN.mode === 'duel' ? "En attente des ordres adverses : l'arbitrage automatique publiera le compte rendu dès qu'ils seront arrivés." : "En attente du compte rendu de l'arbitre : il s'affichera ici automatiquement." }));
+  if (RN.active) p.append(el('div', { class: 'notice warn', text: RN.mode === 'solo' ? "L'adversaire réfléchit : le compte rendu arrive dans un instant." : RN.mode === 'duel' ? "En attente des ordres adverses : l'arbitrage automatique publiera le compte rendu dès qu'ils seront arrivés." : "En attente du compte rendu de l'arbitre : il s'affichera ici automatiquement." }));
   const crBox = RN.active ? el('details', { style: 'margin-top:10px' }, el('summary', { class: 'small', text: 'Secours en cas de panne réseau : coller un compte rendu reçu autrement' })) : p;
   if (RN.active) p.append(crBox);
   crBox.append(el('p', { class: 'small muted', text: "Collez ici le compte rendu complet reçu de l'arbitre, jusqu'à la ligne « RASPSYNC FIN »." }));
@@ -3023,7 +3058,7 @@ $('#fileIn').onchange = async e => {
   try { const d = JSON.parse(await f.text()); if (d.app !== 'raspoutitsa-joueur' || !d.S || !d.S.camp) throw new Error('ce fichier n\'est pas une sauvegarde de la page joueur'); if (RN.active && d.S.camp !== NET.camp) throw new Error('cette sauvegarde est celle de l\'autre camp'); S = fixState(d.S); UI.activeOrder = null; UI.mode = null; UI.sel = null; save(); start(); }
   catch (err) { ask('Fichier illisible', err.message, () => {}); }
 };
-$('#btnNew').onclick = () => RN.active && RN.mode === 'duel' ? duelReset() : ask('Nouvelle partie ?', 'La partie en cours sera remplacée dans ce navigateur. Pensez à la sauvegarder dans un fichier avant.', () => { S = null; try { localStorage.removeItem(STORE); } catch (e) {} if (RN.active) begin(NET.camp); else welcome(); });
+$('#btnNew').onclick = () => RN.active && RN.mode === 'solo' ? soloReset() : RN.active && RN.mode === 'duel' ? duelReset() : ask('Nouvelle partie ?', 'La partie en cours sera remplacée dans ce navigateur. Pensez à la sauvegarder dans un fichier avant.', () => { S = null; try { localStorage.removeItem(STORE); } catch (e) {} if (RN.active) begin(NET.camp); else welcome(); });
 $('#fxSkip').onclick = () => { clearTimeout(UI.fxT); UI.fxQ = null; UI.fx = null; $('#fxToast').style.display = 'none'; drawBoard(); if (UI.endPending) { const f = UI.endPending; UI.endPending = null; playEnd(f); } };
 // Ctrl+A dans un message (compte rendu, historique) : ne sélectionne que ce message, pas toute la page
 let lastMsg = null;
@@ -3128,7 +3163,7 @@ function refresh() {
 }
 // ------------------------------------------------------------------ échanges automatiques avec l'arbitre (Firebase)
 const NET = { camp: null, conn: false, crs: {}, session: undefined };
-const netLabel = () => { const n = $('#netState'); if (n) { n.textContent = (RN.mode === 'duel' ? `Duel ${RN.room || ''}${DU.membres && !(DU.membres.B && DU.membres.R) ? ' · adversaire attendu' : ''} · ` : '') + (NET.conn ? '● Connecté' : '● Connexion perdue'); n.style.color = NET.conn ? 'var(--ok)' : 'var(--err)'; } };
+const netLabel = () => { const n = $('#netState'); if (n && RN.mode === 'solo') { n.textContent = soloLabel(); n.style.color = 'var(--ok)'; return; } if (n) { n.textContent = (RN.mode === 'duel' ? `Duel ${RN.room || ''}${DU.membres && !(DU.membres.B && DU.membres.R) ? ' · adversaire attendu' : ''} · ` : '') + (NET.conn ? '● Connecté' : '● Connexion perdue'); n.style.color = NET.conn ? 'var(--ok)' : 'var(--err)'; } };
 // envoi d'un message : renvoie false si rien n'est parti ; le message reste alors à l'écran pour le secours
 async function netSend(kind, turn, text) {
   const fail = why => { showMsg('Message non envoyé', `${why} Rétablissez la connexion puis cliquez à nouveau, ou copiez ce message pour l'arbitre.`, text); return false; };
@@ -3313,6 +3348,109 @@ function duelReset() {
     ask('Nouvelle partie impossible', "Le serveur n'a pas répondu ou a refusé : vérifiez la connexion puis réessayez.", () => {});
   });
 }
+// ------------------------------------------------------------------ mode solo : contre un bot russe (9 nov.)
+// Tout se passe dans ce navigateur : le backend local (en tête de page) reprend l'arborescence du duel ; le bot joue les Rouges.
+// Profils des bots : bots.js (classeur de Ben). Le bot ne lit de la partie que son propre camp et ses comptes rendus.
+const SO = { box: {}, sv: undefined, busy: false, again: false, done: {}, info: null, api: null };
+const soloApi = () => SO.api || (SO.api = RaspBotCore(R, RASP_BOT_PROFILS));
+function soloLabel() {
+  const i = SO.info; if (!i) return 'Solo';
+  const p = soloApi().list().find(x => x.id === i.id);
+  const fini = SO.sv && SO.sv.state && SO.sv.state.ended;
+  return 'Solo · contre ' + (i.surprise && !fini ? 'un adversaire surprise' : (p ? p.nom : i.id));
+}
+async function soloBoot() {
+  try { await RN.init(); } catch (e) {}
+  if (WANT_CAMP === 'R') return soloLobby('Les Russes ne sont pas encore jouables en solo : choisissez les Bleus.');
+  let info = null; try { info = await RN.get('solo'); } catch (e) {}
+  if (info && info.id) { SO.info = info; netEnter('B'); return; }
+  soloLobby();
+}
+function soloLobby(msg) {
+  document.documentElement.classList.add('noGame');
+  document.body.className = ''; const st = $('#stage'); st.replaceChildren();
+  const bots = soloApi().list().filter(b => /Rouge|deux/i.test(b.camps)).sort((a, b) => a.rang - b.rang);
+  let pick = null;
+  const err = el('div', { class: 'small', style: 'color:var(--err);min-height:1.2em', text: msg || '' });
+  const stars = n => '★'.repeat(n) + '☆'.repeat(5 - n);
+  const list = el('div', { class: 'soloBots' });
+  const go = el('button', { class: 'primary', style: 'flex:1;padding:12px', disabled: true, onclick: () => soloNew(pick) }, 'Commencer la partie');
+  const draw = () => {
+    list.replaceChildren(...[...bots.map(b => ({ id: b.id, nom: b.nom, desc: b.desc, niv: b.niveau })), { id: '?', nom: 'Adversaire surprise', desc: "Un des bots ci-dessus, tiré au hasard. Vous ne saurez lequel qu'à la fin de la partie.", niv: 0 }]
+      .map(b => el('button', { class: 'soloBot' + (pick === b.id ? ' on' : ''), onclick: () => { pick = b.id; go.disabled = false; draw(); } },
+        el('span', { class: 'n', text: b.nom }), el('span', { class: 'lv', text: b.niv ? stars(b.niv) : '?' }), el('span', { class: 'd', text: b.desc }))));
+  };
+  draw();
+  st.append(el('div', { class: 'welcome soloWelcome' },
+    el('h2', { text: 'Mode solo' }),
+    el('p', { text: "Vous commandez le 1er Corps d'Armée (Bleus). Choisissez le chef russe qui vous fait face : du plus faible au plus fort." }),
+    list, el('div', { class: 'row', style: 'margin:14px 0 6px' }, go), err,
+    el('p', { class: 'small' }, el('a', { href: 'index.html#solo' }, '‹ Changer de mode ou de camp'))));
+}
+async function soloNew(id) {
+  const api = soloApi(); let surprise = false;
+  if (id === '?') { const c = api.list().filter(b => b.cache); id = c[Math.floor(Math.random() * c.length)].id; surprise = true; }
+  const seed = 'solo-' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 1e6).toString(36);
+  SO.info = { id, seed, surprise, at: Date.now() };
+  try { localStorage.removeItem('rasp-joueur-solo-v1-B'); } catch (e) {}
+  await RN.update({ solo: SO.info, session: Date.now(), boite: null, cr: null, refus: null, arbitre: null });
+  netEnter('B');
+}
+function soloStart() {
+  RN.on('solo', v => { if (v) SO.info = v; netLabel(); }, () => {});
+  RN.on('boite/B', v => { SO.box = v || {}; soloTick(); }, () => {});
+  RN.on('arbitre/sauvegarde', v => { try { SO.sv = v ? JSON.parse(v) : null; } catch (e) { SO.sv = null; } netLabel(); soloTick(); }, () => {});
+}
+async function soloTick() {
+  if (SO.busy) { SO.again = true; return; }
+  if (SO.sv === undefined || !SO.info) return;
+  SO.busy = true;
+  try { do { SO.again = false; await soloStep(); } while (SO.again); }
+  catch (e) { console.warn('arbitrage solo', e); }
+  finally { SO.busy = false; }
+}
+async function soloRefuse(turn, kind, motif) {
+  const id = RN.tid(turn), key = `B${id}${SO.box[id].at}`; if (SO.done[key]) return; SO.done[key] = 1;
+  await RN.update({ [`boite/B/${id}`]: null, [`refus/B/${id}`]: { turn, kind, motif, at: Date.now() } });
+}
+async function soloStep() {
+  const sv = SO.sv, api = soloApi();
+  if (!sv || !sv.state) {   // début de partie : fiche du joueur et déploiement du bot
+    const d = SO.box.T00; if (!d) return;
+    const e = R.parseDeployment(R.newState(), 'B', d.text).errs; if (e.length) return soloRefuse(0, 'deploy', e.join(' ; '));
+    const bot = api.create(SO.info.id, SO.info.seed);
+    const out = R.setupGame(undefined, d.text, bot.deploy());
+    if (!out.ok) { if (out.B && out.B.errs.length) return soloRefuse(0, 'deploy', out.B.errs.join(' ; ')); console.warn('déploiement du bot refusé', out.R && out.R.errs); return; }
+    const save = { app: 'raspoutitsa-arbitrage', v: 1, mode: 'solo', bot: { id: SO.info.id, seed: SO.info.seed, mem: bot.mem }, state: out.state, drafts: { B: '', R: '' }, excluded: { B: [], R: [] }, forced: {}, hist: [], deploy: { B: d.text, R: bot.deploy() } };
+    await RN.update({ 'arbitre/sauvegarde': JSON.stringify(save), 'arbitre/tour': 1, 'boite/R/T00': { turn: 0, kind: 'deploy', text: bot.deploy(), at: Date.now() } });
+    return;
+  }
+  const st = sv.state; if (st.ended) return;
+  const T = st.turn, id = RN.tid(T), mB = SO.box[id];
+  if (!mB) return;
+  const ch = R.checkOrders(st, 'B', mB.text, null);
+  const bad = ch.lines.filter(o => o.status === 'ignored');
+  if (bad.length) {
+    const motif = (ch.warns.filter(w => /tour|message/.test(w)).concat(bad.map(o => `ligne ${o.n} (${o.card || o.raw.card || '?'}) : ${o.errors.join(' ; ')}`))).join('\n') + '\nCorrigez puis renvoyez les ordres.';
+    return soloRefuse(T, 'orders', motif);
+  }
+  const bot = api.create(sv.bot.id, sv.bot.seed, sv.bot.mem);
+  const txtR = bot.orders(st);
+  const drafts = { B: mB.text, R: txtR }, excluded = { B: [], R: [] };
+  const P = R.resolveTurn(st, drafts, excluded, {});
+  bot.observe(P, st);
+  const at = Date.now();
+  const rec = { turn: T, drafts, excluded, forced: {}, text: P.text, savedAt: new Date(at).toISOString() };   // sans l'état d'avant : la sauvegarde reste légère
+  const save = Object.assign({}, sv, { state: P.state, bot: Object.assign({}, sv.bot, { mem: bot.mem }), hist: (sv.hist || []).concat([rec]) });
+  await RN.update({ 'arbitre/sauvegarde': JSON.stringify(save), 'arbitre/tour': T + 1, [`boite/R/${id}`]: { turn: T, kind: 'orders', text: txtR, at }, [`cr/B/${id}`]: { turn: T, rev: 1, text: P.text.B, at }, [`cr/R/${id}`]: { turn: T, rev: 1, text: P.text.R, at } });
+}
+function soloReset() {
+  ask('Nouvelle partie en solo ?', "La partie en cours contre le bot sera effacée, et vous choisirez de nouveau votre adversaire. Pensez à sauvegarder votre page dans un fichier avant.", () => {
+    try { localStorage.removeItem(STORE); } catch (e) {}
+    if (window.RASP_SOLO_CLEAR) window.RASP_SOLO_CLEAR();
+    location.reload();
+  });
+}
 function netWatch() {
   RN.onConn(v => { NET.conn = v; netLabel(); });
   RN.on('session', netSession, () => {});
@@ -3320,10 +3458,11 @@ function netWatch() {
   RN.on('refus/' + NET.camp, netRefus, () => {});
 }
 function netEnter(camp) {
-  NET.camp = camp; STORE = (RN.mode === 'duel' ? 'rasp-joueur-duel-v1-' + RN.room + '-' : 'rasp-joueur-v1-') + camp;
+  NET.camp = camp; STORE = (RN.mode === 'solo' ? 'rasp-joueur-solo-v1-' : RN.mode === 'duel' ? 'rasp-joueur-duel-v1-' + RN.room + '-' : 'rasp-joueur-v1-') + camp;
   S = load(); if (S && S.camp === camp) start(); else begin(camp);
   netWatch();
   if (RN.mode === 'duel') duelStart();
+  if (RN.mode === 'solo') soloStart();
 }
 function netLogin(msg) {
   document.documentElement.classList.add('noGame');
@@ -3338,6 +3477,7 @@ function netLogin(msg) {
 // 8 nov. : camp choisi sur la page d'accueil (joueur.html?camp=B ou R)
 const WANT_CAMP = (() => { try { const c = new URLSearchParams(location.search).get('camp'); return c === 'B' || c === 'R' ? c : null; } catch (e) { return null; } })();
 async function netBoot() {
+  if (RN.mode === 'solo') return soloBoot();
   if (RN.mode === 'duel') return duelBoot();
   let role = null; try { role = await RN.init(); } catch (e) {}
   if ((role === 'B' || role === 'R') && (!WANT_CAMP || role === WANT_CAMP)) netEnter(role);
