@@ -309,12 +309,54 @@ dialog::backdrop { background: rgba(0,0,0,.4); }
 
 /* 9 nov. : mode solo, choix de l'adversaire */
 .soloWelcome { max-width: 720px; }
-.soloBots { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; margin: 10px 0; max-height: 52vh; overflow: auto; }
-.soloBot { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; text-align: left; padding: 9px 11px; border-radius: 8px; cursor: pointer; }
-.soloBot .n { font-weight: 700; }
-.soloBot .lv { color: #c9a227; letter-spacing: 1px; white-space: nowrap; }
-.soloBot .d { grid-column: 1 / -1; font-size: 12.5px; opacity: .8; line-height: 1.35; }
-.soloBot.on { outline: 2px solid var(--ok); outline-offset: 1px; }
+/* mode solo : choix de l'adversaire (fond d'accueil zoomé sur le côté russe) */
+@font-face { font-family: "Black Ops One"; src: url("polices/black-ops-one.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Stardos Stencil"; font-weight: 700; src: url("polices/stardos-stencil-700.woff2") format("woff2"); font-display: swap; }
+.soloLob { position: fixed; inset: 0; z-index: 50; overflow: hidden; background: #0d0f10; color: #f2eee0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --kh: #d8cfa8; --khd: rgba(216, 207, 168, .5); --red: #c9302c; }
+.soloLob .bg { position: absolute; inset: 0; background: url("accueil.jpg") center / cover no-repeat; transform-origin: 86% 42%; transform: scale(1.12); animation: soloZoom 1.6s cubic-bezier(.65, 0, .25, 1) forwards; }
+@keyframes soloZoom { to { transform: scale(2.1); } }
+.soloLob .veil { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to right, rgba(6, 8, 8, .9) 0%, rgba(6, 8, 8, .6) 34%, rgba(6, 8, 8, .12) 62%, rgba(6, 8, 8, .45) 100%), linear-gradient(to bottom, rgba(6, 8, 8, .55), rgba(6, 8, 8, 0) 30%, rgba(6, 8, 8, .5)); }
+.soloLob .wrap { position: relative; height: 100%; display: grid; grid-template-columns: minmax(230px, 330px) 1fr minmax(300px, 420px); grid-template-rows: auto 1fr auto; gap: 0 clamp(16px, 3vw, 40px); padding: max(16px, env(safe-area-inset-top)) clamp(16px, 4vw, 56px) max(16px, env(safe-area-inset-bottom)); }
+.soloLob h2 { grid-column: 1 / -1; margin: 0 0 clamp(10px, 2.5vh, 24px); font: 400 clamp(22px, 3.4vw, 40px)/1.05 "Black Ops One", Impact, sans-serif; letter-spacing: .05em; text-transform: uppercase; text-shadow: 0 2px 0 #000, 0 0 18px rgba(0, 0, 0, .8); }
+.soloLob h2 small { display: block; margin-top: 6px; font: 700 clamp(12px, 1.5vw, 16px)/1.2 "Stardos Stencil", Impact, sans-serif; letter-spacing: .14em; color: var(--kh); }
+.soloLob .col { grid-column: 1; grid-row: 2; min-height: 0; overflow-y: auto; scroll-behavior: smooth; padding: 4px 8px 4px 2px; display: flex; flex-direction: column; gap: 6px;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%); -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%); }
+.soloLob .nm { position: relative; flex: none; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; width: 100%; padding: 10px 14px 10px 18px; border: 0; cursor: pointer; text-align: left; color: #f2eee0; background: rgba(18, 20, 16, .55);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); box-shadow: inset 0 0 0 1px rgba(216, 207, 168, .25); transition: background .2s, transform .2s, box-shadow .2s; }
+.soloLob .nm::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--kh); opacity: .35; transition: opacity .2s, width .2s, background .2s; }
+.soloLob .nm .t { font: 400 clamp(17px, 1.9vw, 22px)/1.1 "Black Ops One", Impact, sans-serif; letter-spacing: .05em; text-transform: uppercase; }
+.soloLob .nm .lv { font-size: 12px; letter-spacing: 1px; color: var(--kh); opacity: .75; white-space: nowrap; }
+.soloLob .nm:hover, .soloLob .nm:focus-visible { background: rgba(38, 42, 30, .75); transform: translateX(4px); outline: none; }
+.soloLob .nm.on { background: rgba(80, 18, 16, .78); box-shadow: inset 0 0 0 2px var(--red); transform: translateX(8px); }
+.soloLob .nm.on::before { background: var(--red); opacity: 1; width: 7px; }
+.soloLob .nm.sur .t { color: var(--kh); }
+.soloLob .med { grid-column: 3; grid-row: 2; align-self: center; min-height: 0; max-height: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: clamp(14px, 2.4vh, 26px) clamp(14px, 2vw, 24px); background: rgba(0, 0, 0, .86); border-radius: 22px; box-shadow: 0 0 0 1px var(--khd), 0 18px 50px rgba(0, 0, 0, .7); overflow-y: auto; }
+.soloLob .por { flex: none; width: clamp(150px, min(26vh, 22vw), 250px); aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: #000; display: grid; place-items: center; box-shadow: 0 0 0 3px #000, 0 0 0 6px var(--kh), 0 0 30px rgba(201, 48, 44, .35); }
+.soloLob .por img { width: 100%; height: 100%; object-fit: cover; }
+.soloLob .por svg { width: 46%; height: 46%; color: var(--red); opacity: .8; }
+.soloLob .por .q { font: 400 clamp(70px, 10vh, 110px)/1 "Black Ops One", Impact, sans-serif; color: var(--kh); }
+.soloLob .med .t { font: 400 clamp(22px, 2.6vw, 32px)/1 "Black Ops One", Impact, sans-serif; letter-spacing: .05em; text-transform: uppercase; text-align: center; }
+.soloLob .med .lv { margin-top: -6px; color: #c9a227; letter-spacing: 3px; font-size: 18px; }
+.soloLob .med .d { margin: 0; font-size: 15px; line-height: 1.45; text-align: center; color: #e8e2cc; font-style: italic; }
+.soloLob .med .hint { margin: 0; text-align: center; color: var(--kh); opacity: .8; }
+.soloLob .ok { flex: none; margin-top: 4px; padding: 12px 26px; border: 0; cursor: pointer; color: #fff; background: var(--red); font: 400 18px/1 "Black Ops One", Impact, sans-serif; letter-spacing: .06em; text-transform: uppercase;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); transition: filter .2s, transform .2s; }
+.soloLob .ok:hover, .soloLob .ok:focus-visible { filter: brightness(1.15); transform: scale(1.03); outline: none; }
+.soloLob .foot { grid-column: 1 / -1; grid-row: 3; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-top: 12px; font-size: 13px; }
+.soloLob .foot a { color: var(--kh); text-decoration: none; } .soloLob .foot a:hover { text-decoration: underline; }
+.soloLob .err { color: #ff9a8f; }
+@media (max-width: 720px) {
+  .soloLob .bg { background-position: 80% 30%; transform-origin: 80% 30%; animation-name: soloZoomTel; }
+  @keyframes soloZoomTel { to { transform: scale(1.35); } }
+  .soloLob .wrap { grid-template-columns: minmax(120px, 38%) 1fr; gap: 0 12px; padding-left: 16px; padding-right: 16px; }
+  .soloLob .med { grid-column: 2; align-self: start; padding: 14px 12px; gap: 9px; border-radius: 16px; }
+  .soloLob .por { width: min(150px, 40vw); }
+  .soloLob .nm { padding: 9px 8px 9px 13px; flex-direction: column; gap: 2px; }
+  .soloLob .nm .t { font-size: 13.5px; letter-spacing: .02em; overflow-wrap: anywhere; }
+  .soloLob .med .t { font-size: 19px; } .soloLob .med .d { font-size: 13.5px; } .soloLob .ok { padding: 11px 16px; font-size: 15px; }
+}
+@media (prefers-reduced-motion: reduce) { .soloLob .bg { animation: none; transform: scale(2.1); } @media (max-width: 720px) { .soloLob .bg { transform: scale(1.35); } } .soloLob .nm, .soloLob .ok { transition: none; } }
 </style>
 </head>
 <body>
@@ -3366,28 +3408,52 @@ async function soloBoot() {
   if (info && info.id) { SO.info = info; netEnter('B'); return; }
   soloLobby();
 }
+const SOLO_PORTRAITS = { popov: 1, svietchine: 1, toukhatchevski: 1, gerasimov: 1, tchouikov: 1, rokossovski: 1 };   // portraits/<id>.gif fournis ; les autres bots ont l'étoile en attendant
 function soloLobby(msg) {
   document.documentElement.classList.add('noGame');
   document.body.className = ''; const st = $('#stage'); st.replaceChildren();
-  const bots = soloApi().list().filter(b => /Rouge|deux/i.test(b.camps)).sort((a, b) => a.rang - b.rang);
-  let pick = null;
-  const err = el('div', { class: 'small', style: 'color:var(--err);min-height:1.2em', text: msg || '' });
+  const old = document.querySelector('.soloLob'); if (old) old.remove();
+  const bots = soloApi().list().filter(b => /Rouge|deux/i.test(b.camps)).sort((a, b) => a.rang - b.rang)
+    .map(b => ({ id: b.id, nom: b.nom, desc: b.desc, niv: b.niveau }));
+  bots.push({ id: '?', nom: 'Adversaire surprise', desc: "Un des chefs russes, tiré au hasard. Vous ne saurez lequel qu'à la fin de la partie.", niv: 0 });
   const stars = n => '★'.repeat(n) + '☆'.repeat(5 - n);
-  const list = el('div', { class: 'soloBots' });
-  const go = el('button', { class: 'primary', style: 'flex:1;padding:12px', disabled: true, onclick: () => soloNew(pick) }, 'Commencer la partie');
-  const draw = () => {
-    list.replaceChildren(...[...bots.map(b => ({ id: b.id, nom: b.nom, desc: b.desc, niv: b.niveau })), { id: '?', nom: 'Adversaire surprise', desc: "Un des bots ci-dessus, tiré au hasard. Vous ne saurez lequel qu'à la fin de la partie.", niv: 0 }]
-      .map(b => el('button', { class: 'soloBot' + (pick === b.id ? ' on' : ''), onclick: () => { pick = b.id; go.disabled = false; draw(); } },
-        el('span', { class: 'n', text: b.nom }), el('span', { class: 'lv', text: b.niv ? stars(b.niv) : '?' }), el('span', { class: 'd', text: b.desc }))));
-  };
-  draw();
-  st.append(el('div', { class: 'welcome soloWelcome' },
-    el('h2', { text: 'Mode solo' }),
-    el('p', { text: "Vous commandez le 1er Corps d'Armée (Bleus). Choisissez le chef russe qui vous fait face : du plus faible au plus fort." }),
-    list, el('div', { class: 'row', style: 'margin:14px 0 6px' }, go), err,
-    el('p', { class: 'small' }, el('a', { href: 'index.html#solo' }, '‹ Changer de mode ou de camp'))));
+  const STAR = '<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true"><path d="M24 4l5.9 13 14.1 1.6-10.5 9.6 2.9 14L24 35l-12.4 7.2 2.9-14L4 18.6 18.1 17z"/></svg>';
+  let pick = null;
+  const col = el('div', { class: 'col', role: 'listbox', 'aria-label': 'Chefs russes, du plus faible au plus fort' });
+  const med = el('div', { class: 'med', 'aria-live': 'polite' });
+  const items = bots.map((b, i) => el('button', { class: 'nm' + (b.id === '?' ? ' sur' : ''), role: 'option', 'aria-selected': 'false', onclick: () => choose(i) },
+    el('span', { class: 't', text: b.nom }), el('span', { class: 'lv', text: b.niv ? stars(b.niv) : '?' })));
+  col.append(...items);
+  const ok = el('button', { class: 'ok', onclick: () => { if (pick) soloNew(pick.id); } }, "Valider l'adversaire");
+  function show() {
+    const por = el('div', { class: 'por' });
+    if (!pick) { por.append(el('span', { class: 'q', text: '?' })); med.replaceChildren(por, el('p', { class: 'hint', text: 'Choisissez un chef russe dans la colonne de gauche.' })); return; }
+    if (pick.id === '?') por.append(el('span', { class: 'q', text: '?' }));
+    else if (SOLO_PORTRAITS[pick.id]) por.append(el('img', { src: `portraits/${pick.id}.gif`, alt: 'Portrait de ' + pick.nom }));
+    else por.innerHTML = STAR;
+    med.replaceChildren(por, el('div', { class: 't', text: pick.nom }), el('div', { class: 'lv', text: pick.niv ? stars(pick.niv) : '' }), el('p', { class: 'd', text: pick.desc }), ok);
+  }
+  function choose(i, focus) {
+    pick = bots[i];
+    items.forEach((b, j) => { b.classList.toggle('on', j === i); b.setAttribute('aria-selected', String(j === i)); });
+    items[i].scrollIntoView({ block: 'nearest' }); if (focus) items[i].focus();
+    show();
+  }
+  col.addEventListener('keydown', e => {
+    const i = pick ? bots.indexOf(pick) : -1;
+    if (e.key === 'ArrowDown') { e.preventDefault(); choose(Math.min(bots.length - 1, i + 1), true); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); choose(Math.max(0, i - 1), true); }
+  });
+  show();
+  for (const id in SOLO_PORTRAITS) { const im = new Image(); im.src = `portraits/${id}.gif`; }   // préchargement
+  document.body.append(el('div', { class: 'soloLob' }, el('div', { class: 'bg' }), el('div', { class: 'veil' }),
+    el('div', { class: 'wrap' },
+      el('h2', { text: 'Choisissez votre adversaire' }),
+      col, med,
+      el('div', { class: 'foot' }, el('a', { href: 'index.html#solo' }, '‹ Changer de mode ou de camp'), el('span', { class: 'err', text: msg || '' })))));
 }
 async function soloNew(id) {
+  const lob = document.querySelector('.soloLob'); if (lob) lob.remove();
   const api = soloApi(); let surprise = false;
   if (id === '?') { const c = api.list().filter(b => b.cache); id = c[Math.floor(Math.random() * c.length)].id; surprise = true; }
   const seed = 'solo-' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 1e6).toString(36);
