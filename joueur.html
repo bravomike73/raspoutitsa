@@ -292,6 +292,8 @@ dialog::backdrop { background: rgba(0,0,0,.4); }
   #cardImg { display: block; width: auto !important; max-width: 100%; max-height: 62dvh; margin: 0 auto; }
   #zoomBar { position: fixed; right: max(10px, env(safe-area-inset-right)); bottom: 62px; top: auto; flex-direction: column; z-index: 15; }
   #zoomBar button { min-width: 42px; min-height: 42px; font-size: 18px; }
+  header button.ico { display: inline-grid; place-items: center; padding: 4px 7px; min-width: 32px; }
+  header button.ico svg { display: block; }
   html.noGame #zoomBar, html.noGame #btnExport, html.noGame #btnImport, html.noGame #btnNew { display: none; }
   #stage:has(.welcome) { height: 100% !important; }
   .welcome { width: min(560px, 94%); align-self: flex-start; margin: 4px auto; padding: 8px 14px; font-size: 13px; }
@@ -314,10 +316,10 @@ dialog::backdrop { background: rgba(0,0,0,.4); }
   <span class="spacer"></span>
   <span class="small" id="netState"></span>
   <span class="small muted" id="saveInfo" style="overflow:hidden;text-overflow:ellipsis"></span>
-  <button class="small" id="btnFull" title="Afficher la page sur tout l'écran">Plein écran</button>
-  <button class="small" id="btnExport" title="Télécharger un fichier de sauvegarde de la partie">Sauvegarder</button>
-  <button class="small" id="btnImport" title="Reprendre une partie depuis un fichier de sauvegarde">Ouvrir</button>
-  <button class="small" id="btnNew">Nouvelle partie</button>
+  <button class="small ico" id="btnFull" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 11V8h3M18 13v3h-3M6 8l4 3M18 16l-4-3"/></svg></button>
+  <button class="small ico" id="btnExport" title="Sauvegarder : télécharger un fichier de sauvegarde de la partie" aria-label="Sauvegarder"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h11l4 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M8 3v5h7V3M8 21v-7h8v7"/></svg></button>
+  <button class="small ico" id="btnImport" title="Ouvrir : reprendre une partie depuis un fichier de sauvegarde" aria-label="Ouvrir"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></button>
+  <button class="small ico" id="btnNew" title="Nouvelle partie" aria-label="Nouvelle partie"><b style="font-size:16px;line-height:18px;width:18px;display:inline-block">N</b></button>
   <input type="file" id="fileIn" accept=".json,application/json" hidden>
 </header>
 <main id="main">
@@ -3034,8 +3036,9 @@ document.addEventListener('keydown', e => {
 });
 $('#promptEnd').onclick = () => { if (S.phase === 'deploy') { UI.sel = null; UI.depMode = 'pions'; } else { UI.mode = null; UI.sel = null; UI.activeOrder = null; } refresh(); };
 if (!document.fullscreenEnabled) $('#btnFull').hidden = true;
+const FS_IN = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 11V8h3M18 13v3h-3M6 8l4 3M18 16l-4-3"/></svg>', FS_OUT = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M10 8v3H7M14 16v-3h3M10 11L6 8M14 13l4 3"/></svg>';
 $('#btnFull').onclick = () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(() => {}); };
-document.addEventListener('fullscreenchange', () => { $('#btnFull').textContent = document.fullscreenElement ? 'Quitter le plein écran' : 'Plein écran'; fit(); });
+document.addEventListener('fullscreenchange', () => { { const f = !!document.fullscreenElement, b = $('#btnFull'); b.innerHTML = f ? FS_OUT : FS_IN; b.title = b.ariaLabel = f ? 'Quitter le plein écran' : 'Plein écran'; } fit(); });
 // zoom autour d'un point de la carte ; sur téléphone, on peut dézoomer jusqu'à voir toute la carte
 const zoomMin = () => { if (!isPhone()) return 1; const sc = $('#scroller'), side = $('#side'); return Math.min(1, (sc.clientWidth - (side ? side.offsetWidth : 0)) / (sc.clientHeight * IW / IH)); };
 function zoomTo(z, cx, cy) {
@@ -3208,7 +3211,7 @@ async function duelCreate(camp, err) {
     try { await RN.timeout(RN.update({ cree: { at: Date.now(), par: RN.uid }, [`membres/${camp}`]: RN.uid }), 10000); }
     catch (e) { RN.setRoom(null); if (RN.denied(e)) continue; err.textContent = 'Création impossible : vérifiez la connexion Internet.'; return; }
     duelSave({ code, camp }); netEnter(camp);
-    ask(`Duel ${code} créé`, `Transmettez ce code à votre adversaire : ${code}\nIl choisit le camp ${camp === 'B' ? 'Rouge' : 'Bleu'}, puis « Rejoindre un duel » avec ce code. Le code reste affiché en haut à droite.`, () => {});
+    ask(`Duel ${code} créé`, `Transmettez ce code à votre adversaire : ${code}\nIl choisit le camp ${camp === 'B' ? 'Rouge' : 'Bleu'}, puis « Rejoindre une partie existante » avec ce code. Le code reste affiché en haut à droite.`, () => {});
     return;
   }
   err.textContent = 'Création impossible, réessayez.';
@@ -3233,12 +3236,15 @@ function duelLobby(msg) {
   const need = () => { if (!camp) { err.textContent = "Choisissez d'abord votre camp."; return false; } return true; };
   const join = () => { if (need()) duelJoin(code.value, camp, err); };
   code.addEventListener('keydown', e => { if (e.key === 'Enter') join(); });
+  const joinRow = el('div', { class: 'row', style: 'gap:8px;margin:6px 0;display:none' }, code, el('button', { class: 'primary', onclick: join, style: 'padding:10px 16px' }, 'Valider'));
+  const joinBtn = el('button', { style: 'flex:1;padding:12px', onclick: () => { joinRow.style.display = 'flex'; err.textContent = ''; code.focus(); } }, 'Rejoindre une partie existante');
   st.append(el('div', { class: 'welcome' },
     el('h2', { text: 'Duel' }),
-    el('p', { text: "Partie entre camarades avec arbitrage automatique. Créez un duel et transmettez son code à votre adversaire, ou saisissez le code qu'il vous a donné." }),
+    el('p', { text: "Partie entre camarades avec arbitrage automatique. Créez une partie et transmettez son code à votre adversaire, ou rejoignez la partie qu'il a créée avec le code qu'il vous a donné." }),
     WANT_CAMP ? el('p', { class: 'small', text: `Votre camp : ${WANT_CAMP === 'B' ? 'Bleus' : 'Rouges'}.` }) : el('div', {}, el('p', { class: 'small', text: 'Votre camp :' }), pick),
-    el('div', { class: 'row', style: 'margin:14px 0 6px' }, el('button', { class: 'primary', style: 'flex:1;padding:12px', onclick: () => { if (need()) duelCreate(camp, err); } }, 'Créer un duel')),
-    el('div', { class: 'row', style: 'gap:8px;margin:6px 0' }, code, el('button', { onclick: join, style: 'padding:10px 16px' }, 'Rejoindre')),
+    el('div', { class: 'row', style: 'margin:14px 0 6px' }, el('button', { class: 'primary', style: 'flex:1;padding:12px', onclick: () => { if (need()) duelCreate(camp, err); } }, 'Créer une partie')),
+    el('div', { class: 'row', style: 'margin:6px 0' }, joinBtn),
+    joinRow,
     err,
     el('p', { class: 'small' }, el('a', { href: 'index.html#duel' }, '‹ Changer de mode ou de camp'))));
 }
@@ -3251,7 +3257,7 @@ function duelStart() {
   RN.on('membres', v => { DU.membres = v || {}; netLabel(); }, () => {});
   RN.set('vu', Date.now()).catch(() => {});
   const n = $('#netState'); if (n) { n.style.cursor = 'pointer'; n.title = 'Code du duel · cliquer pour quitter ce duel';
-    n.onclick = () => ask(`Quitter le duel ${RN.room} ?`, `La partie reste enregistrée. Pour la reprendre plus tard depuis cet appareil, choisissez « Rejoindre » et saisissez le code ${RN.room}.`, () => { duelSave(null); location.href = 'index.html#duel'; }); }
+    n.onclick = () => ask(`Quitter le duel ${RN.room} ?`, `La partie reste enregistrée. Pour la reprendre plus tard depuis cet appareil, choisissez « Rejoindre une partie existante » et saisissez le code ${RN.room}.`, () => { duelSave(null); location.href = 'index.html#duel'; }); }
   for (const c of ['B', 'R']) RN.on('boite/' + c, v => { DU.box[c] = v || {}; duelTick(); }, () => {});
   RN.on('arbitre/sauvegarde', v => { try { DU.sv = v ? JSON.parse(v) : null; } catch (e) { DU.sv = null; } duelTick(); }, () => {});
 }
