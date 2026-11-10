@@ -1095,8 +1095,10 @@ function RaspBotCore(R, PROFILS) {
     // ---------- artillerie et frappes
     A.alive = sl => { const k = Object.values(A.knownU).find(x => x.slot === sl); return !(k && k.dead); };
     A.usedArt = () => new Set(A.L.filter(l => l[0] === 'Frappe en profondeur' || l[0] === 'Contre-batterie').map(l => l[3]));
+    // Frappe en profondeur : seulement sur un pion ENI repéré, ou une ART DIV ENI pas connue détruite (même règle que la page joueur, 10 nov.)
+    A.fepOk = sl => { const p = R.parseSlot(sl); if (!p) return false; if (p.art) return A.alive(sl); const k = A.knownU[sl]; return !!(k && k.type && !k.dead); };
     A.salvo = (targets, n = 3) => {
-      targets = targets.filter(Boolean); if (!targets.length) return 0;
+      targets = targets.filter(Boolean).filter(A.fepOk); if (!targets.length) return 0;
       if (!A.avail('Frappe en profondeur') || A.L.some(l => l[0] === 'Frappe en profondeur')) return 0;
       const used = A.usedArt();
       const arts = A.artRear().filter(u => !used.has(u.slot)).sort((a, b) => (st.cb[a.id] ? 1 : 0) - (st.cb[b.id] ? 1 : 0));
@@ -1136,6 +1138,7 @@ function RaspBotCore(R, PROFILS) {
       if (A.intelOn(A.nxt('h' + t, g), t)) A.adv('h' + t);
     };
     A.fepClose = f => { const a = A.artRear().find(u => !A.usedArt().has(u.slot)); if (!a) return false; const side = T % 2 ? 'Nord' : 'Sud'; let sl = `${f} ${A.XE} ART ${side}`; if (!A.alive(sl)) sl = `${f} ${A.XE} ART ${side === 'Nord' ? 'Sud' : 'Nord'}`;
+      if (!A.fepOk(sl)) return false;
       return P.salve === 'Toujours' ? A.salvo([sl, `${f} ${A.XE} ART ${side === 'Nord' ? 'Sud' : 'Nord'}`], 3) > 0 : A.add('Frappe en profondeur', '', sl, a.slot); };
     A.cbOn = f => { if (Object.values(st.cb).some(m => m.camp === c && m.zone.fus === f)) return false; const used = A.usedArt(); const free = A.artRear().filter(u => !st.cb[u.id] && !used.has(u.slot)); if (!free.length) return false; return A.add('Contre-batterie', f, '', free[0].slot); };
     A.counterArt = () => {
@@ -1463,6 +1466,15 @@ function RaspBotCore(R, PROFILS) {
 
   const txtOf = (T, L) => [`ORDRES ${CAMPN.R} | TOUR ${T} | ${L.filter(l => !l[5]).length} carte(s) | Prêt à envoyer`, ...L.map((l, i) => `${i + 1};${l[0]};;;${l[1] || ''};${l[2] || ''};${l[3] || ''};${l[4] || ''}`)].join(' || ');
 
+  // 10 nov. : ordres préparés du tour 1 — rien n'est encore repéré chez l'ENI, la Frappe en profondeur ne peut viser qu'une ART DIV ENI ; les autres tirs sont retirés
+  const fepFilterT1 = msg => {
+    const parts = String(msg).split(' || '); const head = parts.shift();
+    const keep = parts.filter(l => { const f = l.split(';'); if (f[1] !== 'Frappe en profondeur') return true; const p = R.parseSlot(f[5]); return !!(p && p.art); });
+    if (keep.length === parts.length) return msg;
+    let fep = 0; const n = keep.filter(l => l.split(';')[1] !== 'Frappe en profondeur' || ++fep === 1).length;
+    return [head.replace(/\d+ carte\(s\)/, n + ' carte(s)'), ...keep.map((l, i) => l.replace(/^\d+;/, `${i + 1};`))].join(' || ');
+  };
+
   // ================================================================== API
   function create(id, seed, mem0) {
     const raw = BYID[id]; if (!raw) throw new Error('bot inconnu : ' + id);
@@ -1475,8 +1487,9 @@ function RaspBotCore(R, PROFILS) {
       let L = [];
       const A = makeAgent(P, mem, st, T);
       if (T === 1 && raw.msgT1) {
-        const ch = R.checkOrders(st, 'R', raw.msgT1, null);
-        if (ch.lines.every(o => o.status !== 'ignored')) { saveMem(bot, A); return raw.msgT1; }
+        const msg1 = fepFilterT1(raw.msgT1);   // 10 nov. : au tour 1, la Frappe en profondeur ne peut viser que les ART DIV ENI
+        const ch = R.checkOrders(st, 'R', msg1, null);
+        if (ch.lines.every(o => o.status !== 'ignored')) { saveMem(bot, A); return msg1; }
       }
       const blank = A.p(P.tourBlanc);
       if (!blank && A.lim > 0) {

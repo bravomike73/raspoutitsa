@@ -905,7 +905,7 @@ function resolveTurn(st0, ordersText, excluded, forced) {
   const wearRD = [];             // baisses de jauge, portées sur la feuille de route en fin de tour
   const out = {
     turn: T, checks: {}, journal: [], road: [], dice: [],
-    rep: { B: { own: [], enemy: [], intel: [], back: [], div: [], notes: [], gauges: [], seen: [] }, R: { own: [], enemy: [], intel: [], back: [], div: [], notes: [], gauges: [], seen: [] } },
+    rep: { B: { own: [], enemy: [], intel: [], back: [], div: [], notes: [], gauges: [], seen: [], nl: [] }, R: { own: [], enemy: [], intel: [], back: [], div: [], notes: [], gauges: [], seen: [], nl: [] } },
     combat: {}, nextDiv: { B: [], R: [] }, act: { B: [], R: [] }, hit: { B: [], R: [] },
   };
   const J = s => out.journal.push(s); const RD = s => out.road.push(s);
@@ -1047,8 +1047,10 @@ function resolveTurn(st0, ordersText, excluded, forced) {
       const lo = logistics(st, en, T);
       for (const [code, [a, b]] of Object.entries(COR[en])) {
         if (a !== zone.region && b !== zone.region) continue;
-        const m = st.net[en][code] || 0; if (!m) continue;
-        const d = st.netDir[en][code]; const inc = d && d[1] === zone.region;
+        const m = st.net[en][code] || 0; const d = st.netDir[en][code];
+        rep[c].nl.push([code, m, (d && d[0]) || '', (d && d[1]) || '', Math.min(m, lo.corFlow[code] || 0)]);   // flux LOG ENI repérés, pour le plateau du joueur (10 nov.)
+        if (!m) continue;
+        const inc = d && d[1] === zone.region;
         const cut = (lo.corFlow[code] || 0) < m ? ` (${lo.corFlow[code] || 0} passent réellement)` : '';
         lines.push(`${code} = ${m} LOG ${inc ? 'entrant' + (m > 1 ? 's' : '') : 'sortant' + (m > 1 ? 's' : '')}${cut}`);
       }
@@ -1059,6 +1061,7 @@ function resolveTurn(st0, ordersText, excluded, forced) {
     const lo = logistics(st, en, T); const dv = divisionScore(st, en, f, T, lo, { rap: 0, fm: 0 }, {});
     lines.push(`FM de la division ENI = ${fmt1(dv.fm)}`);
     lines.push(`${ACCESS_COR[en][f]} = ${st.net[en][ACCESS_COR[en][f]] || 0} LOG`);
+    { const code = ACCESS_COR[en][f], m = st.net[en][code] || 0, d = st.netDir[en][code]; rep[c].nl.push([code, m, (d && d[0]) || '', (d && d[1]) || '', Math.min(m, lo.corFlow[code] || 0)]); }
     return `Fuseau ${DE_FUS[f]} : ` + lines.join(', ');
   };
 
@@ -1658,6 +1661,7 @@ function syncData(st, out, c) {
     nr: Object.fromEntries(Object.entries(st.neutReg).filter(([k]) => k.startsWith(c + '|')).map(([k, v]) => [k.slice(2), v])),
     ct: Object.fromEntries(Object.entries(st.cut).filter(([k]) => COR[c][k])),
     i: out.rep[c].seen,
+    nl: out.rep[c].nl || [],   // flux LOG ENI repérés ce tour : [corridor, marqueurs, de, vers, passent réellement] (10 nov.)
     a: (out.act && out.act[c]) || [],
     x: (out.hit && out.hit[c]) || [],
     eg: (out.engage || []).filter(e => e.c === c).map(e => [e.f, e.ok ? 1 : 0]),   // engagement de notre DIV+ ce tour (fuseau, réussi), sans le nombre de cases
