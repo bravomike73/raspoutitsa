@@ -2685,7 +2685,7 @@ function drawBoard() {
       svg.append(Object.assign(sv('text', { class: 'neutLbl', x: r[0] + r[2] / 2, y: r[1] - 6 }), { textContent: 'détruite' })); continue; }
     if (u.dead || !SLOT[u.slot]) continue;
     const r = SLOT[u.slot]; const big = BIG.includes(u.type); const neut = u.neut >= T;
-    if (u.type === 'ART DIV') { if (neut) { svg.append(sv('rect', { x: r[0], y: r[1], width: r[2], height: r[3], fill: 'rgba(80,80,80,.55)' })); svg.append(Object.assign(sv('text', { class: 'neutLbl', x: r[0] + r[2] / 2, y: r[1] - 6 }), { textContent: `→T${u.neut}` })); } continue; }
+    if (u.type === 'ART DIV') { const g = sv('g', { class: 'ut' }); g.append(pionSvg(u.type, r, 'var(--accent)', neut)); if (neut) g.append(Object.assign(sv('text', { class: 'neutLbl', x: r[0] + r[2] / 2, y: r[1] + r[3] + 16 }), { textContent: `neutralisé → T${u.neut}` })); svg.append(g); continue; }   // ART DIV posée d'office sur son emplacement imprimé : on dessine le pion, non déplaçable (10 nov.)
     const g = sv('g', { class: 'ut' + (big ? ' big' : '') + (UI.sel === u.id ? ' sel' : '') + (u.ghost ? ' ghost' : '') });
     g.append(pionSvg(u.type, r, 'var(--accent)', neut));
     if (neut) g.append(Object.assign(sv('text', { class: 'neutLbl', x: r[0] + r[2] / 2, y: r[1] + r[3] + 16 }), { textContent: `neutralisé → T${u.neut}` }));
