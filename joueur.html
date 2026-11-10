@@ -443,6 +443,9 @@ dialog::backdrop { background: rgba(0,0,0,.4); }
   const subs = [];
   const notify = () => { for (const s of subs) { const v = JSON.stringify(getP(s.p)); if (v !== s.last) { s.last = v; setTimeout(() => s.cb(v == null ? null : JSON.parse(v)), 0); } } };
   window.RASP_SOLO_CLEAR = () => { DB = {}; try { localStorage.removeItem(KEY); } catch (e) {} };
+  // 10 nov. : la sauvegarde fichier du solo emporte toute la partie (arbitrage, ordres du bot, graine, historique) : reprise et 3A possibles
+  window.RASP_SOLO_DUMP = () => JSON.parse(JSON.stringify(DB));
+  window.RASP_SOLO_LOAD = v => { DB = JSON.parse(JSON.stringify(v || {})); persist(); };
   window.RN_BACKEND = {
     init: async () => 'anon:solo', anon: async () => 'solo', login: async () => {}, logout: async () => {},
     set: async (p, v) => { setP(p, v); persist(); notify(); },
@@ -1739,7 +1742,7 @@ function resolveTurn(st0, ordersText, excluded, forced) {
       J(`  ${CAMP[c]} : écart ${gap}, dé ${dTxt(d)} → ÉVASION autour de ${reg} : ${nHit} élément${nHit > 1 ? 's' : ''} touché${nHit > 1 ? 's' : ''} sur ${ev.rolls.length} (${ev.rolls.map(r => `${r.what} ${dTxt(r.d)}${r.hit ? ' ✗' : ''}`).join(', ')}) · jauge POW ${st.pow[c]}`);
       RD(`Évasion au POW ${ADJ[c]} (${regs.join(', ')}) : ${nHit ? nHit + ' élément' + (nHit > 1 ? 's' : '') + ' touché' + (nHit > 1 ? 's' : '') + ' (voir la fenêtre des dés d\'évasion)' : 'aucun élément touché'} · jauge POW ${ADJF[c]} ${st.pow[c]}`);
       rep[c].enemy.unshift(`ÉVASION DE PRISONNIERS : les prisonniers ENI que nous gardions se sont évadés du camp de ${reg} et ont semé le désordre dans les régions ${regs.join(', ')}. ${lines.length ? 'Conséquences : ' + lines.join(' ; ') + '.' : 'Aucun de nos éléments n\'a été touché.'} La jauge POW retombe à ${st.pow[c]}.`);
-      rep[EN[c]].intel.push(`Des prisonniers de nos forces se sont évadés d'un camp ennemi, ce qui a désorganisé l'arrière ENI.`);
+      // 10 nov. : le camp adverse n'est pas prévenu de l'évasion (seul le camp qui gardait les prisonniers l'apprend)
     } else J(`  ${CAMP[c]} : écart ${gap}, dé ${dTxt(d)} → pas d'évasion`);
   }
   // usure du tour : les jauges descendent maintenant
@@ -3175,13 +3178,17 @@ function ask(title, body, yes) { $('#askTitle').textContent = title; $('#askBody
 
 // ------------------------------------------------------------------ sauvegarde fichier
 $('#btnExport').onclick = () => {
-  if (!S) return; const txt = JSON.stringify({ app: 'raspoutitsa-joueur', S }, null, 1);
-  const a = el('a', { href: URL.createObjectURL(new Blob([txt], { type: 'application/json' })), download: `raspoutitsa-${S.camp === 'B' ? 'bleu' : 'rouge'}-tour${S.turn}.json` }); document.body.append(a); a.click(); a.remove();
+  if (!S) return;
+  const solo = RN.active && RN.mode === 'solo' && window.RASP_SOLO_DUMP ? window.RASP_SOLO_DUMP() : null;   // 10 nov. : partie solo complète (arbitrage compris), de quoi reprendre la partie et produire une 3A
+  const txt = JSON.stringify(solo ? { app: 'raspoutitsa-joueur', S, solo } : { app: 'raspoutitsa-joueur', S }, null, 1);
+  const a = el('a', { href: URL.createObjectURL(new Blob([txt], { type: 'application/json' })), download: `raspoutitsa-${solo ? 'solo-' : ''}${S.camp === 'B' ? 'bleu' : 'rouge'}-tour${S.turn}.json` }); document.body.append(a); a.click(); a.remove();
 };
 $('#btnImport').onclick = () => $('#fileIn').click();
 $('#fileIn').onchange = async e => {
   const f = e.target.files[0]; if (!f) return; e.target.value = '';
-  try { const d = JSON.parse(await f.text()); if (d.app !== 'raspoutitsa-joueur' || !d.S || !d.S.camp) throw new Error('ce fichier n\'est pas une sauvegarde de la page joueur'); if (RN.active && d.S.camp !== NET.camp) throw new Error('cette sauvegarde est celle de l\'autre camp'); S = fixState(d.S); UI.activeOrder = null; UI.mode = null; UI.sel = null; save(); start(); }
+  try { const d = JSON.parse(await f.text()); if (d.app !== 'raspoutitsa-joueur' || !d.S || !d.S.camp) throw new Error('ce fichier n\'est pas une sauvegarde de la page joueur'); if (RN.active && d.S.camp !== NET.camp) throw new Error('cette sauvegarde est celle de l\'autre camp');
+    if (RN.active && RN.mode === 'solo' && d.solo && d.solo.arbitre && window.RASP_SOLO_LOAD) { S = fixState(d.S); save(); window.RASP_SOLO_LOAD(d.solo); location.reload(); return; }   // 10 nov. : reprise d'une partie solo complète
+    S = fixState(d.S); UI.activeOrder = null; UI.mode = null; UI.sel = null; save(); start(); }
   catch (err) { ask('Fichier illisible', err.message, () => {}); }
 };
 $('#btnNew').onclick = () => RN.active && RN.mode === 'solo' ? soloReset() : RN.active && RN.mode === 'duel' ? duelReset() : ask('Nouvelle partie ?', 'La partie en cours sera remplacée dans ce navigateur. Pensez à la sauvegarder dans un fichier avant.', () => { S = null; try { localStorage.removeItem(STORE); } catch (e) {} if (RN.active) begin(NET.camp); else welcome(); });

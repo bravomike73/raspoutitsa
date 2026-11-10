@@ -1488,7 +1488,7 @@ function resolveTurn(st0, ordersText, excluded, forced) {
       J(`  ${CAMP[c]} : écart ${gap}, dé ${dTxt(d)} → ÉVASION autour de ${reg} : ${nHit} élément${nHit > 1 ? 's' : ''} touché${nHit > 1 ? 's' : ''} sur ${ev.rolls.length} (${ev.rolls.map(r => `${r.what} ${dTxt(r.d)}${r.hit ? ' ✗' : ''}`).join(', ')}) · jauge POW ${st.pow[c]}`);
       RD(`Évasion au POW ${ADJ[c]} (${regs.join(', ')}) : ${nHit ? nHit + ' élément' + (nHit > 1 ? 's' : '') + ' touché' + (nHit > 1 ? 's' : '') + ' (voir la fenêtre des dés d\'évasion)' : 'aucun élément touché'} · jauge POW ${ADJF[c]} ${st.pow[c]}`);
       rep[c].enemy.unshift(`ÉVASION DE PRISONNIERS : les prisonniers ENI que nous gardions se sont évadés du camp de ${reg} et ont semé le désordre dans les régions ${regs.join(', ')}. ${lines.length ? 'Conséquences : ' + lines.join(' ; ') + '.' : 'Aucun de nos éléments n\'a été touché.'} La jauge POW retombe à ${st.pow[c]}.`);
-      rep[EN[c]].intel.push(`Des prisonniers de nos forces se sont évadés d'un camp ennemi, ce qui a désorganisé l'arrière ENI.`);
+      // 10 nov. : le camp adverse n'est pas prévenu de l'évasion (seul le camp qui gardait les prisonniers l'apprend)
     } else J(`  ${CAMP[c]} : écart ${gap}, dé ${dTxt(d)} → pas d'évasion`);
   }
   // usure du tour : les jauges descendent maintenant
