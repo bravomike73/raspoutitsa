@@ -78,8 +78,58 @@ h1 { margin: clamp(8px, 4vh, 40px) 0 0; font: 400 clamp(40px, min(10vw, 15vh), 1
 .camps.three .camp { width: clamp(140px, 19vw, 220px); }
 .camp.off { cursor: default; opacity: .5; } .camp.off:hover { transform: none; background: rgba(14, 18, 24, .62); box-shadow: inset 0 0 0 2px var(--c); }
 .note { white-space: pre-line; max-width: 560px; margin: clamp(10px, 3vh, 24px) 0 0; font-size: clamp(12px, 2.1vh, 14px); text-align: center; color: #e4dfcf; text-shadow: 0 1px 3px #000; }
-.back { position: fixed; top: max(12px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); padding: 9px 14px 9px 12px; border: 0; cursor: pointer; color: var(--ink); font: 400 15px/1 "Black Ops One", Impact, sans-serif; letter-spacing: .08em; text-transform: uppercase; background: var(--panel); box-shadow: inset 0 0 0 1px var(--khaki-dim); }
+.back { z-index: 2; position: fixed; top: max(12px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); padding: 9px 14px 9px 12px; border: 0; cursor: pointer; color: var(--ink); font: 400 15px/1 "Black Ops One", Impact, sans-serif; letter-spacing: .08em; text-transform: uppercase; background: var(--panel); box-shadow: inset 0 0 0 1px var(--khaki-dim); }
 .back:hover, .back:focus-visible { background: var(--panel-hover); outline: none; }
+
+/* 10 nov. : mode solo, choix de l'adversaire sur l'accueil (zoom sur le chef adverse : russe à droite, français à gauche) */
+body.bot .bg { transform: scale(2.1); }
+body.bot .veil { background: linear-gradient(to right, rgba(6, 8, 8, .9) 0%, rgba(6, 8, 8, .6) 34%, rgba(6, 8, 8, .12) 62%, rgba(6, 8, 8, .45) 100%), linear-gradient(to bottom, rgba(6, 8, 8, .55), rgba(6, 8, 8, 0) 30%, rgba(6, 8, 8, .5)); }
+body.bot.fr .veil { background: linear-gradient(to left, rgba(6, 8, 8, .9) 0%, rgba(6, 8, 8, .6) 34%, rgba(6, 8, 8, .12) 62%, rgba(6, 8, 8, .45) 100%), linear-gradient(to bottom, rgba(6, 8, 8, .55), rgba(6, 8, 8, 0) 30%, rgba(6, 8, 8, .5)); }
+body.bot #camp { opacity: 0; transform: scale(1.1); pointer-events: none; transition-delay: 0s; }
+#bot { --kh: #d8cfa8; --khd: rgba(216, 207, 168, .5); --acc: #c9302c; opacity: 0; pointer-events: none; display: grid; align-items: stretch;
+  grid-template-columns: minmax(230px, 330px) 1fr minmax(300px, 420px); grid-template-rows: auto 1fr auto; gap: 0 clamp(16px, 3vw, 40px); padding: max(16px, env(safe-area-inset-top)) clamp(16px, 4vw, 56px) max(16px, env(safe-area-inset-bottom)); }
+body.bot #bot { opacity: 1; pointer-events: auto; transition-delay: .7s; }
+body.go #bot { opacity: 0; transition-delay: 0s; }
+body.fr #bot { --acc: #3b74d6; grid-template-columns: minmax(300px, 420px) 1fr minmax(230px, 330px); }
+#bot h2 { grid-column: 1 / -1; margin: 0 0 clamp(10px, 2.5vh, 24px); padding-left: 96px; font: 400 clamp(22px, 3.4vw, 40px)/1.05 "Black Ops One", Impact, sans-serif; letter-spacing: .05em; text-transform: uppercase; text-shadow: 0 2px 0 #000, 0 0 18px rgba(0, 0, 0, .8); }
+#bot h2 small { display: block; margin-top: 6px; font: 700 clamp(12px, 1.5vw, 16px)/1.2 "Stardos Stencil", Impact, sans-serif; letter-spacing: .14em; color: var(--kh); }
+#bot .col { grid-column: 1; grid-row: 2; min-height: 0; overflow-y: auto; scroll-behavior: smooth; padding: 4px 8px 4px 2px; display: flex; flex-direction: column; gap: 6px;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%); -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%); }
+body.fr #bot .col { grid-column: 3; } body.fr #bot .med { grid-column: 1; }
+#bot .nm { position: relative; flex: none; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; width: 100%; padding: 10px 14px 10px 18px; border: 0; cursor: pointer; text-align: left; color: #f2eee0; background: rgba(18, 20, 16, .55); font: inherit;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); box-shadow: inset 0 0 0 1px rgba(216, 207, 168, .25); transition: background .2s, transform .2s, box-shadow .2s; }
+#bot .nm::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--kh); opacity: .35; transition: opacity .2s, width .2s, background .2s; }
+#bot .nm .t { font: 400 clamp(17px, 1.9vw, 22px)/1.1 "Black Ops One", Impact, sans-serif; letter-spacing: .05em; text-transform: uppercase; }
+#bot .nm .lv { font-size: 12px; letter-spacing: 1px; color: var(--kh); opacity: .75; white-space: nowrap; }
+#bot .nm:hover, #bot .nm:focus-visible { background: rgba(38, 42, 30, .75); transform: translateX(4px); outline: none; }
+#bot .nm.on { background: rgba(80, 18, 16, .78); box-shadow: inset 0 0 0 2px var(--acc); transform: translateX(8px); }
+body.fr #bot .nm.on { background: rgba(16, 34, 84, .78); }
+#bot .nm.on::before { background: var(--acc); opacity: 1; width: 7px; }
+#bot .nm.sur .t, #bot .nm.cur .t { color: var(--kh); }
+#bot .nm.cur { box-shadow: inset 0 0 0 1px var(--kh); }
+#bot .med { grid-column: 3; grid-row: 2; align-self: center; min-height: 0; max-height: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: clamp(14px, 2.4vh, 26px) clamp(14px, 2vw, 24px); background: rgba(0, 0, 0, .86); border-radius: 22px; box-shadow: 0 0 0 1px var(--khd), 0 18px 50px rgba(0, 0, 0, .7); overflow-y: auto; }
+#bot .por { flex: none; width: clamp(150px, min(26vh, 22vw), 250px); aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: #000; display: grid; place-items: center; box-shadow: 0 0 0 3px #000, 0 0 0 6px var(--kh), 0 0 30px color-mix(in srgb, var(--acc) 40%, transparent); }
+#bot .por img { width: 100%; height: 100%; object-fit: cover; }
+#bot .por .q { font: 400 clamp(70px, 10vh, 110px)/1 "Black Ops One", Impact, sans-serif; color: var(--kh); }
+#bot .med .t { font: 400 clamp(22px, 2.6vw, 32px)/1 "Black Ops One", Impact, sans-serif; letter-spacing: .05em; text-transform: uppercase; text-align: center; }
+#bot .med .lv { margin-top: -6px; color: #c9a227; letter-spacing: 3px; font-size: 18px; }
+#bot .med .d { margin: 0; font-size: 15px; line-height: 1.45; text-align: center; color: #e8e2cc; font-style: italic; }
+#bot .med .hint { margin: 0; text-align: center; color: var(--kh); opacity: .8; }
+#bot .med .warn { margin: 0; font-size: 13px; text-align: center; color: #ffcf8f; }
+#bot .ok { flex: none; margin-top: 4px; padding: 12px 26px; border: 0; cursor: pointer; color: #fff; background: var(--acc); font: 400 18px/1 "Black Ops One", Impact, sans-serif; letter-spacing: .06em; text-transform: uppercase;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); transition: filter .2s, transform .2s; }
+#bot .ok:hover, #bot .ok:focus-visible { filter: brightness(1.15); transform: scale(1.03); outline: none; }
+@media (max-width: 720px) {
+  #bot { grid-template-columns: minmax(120px, 38%) 1fr; gap: 0 12px; padding-left: 16px; padding-right: 16px; }
+  body.fr #bot { grid-template-columns: 1fr minmax(120px, 38%); }
+  body.fr #bot .col { grid-column: 2; } body.fr #bot .med { grid-column: 1; } #bot .med { grid-column: 2; align-self: start; padding: 14px 12px; gap: 9px; border-radius: 16px; }
+  #bot h2 { padding-left: 84px; }
+  #bot .por { width: min(150px, 40vw); }
+  #bot .nm { padding: 9px 8px 9px 13px; flex-direction: column; gap: 2px; }
+  #bot .nm .t { font-size: 13.5px; letter-spacing: .02em; overflow-wrap: anywhere; }
+  #bot .med .t { font-size: 19px; } #bot .med .d { font-size: 13.5px; } #bot .ok { padding: 11px 16px; font-size: 15px; }
+}
+@media (max-height: 480px) { #bot .por { width: min(110px, 26vh); } #bot .med .d { font-size: 12.5px; } }
 
 /* téléphone en paysage : tout tient en hauteur */
 @media (max-height: 480px) {
@@ -125,7 +175,14 @@ h1 { margin: clamp(8px, 4vh, 40px) 0 0; font: 400 clamp(40px, min(10vw, 15vh), 1
   <div class="camps" id="camps"></div>
   <p class="note" id="note"></p>
 </section>
+<section class="screen" id="bot" aria-live="polite">
+  <button class="back" type="button" id="back2">‹ Retour</button>
+  <h2 id="botT">Choisissez votre adversaire<small id="botS"></small></h2>
+  <div class="col" id="botCol" role="listbox"></div>
+  <div class="med" id="botMed"></div>
+</section>
 <div class="black" aria-hidden="true"></div>
+<script src="bots.js"></script>
 
 <script>
 (() => {
@@ -137,8 +194,8 @@ h1 { margin: clamp(8px, 4vh, 40px) 0 0; font: 400 clamp(40px, min(10vw, 15vh), 1
       camps: [['B', 'Bleus', "1er Corps d'Armée", 'joueur.html?camp=B', FLAG], ['A', 'Arbitre', 'Poste de l\'arbitre', 'arbitre.html', SCALE], ['R', 'Rouges', '3e Armée interarmes', 'joueur.html?camp=R', STAR]] },
     duel: { sub: 'Mode duel · arbitrage automatique', note: "Partie entre camarades avec arbitrage automatique.\nCréez une partie ou rejoignez-la avec le code de votre adversaire.",
       camps: [['B', 'Bleus', "1er Corps d'Armée", 'joueur.html?mode=duel&camp=B', FLAG], ['R', 'Rouges', '3e Armée interarmes', 'joueur.html?mode=duel&camp=R', STAR]] },
-    solo: { sub: "Mode solo · contre l'ordinateur", note: "Choisissez votre camp, puis le chef russe qui vous fait face.\nLa partie reste dans ce navigateur : pas besoin de connexion.",
-      camps: [['B', 'Bleus', "1er Corps d'Armée", 'joueur.html?mode=solo&camp=B', FLAG], ['R', 'Rouges', 'Bientôt', null, STAR]] },
+    solo: { sub: "Mode solo · contre l'ordinateur", note: "Choisissez votre camp, puis le chef adverse qui vous fait face.\nLa partie reste dans ce navigateur : pas besoin de connexion.",
+      camps: [['B', 'Bleus', "1er Corps d'Armée", '#solo-B', FLAG], ['R', 'Rouges', '3e Armée interarmes', '#solo-R', STAR]] },
   };
   const $ = s => document.querySelector(s);
   function enter(mode, push) {
@@ -150,18 +207,71 @@ h1 { margin: clamp(8px, 4vh, 40px) 0 0; font: 400 clamp(40px, min(10vw, 15vh), 1
       const a = document.createElement('a'); a.className = 'camp ' + c; a.href = href;
       a.innerHTML = ic + '<span class="n"></span><span class="u"></span>';
       a.querySelector('.n').textContent = n; a.querySelector('.u').textContent = u;
-      a.addEventListener('click', e => { if (e.ctrlKey || e.metaKey || e.shiftKey) return; e.preventDefault(); document.body.classList.add('go'); setTimeout(() => { location.href = href; }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 750); });
+      a.addEventListener('click', e => { if (href[0] === '#') { e.preventDefault(); showBots(href.slice(-1), true); return; } if (e.ctrlKey || e.metaKey || e.shiftKey) return; e.preventDefault(); go(href); });
       box.append(a);
     }
     document.body.classList.add('in');
     if (push) history.pushState({ mode }, '', '#' + mode);
   }
-  function leave() { document.body.classList.remove('in', 'go'); }
+  function leave() { hideBots(); document.body.classList.remove('in', 'go'); }
+  const go = href => { document.body.classList.add('go'); setTimeout(() => { location.href = href; }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 750); };
+
+  // ---------------------------------------------------------------- 10 nov. : choix du bot (mode solo), pour les deux camps
+  // Le joueur Bleu affronte un chef russe, le joueur Rouge un chef français. La partie est créée par la page joueur (joueur.html?mode=solo&camp=X&bot=id).
+  const PORTRAITS = { popov: 1, boris: 1, ivan: 1, svietchine: 1, toukhatchevski: 1, gerasimov: 1, tchouikov: 1, rokossovski: 1, koniev: 1, joukov: 1,
+    tim: 1, bagar: 1, jeanmichel: 1, colo: 1, santo: 1, galula: 1, ardant: 1, yako: 1, beaufre: 1, foch: 1 };   // portraits/<id>.gif
+  const campOf = p => /bleu/i.test(String(p.camps || '')) && !/deux/i.test(String(p.camps || '')) ? 'B' : 'R';
+  const stars = n => '★'.repeat(n) + '☆'.repeat(5 - n);
+  const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  function soloSaved(pc) {   // partie solo en cours dans ce navigateur (même origine que la page joueur)
+    try { const db = JSON.parse(localStorage.getItem('rasp-solo-partie') || '{}') || {}; const i = db.solo; if (!i || !i.id) return null;
+      let ended = false; try { const sv = JSON.parse(db.arbitre && db.arbitre.sauvegarde || 'null'); ended = !!(sv && sv.state && sv.state.ended); } catch (e) {}
+      return { id: i.id, camp: i.camp || 'B', surprise: !!i.surprise, tour: (db.arbitre && db.arbitre.tour) || 0, ended };
+    } catch (e) { return null; }
+  }
+  function hideBots() { document.body.classList.remove('bot', 'fr'); const r = document.documentElement.style; r.removeProperty('--zoom-x'); r.removeProperty('--zoom-y'); }
+  function showBots(pc, push) {
+    if (!document.body.classList.contains('in')) enter('solo', false);
+    const BC = pc === 'B' ? 'R' : 'B', FR = BC === 'B', chefs = FR ? 'chefs français' : 'chefs russes';
+    const r = document.documentElement.style; r.setProperty('--zoom-x', FR ? (innerWidth <= 720 ? '20%' : '14%') : (innerWidth <= 720 ? '80%' : '86%')); r.setProperty('--zoom-y', '42%');
+    document.body.classList.add('bot'); document.body.classList.toggle('fr', FR);
+    $('#botS').textContent = (pc === 'B' ? "Vous commandez le 1er Corps d'Armée" : 'Vous commandez la 3e Armée interarmes') + ' · du plus faible au plus fort';
+    const all = (typeof RASP_BOT_PROFILS !== 'undefined' ? RASP_BOT_PROFILS : []).filter(p => campOf(p) === BC).sort((a, b) => a.rang - b.rang);
+    const bots = all.map(p => ({ id: p.id, nom: p.nom, desc: p.desc, niv: +p.niveau || 0 }));
+    bots.push({ id: '?', nom: 'Adversaire surprise', desc: `Un des ${chefs}, tiré au hasard. Vous ne saurez lequel qu'à la fin de la partie.`, niv: 0 });
+    const sv = soloSaved(), cur = sv && sv.camp === pc && !sv.ended ? sv : null;
+    if (cur) { const p = all.find(x => x.id === cur.id); bots.unshift({ id: '=', nom: 'Reprendre la partie', desc: `Votre partie en cours contre ${cur.surprise ? 'un adversaire surprise' : (p ? p.nom : cur.id)}${cur.tour ? ', au tour ' + cur.tour : ''}.`, niv: 0, cur: true }); }
+    const col = $('#botCol'), med = $('#botMed'); col.setAttribute('aria-label', (FR ? 'Chefs français' : 'Chefs russes') + ', du plus faible au plus fort');
+    let pick = null;
+    const items = bots.map((b, i) => { const x = mk('button', 'nm' + (b.id === '?' ? ' sur' : '') + (b.cur ? ' cur' : '')); x.type = 'button'; x.setAttribute('role', 'option'); x.setAttribute('aria-selected', 'false');
+      x.append(mk('span', 't', b.nom), mk('span', 'lv', b.niv ? stars(b.niv) : b.cur ? '›' : '?')); x.onclick = () => choose(i); return x; });
+    col.replaceChildren(...items);
+    function show() {
+      const por = mk('div', 'por');
+      if (!pick) { por.append(mk('span', 'q', '?')); med.replaceChildren(por, mk('p', 'hint', `Choisissez un ${FR ? 'chef français dans la colonne de droite' : 'chef russe dans la colonne de gauche'}.`)); return; }
+      const pid = pick.cur ? (cur.surprise ? '?' : cur.id) : pick.id;
+      if (PORTRAITS[pid]) { const im = mk('img'); im.src = `portraits/${pid}.gif`; im.alt = 'Portrait de ' + pick.nom; por.append(im); } else por.append(mk('span', 'q', pick.cur ? '›' : '?'));
+      const ok = mk('button', 'ok', pick.cur ? 'Reprendre' : "Valider l'adversaire"); ok.type = 'button';
+      ok.onclick = () => go(`joueur.html?mode=solo&camp=${pc}` + (pick.cur ? '' : '&bot=' + encodeURIComponent(pick.id)));
+      const kids = [por, mk('div', 't', pick.nom)]; if (pick.niv) kids.push(mk('div', 'lv', stars(pick.niv)));
+      kids.push(mk('p', 'd', pick.desc));
+      if (!pick.cur && sv && !sv.ended) kids.push(mk('p', 'warn', sv.camp === pc ? 'La partie en cours sera effacée.' : "La partie solo en cours dans l'autre camp sera effacée."));
+      kids.push(ok); med.replaceChildren(...kids);
+    }
+    function choose(i, focus) { pick = bots[i]; items.forEach((b, j) => { b.classList.toggle('on', j === i); b.setAttribute('aria-selected', String(j === i)); }); items[i].scrollIntoView({ block: 'nearest' }); if (focus) items[i].focus(); show(); }
+    col.onkeydown = e => { const i = pick ? bots.indexOf(pick) : -1;
+      if (e.key === 'ArrowDown') { e.preventDefault(); choose(Math.min(bots.length - 1, i + 1), true); } else if (e.key === 'ArrowUp') { e.preventDefault(); choose(Math.max(0, i - 1), true); } };
+    show();
+    for (const b of bots) if (PORTRAITS[b.id]) { const im = new Image(); im.src = `portraits/${b.id}.gif`; }   // préchargement
+    if (push) history.pushState({ mode: 'solo', camp: pc }, '', '#solo-' + pc);
+  }
   document.querySelectorAll('.btn[data-mode]').forEach(b => b.addEventListener('click', () => { if (b.getAttribute('aria-disabled') === 'true') return; enter(b.dataset.mode, true); }));
-  $('#back').addEventListener('click', () => { if (history.state && history.state.mode) history.back(); else leave(); });
-  addEventListener('popstate', () => { const m = location.hash.slice(1); if (MODES[m]) enter(m, false); else leave(); });
-  addEventListener('pageshow', e => { if (e.persisted) document.body.classList.remove('go'); });   // retour arrière depuis une page joueur
-  const m0 = location.hash.slice(1); if (MODES[m0]) enter(m0, false);
+  const back = () => { if (document.body.classList.contains('bot')) { if (history.state && history.state.camp) history.back(); else { hideBots(); history.replaceState({ mode: 'solo' }, '', '#solo'); } return; } if (history.state && history.state.mode) history.back(); else leave(); };
+  $('#back').addEventListener('click', back); $('#back2').addEventListener('click', back);
+  const route = () => { const m = location.hash.slice(1); const b = m.match(/^solo-([BR])$/); if (b) return showBots(b[1], false); hideBots(); if (MODES[m]) enter(m, false); else leave(); };
+  addEventListener('popstate', route);
+  addEventListener('pageshow', e => { if (e.persisted) { document.body.classList.remove('go'); const b = location.hash.match(/^#solo-([BR])$/); if (b) showBots(b[1], false); } });   // retour arrière depuis une page joueur
+  route();
 })();
 </script>
 </body>

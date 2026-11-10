@@ -371,6 +371,20 @@ dialog::backdrop { background: rgba(0,0,0,.4); }
   .soloLob .nm .t { font-size: 13.5px; letter-spacing: .02em; overflow-wrap: anywhere; }
   .soloLob .med .t { font-size: 19px; } .soloLob .med .d { font-size: 13.5px; } .soloLob .ok { padding: 11px 16px; font-size: 15px; }
 }
+/* 10 nov. : le joueur prend les Rouges et choisit un chef français (côté gauche de l'image, accent bleu) */
+.soloLob.fr { --red: #3b74d6; }
+.soloLob.fr .bg { transform-origin: 14% 42%; }
+.soloLob.fr .veil { background: linear-gradient(to left, rgba(6, 8, 8, .9) 0%, rgba(6, 8, 8, .6) 34%, rgba(6, 8, 8, .12) 62%, rgba(6, 8, 8, .45) 100%), linear-gradient(to bottom, rgba(6, 8, 8, .55), rgba(6, 8, 8, 0) 30%, rgba(6, 8, 8, .5)); }
+.soloLob.fr .wrap { grid-template-columns: minmax(300px, 420px) 1fr minmax(230px, 330px); }
+.soloLob.fr .col { grid-column: 3; } .soloLob.fr .med { grid-column: 1; }
+.soloLob.fr .nm.on { background: rgba(16, 34, 84, .78); }
+.soloLob.fr .por { box-shadow: 0 0 0 3px #000, 0 0 0 6px var(--kh), 0 0 30px rgba(59, 116, 214, .4); }
+.soloLob .por .coc { width: 46%; height: 46%; }
+@media (max-width: 720px) {
+  .soloLob.fr .bg { background-position: 20% 30%; transform-origin: 20% 30%; }
+  .soloLob.fr .wrap { grid-template-columns: 1fr minmax(120px, 38%); }
+  .soloLob.fr .col { grid-column: 2; } .soloLob.fr .med { grid-column: 1; }
+}
 @media (prefers-reduced-motion: reduce) { .soloLob .bg { animation: none; transform: scale(2.1); } @media (max-width: 720px) { .soloLob .bg { transform: scale(1.35); } } .soloLob .nm, .soloLob .ok { transition: none; } }
 </style>
 </head>
@@ -2225,7 +2239,7 @@ function ordersCheck() {
     if (C.tgt === 'disp') for (const [id, to] of Object.entries(o.moves)) { const p = parse(to); if (p && p.kind === 'region' && p.n >= 4 && !S.opened.includes(to) && !willOpen(to)) warns.push(`${to} n'est pas ouvert : le pion ne pourra pas s'y installer`); }
     if (BIGMOVE[o.card]) { const big = S.units.find(u => u.type === BIGMOVE[o.card]); const from = parse(big.slot)?.region; if (o.zone && from && o.zone === from) warns.push(`${{ PC: 'le PC', BSC: 'la BSC', 'DIV+': 'la DIV+' }[big.type]} est déjà à ${from} : non exécutée si rien ne change d'ici l'effet`); }
     if (C.tgt === 'disp') for (const [id, to] of Object.entries(o.moves)) { const u = S.units.find(x => x.id === +id); const occ = S.units.find(x => x.slot === to && x.id !== +id && !x.dead);
-      if (u && occ && !(S.orders.some(q => q.moves && q.moves[occ.id]) && !(occ.neut >= S.turn + C.mep))) warns.push(`${to} est tenu par notre ${occ.type}, qui ne bouge pas : le ${u.type} ira en réserve`); }
+      if (u && occ && to !== 'Garde POW' && to !== 'Réserve' && !(S.orders.some(q => q.moves && q.moves[occ.id]) && !(occ.neut >= S.turn + C.mep))) warns.push(`${to} est tenu par notre ${occ.type}, qui ne bouge pas : le ${u.type} ira en réserve`); }
     const cs = cardState(o.card); if (cs.warn) warns.push(cs.why);
     if (L.status === 'void' && !errs.length) errs.push('carte jouée pour rien');
     const status = errs.length ? 'err' : (warns.length ? 'warn' : 'ok');
@@ -3460,10 +3474,12 @@ function duelReset() {
     ask('Nouvelle partie impossible', "Le serveur n'a pas répondu ou a refusé : vérifiez la connexion puis réessayez.", () => {});
   });
 }
-// ------------------------------------------------------------------ mode solo : contre un bot russe (9 nov.)
-// Tout se passe dans ce navigateur : le backend local (en tête de page) reprend l'arborescence du duel ; le bot joue les Rouges.
+// ------------------------------------------------------------------ mode solo : contre un bot (9 nov. ; les deux camps depuis le 10 nov.)
+// Tout se passe dans ce navigateur : le backend local (en tête de page) reprend l'arborescence du duel.
+// Le joueur prend le camp choisi sur l'accueil (SO.camp) ; le bot joue l'autre : un chef russe contre les Bleus, un chef français contre les Rouges.
 // Profils des bots : bots.js (classeur de Ben). Le bot ne lit de la partie que son propre camp et ses comptes rendus.
-const SO = { box: {}, sv: undefined, busy: false, again: false, done: {}, info: null, api: null };
+const SO = { box: {}, sv: undefined, busy: false, again: false, done: {}, info: null, api: null, camp: 'B' };
+const soloBotCamp = () => SO.camp === 'R' ? 'B' : 'R';
 const soloApi = () => SO.api || (SO.api = RaspBotCore(R, RASP_BOT_PROFILS));
 function soloLabel() {
   const i = SO.info; if (!i) return 'Solo';
@@ -3473,23 +3489,28 @@ function soloLabel() {
 }
 async function soloBoot() {
   try { await RN.init(); } catch (e) {}
-  if (WANT_CAMP === 'R') return soloLobby('Les Russes ne sont pas encore jouables en solo : choisissez les Bleus.');
   let info = null; try { info = await RN.get('solo'); } catch (e) {}
-  if (info && info.id) { SO.info = info; netEnter('B'); return; }
-  soloLobby();
+  SO.camp = WANT_CAMP || (info && info.camp) || 'B';
+  // 10 nov. : l'adversaire se choisit sur l'accueil (index.html#solo-B ou #solo-R), qui ouvre joueur.html?mode=solo&camp=X&bot=id
+  let want = null; try { want = new URLSearchParams(location.search).get('bot'); } catch (e) {}
+  if (want) { try { history.replaceState(null, '', location.pathname + '?mode=solo&camp=' + SO.camp); } catch (e) {} return soloNew(want); }
+  if (info && info.id && (info.camp || 'B') === SO.camp) { SO.info = info; netEnter(SO.camp); return; }
+  location.replace('index.html#solo-' + SO.camp);
 }
-const SOLO_PORTRAITS = { popov: 1, boris: 1, ivan: 1, svietchine: 1, toukhatchevski: 1, gerasimov: 1, tchouikov: 1, rokossovski: 1, koniev: 1, joukov: 1 };   // portraits/<id>.gif (un bot sans portrait aurait l'étoile)
+const SOLO_PORTRAITS = { popov: 1, boris: 1, ivan: 1, svietchine: 1, toukhatchevski: 1, gerasimov: 1, tchouikov: 1, rokossovski: 1, koniev: 1, joukov: 1 };   // portraits/<id>.gif (sans portrait : étoile rouge pour un russe, cocarde pour un français)
 function soloLobby(msg) {
   document.documentElement.classList.add('noGame');
   document.body.className = ''; const st = $('#stage'); st.replaceChildren();
   const old = document.querySelector('.soloLob'); if (old) old.remove();
-  const bots = soloApi().list().filter(b => /Rouge|deux/i.test(b.camps)).sort((a, b) => a.rang - b.rang)
+  const BC = soloBotCamp(), FR = BC === 'B', chefs = FR ? 'chefs français' : 'chefs russes';
+  const bots = soloApi().list().filter(b => b.camp === BC).sort((a, b) => a.rang - b.rang)
     .map(b => ({ id: b.id, nom: b.nom, desc: b.desc, niv: b.niveau }));
-  bots.push({ id: '?', nom: 'Adversaire surprise', desc: "Un des chefs russes, tiré au hasard. Vous ne saurez lequel qu'à la fin de la partie.", niv: 0 });
+  bots.push({ id: '?', nom: 'Adversaire surprise', desc: `Un des ${chefs}, tiré au hasard. Vous ne saurez lequel qu'à la fin de la partie.`, niv: 0 });
   const stars = n => '★'.repeat(n) + '☆'.repeat(5 - n);
   const STAR = '<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true"><path d="M24 4l5.9 13 14.1 1.6-10.5 9.6 2.9 14L24 35l-12.4 7.2 2.9-14L4 18.6 18.1 17z"/></svg>';
   let pick = null;
-  const col = el('div', { class: 'col', role: 'listbox', 'aria-label': 'Chefs russes, du plus faible au plus fort' });
+  const COC = '<svg class="coc" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#c9302c"/><circle cx="24" cy="24" r="15" fill="#f2eee0"/><circle cx="24" cy="24" r="8" fill="#2f5fb3"/></svg>';
+  const col = el('div', { class: 'col', role: 'listbox', 'aria-label': (FR ? 'Chefs français' : 'Chefs russes') + ', du plus faible au plus fort' });
   const med = el('div', { class: 'med', 'aria-live': 'polite' });
   const items = bots.map((b, i) => el('button', { class: 'nm' + (b.id === '?' ? ' sur' : ''), role: 'option', 'aria-selected': 'false', onclick: () => choose(i) },
     el('span', { class: 't', text: b.nom }), el('span', { class: 'lv', text: b.niv ? stars(b.niv) : '?' })));
@@ -3497,10 +3518,10 @@ function soloLobby(msg) {
   const ok = el('button', { class: 'ok', onclick: () => { if (pick) soloNew(pick.id); } }, "Valider l'adversaire");
   function show() {
     const por = el('div', { class: 'por' });
-    if (!pick) { por.append(el('span', { class: 'q', text: '?' })); med.replaceChildren(por, el('p', { class: 'hint', text: 'Choisissez un chef russe dans la colonne de gauche.' })); return; }
+    if (!pick) { por.append(el('span', { class: 'q', text: '?' })); med.replaceChildren(por, el('p', { class: 'hint', text: `Choisissez un ${FR ? 'chef français dans la colonne de droite' : 'chef russe dans la colonne de gauche'}.` })); return; }
     if (pick.id === '?') por.append(el('span', { class: 'q', text: '?' }));
     else if (SOLO_PORTRAITS[pick.id]) por.append(el('img', { src: `portraits/${pick.id}.gif`, alt: 'Portrait de ' + pick.nom }));
-    else por.innerHTML = STAR;
+    else por.innerHTML = FR ? COC : STAR;
     med.replaceChildren(por, el('div', { class: 't', text: pick.nom }), el('div', { class: 'lv', text: pick.niv ? stars(pick.niv) : '' }), el('p', { class: 'd', text: pick.desc }), ok);
   }
   function choose(i, focus) {
@@ -3516,7 +3537,7 @@ function soloLobby(msg) {
   });
   show();
   for (const id in SOLO_PORTRAITS) { const im = new Image(); im.src = `portraits/${id}.gif`; }   // préchargement
-  document.body.append(el('div', { class: 'soloLob' }, el('div', { class: 'bg' }), el('div', { class: 'veil' }),
+  document.body.append(el('div', { class: 'soloLob' + (FR ? ' fr' : '') }, el('div', { class: 'bg' }), el('div', { class: 'veil' }),
     el('div', { class: 'wrap' },
       el('h2', { text: 'Choisissez votre adversaire' }),
       col, med,
@@ -3525,16 +3546,17 @@ function soloLobby(msg) {
 async function soloNew(id) {
   const lob = document.querySelector('.soloLob'); if (lob) lob.remove();
   const api = soloApi(); let surprise = false;
-  if (id === '?') { const c = api.list().filter(b => b.cache); id = c[Math.floor(Math.random() * c.length)].id; surprise = true; }
+  if (id === '?') { const c = api.list().filter(b => b.cache && b.camp === soloBotCamp()); id = c[Math.floor(Math.random() * c.length)].id; surprise = true; }
+  if (!api.list().some(b => b.id === id && b.camp === soloBotCamp())) return location.replace('index.html#solo-' + SO.camp);   // bot inconnu ou de l'autre camp
   const seed = 'solo-' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 1e6).toString(36);
-  SO.info = { id, seed, surprise, at: Date.now() };
-  try { localStorage.removeItem('rasp-joueur-solo-v1-B'); } catch (e) {}
+  SO.info = { id, seed, surprise, at: Date.now(), camp: SO.camp };
+  try { localStorage.removeItem('rasp-joueur-solo-v1-B'); localStorage.removeItem('rasp-joueur-solo-v1-R'); } catch (e) {}
   await RN.update({ solo: SO.info, session: Date.now(), boite: null, cr: null, refus: null, arbitre: null });
-  netEnter('B');
+  netEnter(SO.camp);
 }
 function soloStart() {
   RN.on('solo', v => { if (v) SO.info = v; netLabel(); }, () => {});
-  RN.on('boite/B', v => { SO.box = v || {}; soloTick(); }, () => {});
+  RN.on('boite/' + SO.camp, v => { SO.box = v || {}; soloTick(); }, () => {});
   RN.on('arbitre/sauvegarde', v => { try { SO.sv = v ? JSON.parse(v) : null; } catch (e) { SO.sv = null; } netLabel(); soloTick(); }, () => {});
 }
 async function soloTick() {
@@ -3546,45 +3568,46 @@ async function soloTick() {
   finally { SO.busy = false; }
 }
 async function soloRefuse(turn, kind, motif) {
-  const id = RN.tid(turn), key = `B${id}${SO.box[id].at}`; if (SO.done[key]) return; SO.done[key] = 1;
-  await RN.update({ [`boite/B/${id}`]: null, [`refus/B/${id}`]: { turn, kind, motif, at: Date.now() } });
+  const PC = SO.camp, id = RN.tid(turn), key = `${PC}${id}${SO.box[id].at}`; if (SO.done[key]) return; SO.done[key] = 1;
+  await RN.update({ [`boite/${PC}/${id}`]: null, [`refus/${PC}/${id}`]: { turn, kind, motif, at: Date.now() } });
 }
 async function soloStep() {
-  const sv = SO.sv, api = soloApi();
+  const sv = SO.sv, api = soloApi(), PC = SO.camp, BC = soloBotCamp();
   if (!sv || !sv.state) {   // début de partie : fiche du joueur et déploiement du bot
     const d = SO.box.T00; if (!d) return;
-    const e = R.parseDeployment(R.newState(), 'B', d.text).errs; if (e.length) return soloRefuse(0, 'deploy', e.join(' ; '));
+    const e = R.parseDeployment(R.newState(), PC, d.text).errs; if (e.length) return soloRefuse(0, 'deploy', e.join(' ; '));
     const bot = api.create(SO.info.id, SO.info.seed);
-    const out = R.setupGame(undefined, d.text, bot.deploy());
-    if (!out.ok) { if (out.B && out.B.errs.length) return soloRefuse(0, 'deploy', out.B.errs.join(' ; ')); console.warn('déploiement du bot refusé', out.R && out.R.errs); return; }
-    const save = { app: 'raspoutitsa-arbitrage', v: 1, mode: 'solo', bot: { id: SO.info.id, seed: SO.info.seed, mem: bot.mem }, state: out.state, drafts: { B: '', R: '' }, excluded: { B: [], R: [] }, forced: {}, hist: [], deploy: { B: d.text, R: bot.deploy() } };
-    await RN.update({ 'arbitre/sauvegarde': JSON.stringify(save), 'arbitre/tour': 1, 'boite/R/T00': { turn: 0, kind: 'deploy', text: bot.deploy(), at: Date.now() } });
+    const dep = { [PC]: d.text, [BC]: bot.deploy() };
+    const out = R.setupGame(undefined, dep.B, dep.R);
+    if (!out.ok) { if (out[PC] && out[PC].errs.length) return soloRefuse(0, 'deploy', out[PC].errs.join(' ; ')); console.warn('déploiement du bot refusé', out[BC] && out[BC].errs); return; }
+    const save = { app: 'raspoutitsa-arbitrage', v: 1, mode: 'solo', bot: { id: SO.info.id, seed: SO.info.seed, mem: bot.mem, camp: BC }, state: out.state, drafts: { B: '', R: '' }, excluded: { B: [], R: [] }, forced: {}, hist: [], deploy: dep };
+    await RN.update({ 'arbitre/sauvegarde': JSON.stringify(save), 'arbitre/tour': 1, [`boite/${BC}/T00`]: { turn: 0, kind: 'deploy', text: bot.deploy(), at: Date.now() } });
     return;
   }
   const st = sv.state; if (st.ended) return;
   const T = st.turn, id = RN.tid(T), mB = SO.box[id];
   if (!mB) return;
-  const ch = R.checkOrders(st, 'B', mB.text, null);
+  const ch = R.checkOrders(st, PC, mB.text, null);
   const bad = ch.lines.filter(o => o.status === 'ignored');
   if (bad.length) {
     const motif = (ch.warns.filter(w => /tour|message/.test(w)).concat(bad.map(o => `ligne ${o.n} (${o.card || o.raw.card || '?'}) : ${o.errors.join(' ; ')}`))).join('\n') + '\nCorrigez puis renvoyez les ordres.';
     return soloRefuse(T, 'orders', motif);
   }
   const bot = api.create(sv.bot.id, sv.bot.seed, sv.bot.mem);
-  const txtR = bot.orders(st);
-  const drafts = { B: mB.text, R: txtR }, excluded = { B: [], R: [] };
+  const txtR = bot.orders(st);   // ordres du bot (camp BC)
+  const drafts = { [PC]: mB.text, [BC]: txtR }, excluded = { B: [], R: [] };
   const P = R.resolveTurn(st, drafts, excluded, {});
   bot.observe(P, st);
   const at = Date.now();
   const rec = { turn: T, drafts, excluded, forced: {}, text: P.text, savedAt: new Date(at).toISOString() };   // sans l'état d'avant : la sauvegarde reste légère
   const save = Object.assign({}, sv, { state: P.state, bot: Object.assign({}, sv.bot, { mem: bot.mem }), hist: (sv.hist || []).concat([rec]) });
-  await RN.update({ 'arbitre/sauvegarde': JSON.stringify(save), 'arbitre/tour': T + 1, [`boite/R/${id}`]: { turn: T, kind: 'orders', text: txtR, at }, [`cr/B/${id}`]: { turn: T, rev: 1, text: P.text.B, at }, [`cr/R/${id}`]: { turn: T, rev: 1, text: P.text.R, at } });
+  await RN.update({ 'arbitre/sauvegarde': JSON.stringify(save), 'arbitre/tour': T + 1, [`boite/${BC}/${id}`]: { turn: T, kind: 'orders', text: txtR, at }, [`cr/B/${id}`]: { turn: T, rev: 1, text: P.text.B, at }, [`cr/R/${id}`]: { turn: T, rev: 1, text: P.text.R, at } });
 }
 function soloReset() {
-  ask('Nouvelle partie en solo ?', "La partie en cours contre le bot sera effacée, et vous choisirez de nouveau votre adversaire. Pensez à sauvegarder votre page dans un fichier avant.", () => {
+  ask('Nouvelle partie en solo ?', "La partie en cours contre le bot sera effacée, et vous choisirez de nouveau votre adversaire sur l'accueil. Pensez à sauvegarder votre page dans un fichier avant.", () => {
     try { localStorage.removeItem(STORE); } catch (e) {}
     if (window.RASP_SOLO_CLEAR) window.RASP_SOLO_CLEAR();
-    location.reload();
+    location.replace('index.html#solo-' + SO.camp);   // 10 nov. : nouveau choix de l'adversaire sur l'accueil
   });
 }
 function netWatch() {

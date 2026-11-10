@@ -1,4 +1,4 @@
-/* Raspoutitsa : bots russes du mode solo (9 nov. 2026).
+/* Raspoutitsa : bots du mode solo — 10 bots russes (9 nov. 2026) et 10 bots français (10 nov. 2026).
    Profils : classeur « Profils des bots » de Ben (10 bots, de Popov à Joukov), converti en données ci-dessous.
    Le cœur (RaspBotCore) reçoit le moteur d'arbitrage de la page (R) et ces profils. */
 const RASP_BOT_PROFILS = [
@@ -836,6 +836,848 @@ const RASP_BOT_PROFILS = [
 "b_cb": "Souvent",
 "b_garde": "Souvent",
 "remarques": "Le meilleur possible"
+},
+// ---- bots français du mode solo (camp Bleu), classeur « Profils des bots français » de Ben (10 nov. 2026)
+{
+"id": "tim",
+"rang": 1,
+"nom": "SGT Tim",
+"desc": "Parfait représentant de l'armée de terre : sourire bright, moral à toute épreuve et pas de cerveau.",
+"niveau": 1,
+"camps": "Bleu",
+"cache": "Non",
+"msgDep": "Camp : Bleu\nPC : Poltava 0\nBSC : Dnipro 0\nPOW : Krementchouk 0\nDIV+ : Zaporijjia 0\nINF : Kharkiv Bleu 1, Izioum Bleu 1, Donetsk Bleu 1, Poltava 1, Zaporijjia 1\nMP : Kharkiv Bleu 3, Izioum Bleu 3, Donetsk Bleu 3\nCIMIC : Lysanka 2, Tcherkassy 1, Kropyvnytskyï 3, Krementchouk 2, Dnipro 1\nDSA : Poltava 2, Dnipro 2, Zaporijjia 2, Kropyvnytskyï 2, Tcherkassy 2\nGEN : Krementchouk 3, Kryvyï Rih 2, Bobrynets 2\nART CA : Poltava 3, Dnipro 3, Zaporijjia 3\nEW : Kharkiv Bleu 2, Izioum Bleu 2, Donetsk Bleu 2\nGAM : Lysanka 1\nRéseau LOG : U2 1, B2 2, BK 3, U1 3, B1 1, B3 2, B5 1, B4 1, U3 3, B7 1, U4 1, B11 1, B9 1, B13 2, B10 1, B8 1, B6 1, BI 1, B14 1, BD 1",
+"msgT1": "ORDRES BLEU | TOUR 1 | PC : 100 % | 5 carte(s) | Prêt à envoyer || 1;Embuscade;effet T4;retour T8;RI;;; || 2;OSINT;effet T5;retour T6;Sovetskaya;;; || 3;SEAD;effet T3;retour T8;Bogoutchar;;; || 4;Effort LOG;effet T4;retour T8;Izioum;;; || 5;Engagement GAM;effet T2;retour T5;Kharkiv;;;",
+"agress": 3,
+"prudence": 1,
+"imprevu": 0.4,
+"constance": "S'adapte un peu",
+"effort": "Deux fuseaux",
+"fuseau": "Au hasard",
+"mobilite": "Statique",
+"ruse": 2,
+"critique": 0.1,
+"raisonne": "Idées reçues",
+"calcule": "Jamais",
+"imperatifs": "Parfois",
+"enchaine": "Jamais",
+"reserve": "Garde 2 cartes ou plus",
+"memoire": "Toute la partie",
+"tourBlanc": 0.2,
+"r_percer": 1,
+"r_tenir": 2,
+"r_div": 3,
+"r_bsc": 11,
+"r_pc": 10,
+"r_cb": 9,
+"r_rens": 7,
+"r_proteger": 6,
+"r_log": 5,
+"r_env": 8,
+"r_accu": 4,
+"posPC": "Près du front",
+"posBSC": "Près du front",
+"posDIV": "Milieu du Rear",
+"gardePOW": 0,
+"dsa": "Réparties",
+"posART": "Mixtes",
+"reseau": "Minimum partout",
+"fortifie": "Jamais",
+"seuilDiv": 20,
+"fusDiv": "Au hasard",
+"salve": "Jamais",
+"rensAvant": "Jamais",
+"rensMin": 0,
+"scoot": "Jamais",
+"assautBP": "Dès que possible",
+"maquis": "Jamais",
+"effortLog": "Jamais",
+"appuiClose": "Rarement",
+"justice": "Jamais",
+"x_pc": "Ignore",
+"x_bsc": "Ignore",
+"x_div": "Ignore",
+"x_pow": "Riposte",
+"x_art": "Ignore",
+"x_repere": "Ignore",
+"x_engENI": "Ignore",
+"x_recule": "Ignore",
+"x_percer": "Garde la DIV+ en réserve",
+"x_coupe": "Ignore",
+"x_jauge": "Change rien",
+"x_dsa": "Ignore",
+"x_echec": "Rejoue la même dès son retour",
+"x_finMene": "Continue pareil",
+"x_finMen": "Continue pareil",
+"e_danger": "Souvent",
+"e_pow": "Souvent",
+"e_sansFlux": "Souvent",
+"e_memeFus": "Rarement",
+"e_vieux": "Souvent",
+"e_bascule": "Jamais",
+"e_divLoin": "Toujours",
+"b_sead": "Jamais",
+"b_cb": "Jamais",
+"b_garde": "Rarement",
+"remarques": "Comportement erratique"
+},
+{
+"id": "bagar",
+"rang": 2,
+"nom": "CPL Bagar",
+"desc": "Fine fleur de nos soldats, le CPL Bagar veut en découdre.",
+"niveau": 2,
+"camps": "Bleu",
+"cache": "Oui",
+"msgDep": "Camp : Bleu\nPC : Dnipro 0\nBSC : Kryvyï Rih 0\nPOW : Mykolaïv 0\nDIV+ : Krementchouk 0\nINF : Izioum Bleu 1, Izioum Bleu 2, Izioum Bleu 3, Kharkiv Bleu 1, Donetsk Bleu 1\nMP : Garde POW, Garde POW, Kharkiv Bleu 2, Donetsk Bleu 2, Krementchouk 1\nCIMIC : Tcherkassy 2, Lysanka 1, Krementchouk 2, Kropyvnytskyï 2, Mykolaïv 2\nDSA : Poltava 3, Zaporijjia 3, Kharkiv Bleu 3, Donetsk Bleu 3, Kryvyï Rih 1\nGEN : Poltava 1, Dnipro 2, Zaporijjia 1\nART CA : Tcherkassy 1, Kropyvnytskyï 1, Bobrynets 1\nEW : Poltava 2, Dnipro 1, Zaporijjia 2\nGAM : Dnipro 3\nRéseau LOG : B2 2, BK 2, U1 3, B1 2, U3 2, B7 1, B5 2, B6 2, BI 2, U4 3, B13 3, B14 2, BD 2, B3 1, B9 1",
+"msgT1": "ORDRES BLEU | TOUR 1 | PC : 100 % | 5 carte(s) | Prêt à envoyer || 1;Frappe en profondeur;effet T2;retour T4;;Kharkiv Rouge ART Nord;Tcherkassy 1; || 2;Frappe en profondeur;effet T2;retour T4;;Izioum Rouge ART Nord;Kropyvnytskyï 1; || 3;Frappe en profondeur;effet T2;retour T4;;Donetsk Rouge ART Nord;Bobrynets 1; || 4;Engagement GAM;effet T2;retour T5;Izioum;;; || 5;CAS;effet T3;retour T6;Kharkiv;;; || 6;Effort COM;effet T5;retour T6;Donetsk;;; || 7;Effort LOG;effet T4;retour T8;Donetsk;;;",
+"agress": 5,
+"prudence": 1,
+"imprevu": 0.3,
+"constance": "S'en tient au plan",
+"effort": "Les trois fuseaux",
+"fuseau": "Izioum (centre)",
+"mobilite": "Peu mobile",
+"ruse": 1,
+"critique": 0.2,
+"raisonne": "Idées reçues",
+"calcule": "Jamais",
+"imperatifs": "Jamais",
+"enchaine": "Jamais",
+"reserve": "Garde 1 carte en réserve",
+"memoire": "Toute la partie",
+"tourBlanc": 0.2,
+"r_percer": 1,
+"r_tenir": 4,
+"r_div": 3,
+"r_bsc": 8,
+"r_pc": 9,
+"r_cb": 5,
+"r_rens": 6,
+"r_proteger": 10,
+"r_log": 7,
+"r_env": 11,
+"r_accu": 2,
+"posPC": "Près du front",
+"posBSC": "Loin du front",
+"posDIV": "Région d'accès d'un fuseau",
+"gardePOW": 1,
+"dsa": "DIV+",
+"posART": "Mixtes",
+"reseau": "Concentrée sur l'effort",
+"fortifie": "Après une frappe",
+"seuilDiv": 60,
+"fusDiv": "Son fuseau d'effort",
+"salve": "Toujours",
+"rensAvant": "Rarement",
+"rensMin": 1,
+"scoot": "Rarement",
+"assautBP": "Sur un grand pion repéré",
+"maquis": "Tôt dans la partie",
+"effortLog": "Seulement sous 50 %",
+"appuiClose": "Chaque tour",
+"justice": "Quand le POW est plein",
+"x_pc": "Riposte",
+"x_bsc": "Riposte",
+"x_div": "Riposte",
+"x_pow": "Riposte",
+"x_art": "Contre-batterie en retour",
+"x_repere": "Frappe tout de suite",
+"x_engENI": "Engage sa propre DIV+ ailleurs",
+"x_recule": "Ignore",
+"x_percer": "Engage la DIV+ pour percer",
+"x_coupe": "Riposte",
+"x_jauge": "Va au plus offensif",
+"x_dsa": "Fortifie",
+"x_echec": "Change de cible",
+"x_finMene": "Accélère",
+"x_finMen": "Assaut de la BP et Maquis",
+"e_danger": "Parfois",
+"e_pow": "Parfois",
+"e_sansFlux": "Parfois",
+"e_memeFus": "Souvent",
+"e_vieux": "Souvent",
+"e_bascule": "Rarement",
+"e_divLoin": "Jamais",
+"b_sead": "Rarement",
+"b_cb": "Souvent",
+"b_garde": "Rarement",
+"remarques": "Agressif"
+},
+{
+"id": "jeanmichel",
+"rang": 3,
+"nom": "ADC Jean-Michel Spécialiste",
+"desc": "L'ADC Specialiste fait le même métier, de la même manière depuis 15 ans. C'est pas vous qui allez lui dire comment faire mieux.",
+"niveau": 2,
+"camps": "Bleu",
+"cache": "Oui",
+"msgDep": "Camp : Bleu\nPC : Krementchouk 0\nBSC : Kryvyï Rih 0\nPOW : Bobrynets 0\nDIV+ : Dnipro 0\nINF : Kharkiv Bleu 1, Izioum Bleu 1, Donetsk Bleu 1, Kropyvnytskyï 1, Garde POW\nMP : Poltava 1, Dnipro 1, Zaporijjia 1, Garde POW, Garde POW\nCIMIC : Tcherkassy 1, Krementchouk 1, Lysanka 1, Kryvyï Rih 1, Mykolaïv 1\nDSA : Poltava 2, Krementchouk 2, Dnipro 2, Kryvyï Rih 2, Zaporijjia 2\nGEN : Poltava 3, Dnipro 3, Zaporijjia 3\nART CA : Kharkiv Bleu 2, Izioum Bleu 2, Donetsk Bleu 2\nEW : Kharkiv Bleu 3, Izioum Bleu 3, Donetsk Bleu 3\nGAM : Krementchouk 3\nRéseau LOG : U1 3, B1 1, B2 1, BK 1, U3 5, B9 5, B10 2, B14 2, BD 2, BI 2, B3 2, B5 2, B6 2",
+"msgT1": "ORDRES BLEU | TOUR 1 | PC : 100 % | 5 carte(s) | Prêt à envoyer || 1;Renseignement SAT;effet T2;retour T4;Valouïki;;; || 2;ROHUM;effet T5;retour T8;Novoaïdar;;; || 3;Frappe drone;effet T3;retour T5;;Milerovo 0;; || 4;Effort COM;effet T5;retour T6;Donetsk;;; || 5;Brouillage GE;effet T2;retour T4;Izioum;;;",
+"agress": 1,
+"prudence": 5,
+"imprevu": 0.2,
+"constance": "S'en tient au plan",
+"effort": "Les trois fuseaux",
+"fuseau": "Au hasard",
+"mobilite": "Peu mobile",
+"ruse": 2,
+"critique": 0.4,
+"raisonne": "Idées reçues",
+"calcule": "Rarement",
+"imperatifs": "Souvent",
+"enchaine": "Parfois",
+"reserve": "Garde 1 carte en réserve",
+"memoire": "Toute la partie",
+"tourBlanc": 0.1,
+"r_percer": 11,
+"r_tenir": 3,
+"r_div": 9,
+"r_bsc": 10,
+"r_pc": 7,
+"r_cb": 8,
+"r_rens": 4,
+"r_proteger": 1,
+"r_log": 2,
+"r_env": 6,
+"r_accu": 5,
+"posPC": "Loin du front",
+"posBSC": "Loin du front",
+"posDIV": "Loin du front",
+"gardePOW": 3,
+"dsa": "PC",
+"posART": "En retrait",
+"reseau": "Priorité à la DIV+",
+"fortifie": "Après une frappe",
+"seuilDiv": 100,
+"fusDiv": "Au hasard",
+"salve": "Sur une cible de valeur",
+"rensAvant": "Rarement",
+"rensMin": 1,
+"scoot": "Rarement",
+"assautBP": "En dernier recours",
+"maquis": "Jamais",
+"effortLog": "Seulement sous 50 %",
+"appuiClose": "Rarement",
+"justice": "Quand le POW est plein",
+"x_pc": "Bascule de PC",
+"x_bsc": "Fortifie",
+"x_div": "Fortifie",
+"x_pow": "Renforce la garde",
+"x_art": "Ignore",
+"x_repere": "Frappe tout de suite",
+"x_engENI": "Renforce ce fuseau",
+"x_recule": "Renforce ce fuseau",
+"x_percer": "Garde la DIV+ en réserve",
+"x_coupe": "Ignore",
+"x_jauge": "Joue plus prudent",
+"x_dsa": "Remplace les DSA",
+"x_echec": "Rejoue la même dès son retour",
+"x_finMene": "Se défend",
+"x_finMen": "Continue pareil",
+"e_danger": "Parfois",
+"e_pow": "Parfois",
+"e_sansFlux": "Parfois",
+"e_memeFus": "Souvent",
+"e_vieux": "Souvent",
+"e_bascule": "Rarement",
+"e_divLoin": "Toujours",
+"b_sead": "Rarement",
+"b_cb": "Parfois",
+"b_garde": "Toujours",
+"remarques": "Très défensif, surtout pour son PC"
+},
+{
+"id": "colo",
+"rang": 4,
+"nom": "Go l'Colo",
+"desc": "La mort va devenir votre hypothèse de travail.",
+"niveau": 3,
+"camps": "Bleu",
+"cache": "Oui",
+"msgDep": "Camp : Bleu\nPC : Krementchouk 0\nBSC : Kryvyï Rih 0\nPOW : Tcherkassy 0\nDIV+ : Kropyvnytskyï 0\nINF : Kharkiv Bleu 3, Izioum Bleu 3, Donetsk Bleu 3, Garde POW, Garde POW\nMP : Krementchouk 3, Kryvyï Rih 3, Kropyvnytskyï 2, Poltava 2, Dnipro 2\nCIMIC : Kharkiv Bleu 2, Izioum Bleu 2, Donetsk Bleu 2, Tcherkassy 2, Bobrynets 2\nDSA : Kharkiv Bleu 1, Izioum Bleu 1, Donetsk Bleu 1, Krementchouk 1, Kryvyï Rih 1\nGEN : Krementchouk 2, Kropyvnytskyï 1, Kryvyï Rih 2\nART CA : Poltava 1, Dnipro 1, Zaporijjia 1\nEW : Lysanka 2, Lysanka 3, Tcherkassy 1\nGAM : Lysanka 1\nRéseau LOG : U3 5, B7 4, B9 1, U4 3, B13 2, B14 2, BD 2, U2 2, B2 2, BK 2, U1 1, B3 1, B5 1, B6 1, BI 1",
+"msgT1": "ORDRES BLEU | TOUR 1 | PC : 100 % | 5 carte(s) | Prêt à envoyer || 1;Travaux du GEN;effet T4;retour T5;;;;Fortifier Krementchouk 0 · Fortifier Kropyvnytskyï 0 · Fortifier Kryvyï Rih 0 || 2;Renseignement SAT;effet T2;retour T4;Valouïki;;; || 3;Renseignement drone;effet T2;retour T4;Novoaïdar;;; || 4;OSINT;effet T5;retour T6;Louhansk;;; || 5;Effort COM;effet T5;retour T6;Kharkiv;;;",
+"agress": 2,
+"prudence": 4,
+"imprevu": 0.1,
+"constance": "S'adapte un peu",
+"effort": "Les trois fuseaux",
+"fuseau": "Le plus menacé",
+"mobilite": "Mobile",
+"ruse": 4,
+"critique": 0.7,
+"raisonne": "Recoupe ce qu'il voit",
+"calcule": "Parfois",
+"imperatifs": "Toujours",
+"enchaine": "Souvent",
+"reserve": "Toujours le maximum",
+"memoire": "10 tours",
+"tourBlanc": 0.05,
+"r_percer": 11,
+"r_tenir": 1,
+"r_div": 2,
+"r_bsc": 3,
+"r_pc": 10,
+"r_cb": 4,
+"r_rens": 5,
+"r_proteger": 7,
+"r_log": 6,
+"r_env": 9,
+"r_accu": 8,
+"posPC": "Loin du front",
+"posBSC": "Milieu du Rear",
+"posDIV": "Loin du front",
+"gardePOW": 2,
+"dsa": "BSC",
+"posART": "En retrait",
+"reseau": "Équilibrée",
+"fortifie": "Dès le tour 1",
+"seuilDiv": 100,
+"fusDiv": "Celui où il gagne",
+"salve": "Sur une cible de valeur",
+"rensAvant": "Souvent",
+"rensMin": 1,
+"scoot": "Souvent",
+"assautBP": "En dernier recours",
+"maquis": "Tôt dans la partie",
+"effortLog": "Dès que la BSC baisse",
+"appuiClose": "Quand un fuseau recule",
+"justice": "Dès que possible",
+"x_pc": "Bascule de PC",
+"x_bsc": "Bascule BSC",
+"x_div": "Fortifie",
+"x_pow": "Ignore",
+"x_art": "Déplace les autres ART CA",
+"x_repere": "Confirme puis frappe",
+"x_engENI": "Renforce ce fuseau",
+"x_recule": "Renforce ce fuseau",
+"x_percer": "Garde la DIV+ en réserve",
+"x_coupe": "Retrace le réseau",
+"x_jauge": "Joue plus prudent",
+"x_dsa": "Fortifie",
+"x_echec": "Change de cible",
+"x_finMene": "Continue pareil",
+"x_finMen": "Continue pareil",
+"e_danger": "Rarement",
+"e_pow": "Rarement",
+"e_sansFlux": "Rarement",
+"e_memeFus": "Souvent",
+"e_vieux": "Parfois",
+"e_bascule": "Parfois",
+"e_divLoin": "Rarement",
+"b_sead": "Parfois",
+"b_cb": "Souvent",
+"b_garde": "Toujours",
+"remarques": "Défensif et intelligent",
+"depRetouche": "infFus"
+},
+{
+"id": "santo",
+"rang": 5,
+"nom": "Santo-Senseï",
+"desc": "Cette partie sera votre ultime champ de bataille.",
+"niveau": 3,
+"camps": "Bleu",
+"cache": "Oui",
+"msgDep": "Camp : Bleu\nPC : Tcherkassy 0\nBSC : Krementchouk 0\nPOW : Bobrynets 0\nDIV+ : Lysanka 0\nINF : Kropyvnytskyï 3, Kryvyï Rih 3, Mykolaïv 3, Zaporijjia 1, Bobrynets 1\nMP : Lysanka 1, Tcherkassy 1, Krementchouk 1, Poltava 1, Garde POW\nCIMIC : Kharkiv Bleu 1, Izioum Bleu 1, Donetsk Bleu 1, Dnipro 1, Kropyvnytskyï 1\nDSA : Lysanka 2, Tcherkassy 2, Krementchouk 2, Kharkiv Bleu 2, Izioum Bleu 2\nGEN : Lysanka 3, Tcherkassy 3, Krementchouk 3\nART CA : Kropyvnytskyï 2, Kryvyï Rih 2, Mykolaïv 2\nEW : Kharkiv Bleu 3, Izioum Bleu 3, Donetsk Bleu 2\nGAM : Kryvyï Rih 1\nRéseau LOG : U1 4, U2 3, BK 3, B2 3, U3 4, B7 1, B5 1, B11 2, B13 2, B14 2, BD 2, B9 1, B10 1, BI 1",
+"msgT1": "ORDRES BLEU | TOUR 1 | PC : 100 % | 5 carte(s) | Prêt à envoyer || 1;Travaux du GEN;effet T4;retour T5;;;;Fortifier Lysanka 0 · Fortifier Tcherkassy 0 · Fortifier Krementchouk 0 || 2;Renseignement SAT;effet T2;retour T4;Bogoutchar;;; || 3;OSINT;effet T5;retour T6;Milerovo;;; || 4;Effort COM;effet T5;retour T6;Kharkiv;;; || 5;Ecoute GE;effet T3;retour T5;Izioum;;;",
+"agress": 4,
+"prudence": 3,
+"imprevu": 0.1,
+"constance": "S'adapte un peu",
+"effort": "Un seul fuseau",
+"fuseau": "Le plus favorable",
+"mobilite": "Mobile",
+"ruse": 2,
+"critique": 0.7,
+"raisonne": "Recoupe ce qu'il voit",
+"calcule": "Parfois",
+"imperatifs": "Toujours",
+"enchaine": "Souvent",
+"reserve": "Toujours le maximum",
+"memoire": "10 tours",
+"tourBlanc": 0.05,
+"r_percer": 1,
+"r_tenir": 6,
+"r_div": 5,
+"r_bsc": 10,
+"r_pc": 9,
+"r_cb": 4,
+"r_rens": 7,
+"r_proteger": 8,
+"r_log": 3,
+"r_env": 11,
+"r_accu": 2,
+"posPC": "Milieu du Rear",
+"posBSC": "Milieu du Rear",
+"posDIV": "Région d'accès d'un fuseau",
+"gardePOW": 2,
+"dsa": "DIV+",
+"posART": "En retrait",
+"reseau": "Concentrée sur l'effort",
+"fortifie": "Dès le tour 1",
+"seuilDiv": 70,
+"fusDiv": "Celui où il gagne",
+"salve": "Toujours",
+"rensAvant": "Souvent",
+"rensMin": 1,
+"scoot": "Souvent",
+"assautBP": "Sur un grand pion repéré",
+"maquis": "Tôt dans la partie",
+"effortLog": "Dès que la BSC baisse",
+"appuiClose": "Chaque tour",
+"justice": "Dès que possible",
+"x_pc": "Bascule de PC",
+"x_bsc": "Bascule BSC",
+"x_div": "Engage la DIV+ tout de suite",
+"x_pow": "Ignore",
+"x_art": "Contre-batterie en retour",
+"x_repere": "Frappe tout de suite",
+"x_engENI": "Engage sa propre DIV+ ailleurs",
+"x_recule": "Ignore",
+"x_percer": "Pousse ce fuseau",
+"x_coupe": "Ouverture d'itinéraire",
+"x_jauge": "Va au plus offensif",
+"x_dsa": "Remplace les DSA",
+"x_echec": "Change de carte",
+"x_finMene": "Accélère",
+"x_finMen": "Tout pour percer",
+"e_danger": "Rarement",
+"e_pow": "Rarement",
+"e_sansFlux": "Rarement",
+"e_memeFus": "Jamais",
+"e_vieux": "Parfois",
+"e_bascule": "Parfois",
+"e_divLoin": "Rarement",
+"b_sead": "Parfois",
+"b_cb": "Souvent",
+"b_garde": "Parfois",
+"remarques": "Offensif et intelligent"
+},
+{
+"id": "galula",
+"rang": 6,
+"nom": "Galula",
+"desc": "Si vous perdez, ça ne sert à rien de vous insurger.",
+"niveau": 3,
+"camps": "Bleu",
+"cache": "Oui",
+"msgDep": "Camp : Bleu\nPC : Krementchouk 0\nBSC : Kryvyï Rih 0\nPOW : Kropyvnytskyï 0\nDIV+ : Lysanka 0\nINF : Kharkiv Bleu 1, Izioum Bleu 1, Donetsk Bleu 1, Tcherkassy 2, Mykolaïv 2\nMP : Lysanka 3, Kropyvnytskyï 3, Krementchouk 3, Garde POW, Kryvyï Rih 1\nCIMIC : Lysanka 1, Tcherkassy 3, Tcherkassy 1, Lysanka 2, Kropyvnytskyï 1\nDSA : Krementchouk 2, Kryvyï Rih 3, Bobrynets 2, Poltava 3, Zaporijjia 3\nGEN : Krementchouk 1, Kryvyï Rih 2, Bobrynets 1\nART CA : Poltava 1, Dnipro 1, Zaporijjia 1\nEW : Kharkiv Bleu 2, Izioum Bleu 2, Donetsk Bleu 2\nGAM : Dnipro 3\nRéseau LOG : U1 5, U2 4, B2 3, BK 3, U3 2, B9 2, U4 2, B13 2, B14 2, BD 2, B10 1, BI 1, B1 1",
+"msgT1": "ORDRES BLEU | TOUR 1 | PC : 100 % | 5 carte(s) | Prêt à envoyer || 1;Travaux du GEN;effet T4;retour T5;;;;Fortifier Krementchouk 0 · Fortifier Kryvyï Rih 0 · Fortifier Lysanka 0 || 2;ROHUM;effet T5;retour T8;Bogoutchar;;; || 3;Maquis de partisans;effet T8;retour T15;Morozovsk;;; || 4;Embuscade;effet T4;retour T8;RK;;; || 5;Ecoute GE;effet T3;retour T5;Donetsk;;;",
+"agress": 3,
+"prudence": 4,
+"imprevu": 0.1,
+"constance": "S'adapte un peu",
+"effort": "Deux fuseaux",
+"fuseau": "Au hasard",
+"mobilite": "Mobile",
+"ruse": 5,
+"critique": 0.7,
+"raisonne": "Recoupe ce qu'il voit",
+"calcule": "Parfois",
+"imperatifs": "Toujours",
+"enchaine": "Souvent",
+"reserve": "Toujours le maximum",
+"memoire": "10 tours",
+"tourBlanc": 0.05,
+"r_percer": 11,
+"r_tenir": 8,
+"r_div": 4,
+"r_bsc": 2,
+"r_pc": 3,
+"r_cb": 6,
+"r_rens": 5,
+"r_proteger": 9,
+"r_log": 7,
+"r_env": 1,
+"r_accu": 10,
+"posPC": "Loin du front",
+"posBSC": "Milieu du Rear",
+"posDIV": "Milieu du Rear",
+"gardePOW": 2,
+"gardeMP": "Oui",
+"dsa": "Réparties",
+"posART": "En retrait",
+"reseau": "Équilibrée",
+"fortifie": "Dès le tour 1",
+"seuilDiv": "Jamais sauf pour percer",
+"fusDiv": "Celui où il gagne",
+"salve": "Sur une cible de valeur",
+"rensAvant": "Souvent",
+"rensMin": 1,
+"scoot": "Souvent",
+"assautBP": "Sur un grand pion repéré",
+"maquis": "Tôt dans la partie",
+"effortLog": "Dès que la BSC baisse",
+"appuiClose": "Quand un fuseau recule",
+"justice": "Dès que possible",
+"x_pc": "Bascule de PC",
+"x_bsc": "Bascule BSC",
+"x_div": "Mouvement de la DIV",
+"x_pow": "Ignore",
+"x_art": "Contre-batterie en retour",
+"x_repere": "Frappe en salve",
+"x_engENI": "Frappe la DIV+ ENI",
+"x_recule": "Ajoute des flux LOG",
+"x_percer": "Engage la DIV+ pour percer",
+"x_coupe": "Retrace le réseau",
+"x_jauge": "Joue plus prudent",
+"x_dsa": "Déplace le grand pion couvert",
+"x_echec": "Change de cible",
+"x_finMene": "Continue pareil",
+"x_finMen": "Assaut de la BP et Maquis",
+"e_danger": "Rarement",
+"e_pow": "Rarement",
+"e_sansFlux": "Rarement",
+"e_memeFus": "Parfois",
+"e_vieux": "Parfois",
+"e_bascule": "Parfois",
+"e_divLoin": "Rarement",
+"b_sead": "Parfois",
+"b_cb": "Souvent",
+"b_garde": "Souvent",
+"remarques": "Vise d'abord le deep",
+"depRetouche": "w3"
+},
+{
+"id": "ardant",
+"rang": 7,
+"nom": "Ardant du Picq",
+"desc": "Vous pourrez sans doute trouver un amphi pour raconter votre défaite à l'issue.",
+"niveau": 4,
+"camps": "Bleu",
+"cache": "Oui",
+"msgDep": "Camp : Bleu\nPC : Dnipro 0\nBSC : Kropyvnytskyï 0\nPOW : Mykolaïv 0\nDIV+ : Lysanka 0\nINF : Kharkiv Bleu 1, Izioum Bleu 1, Donetsk Bleu 1, Krementchouk 3, Kryvyï Rih 2\nMP : Dnipro 1, Donetsk Bleu 2, Kropyvnytskyï 1, Lysanka 1, Garde POW\nCIMIC : Tcherkassy 2, Tcherkassy 3, Donetsk Bleu 3, Kharkiv Bleu 2, Izioum Bleu 2\nDSA : Poltava 2, Zaporijjia 2, Lysanka 2, Kropyvnytskyï 2, Dnipro 2\nGEN : Lysanka 3, Kropyvnytskyï 3, Dnipro 3\nART CA : Krementchouk 1, Kryvyï Rih 1, Tcherkassy 1\nEW : Kharkiv Bleu 3, Izioum Bleu 3, Zaporijjia 1\nGAM : Krementchouk 2\nRéseau LOG : U2 3, B2 2, BK 2, U3 3, B7 1, U4 2, B13 2, B14 2, BD 2, B9 2, B10 2, BI 2, U1 5",
+"msgT1": "ORDRES BLEU | TOUR 1 | PC : 100 % | 5 carte(s) | Prêt à envoyer || 1;Effort COM;effet T5;retour T6;Izioum;;; || 2;Renseignement SAT;effet T2;retour T4;Valouïki;;; || 3;OSINT;effet T5;retour T6;Novoaïdar;;; || 4;Ecoute GE;effet T3;retour T5;Kharkiv;;; || 5;Travaux du GEN;effet T4;retour T5;;;;Fortifier Lysanka 0 · Fortifier Kropyvnytskyï 0 · Fortifier Dnipro 0",
+"agress": 2,
+"prudence": 4,
+"imprevu": 0,
+"constance": "S'adapte beaucoup",
+"effort": "Deux fuseaux",
+"fuseau": "Le plus menacé",
+"mobilite": "Mobile",
+"ruse": 3,
+"critique": 0.9,
+"raisonne": "Anticipe l'ENI",
+"calcule": "Souvent",
+"imperatifs": "Toujours",
+"enchaine": "Toujours",
+"reserve": "Toujours le maximum",
+"memoire": "3 tours",
+"tourBlanc": 0,
+"r_percer": 5,
+"r_tenir": 1,
+"r_div": 8,
+"r_bsc": 9,
+"r_pc": 10,
+"r_cb": 6,
+"r_rens": 7,
+"r_proteger": 3,
+"r_log": 2,
+"r_env": 11,
+"r_accu": 4,
+"posPC": "Près du front",
+"posBSC": "Milieu du Rear",
+"posDIV": "Région d'accès d'un fuseau",
+"gardePOW": 2,
+"gardeMP": "Oui",
+"dsa": "PC",
+"posART": "En retrait",
+"reseau": "Équilibrée",
+"fortifie": "Dès le tour 1",
+"seuilDiv": 60,
+"fusDiv": "Celui où il gagne",
+"salve": "Sur une cible de valeur",
+"rensAvant": "Souvent",
+"rensMin": 1,
+"scoot": "Souvent",
+"assautBP": "En dernier recours",
+"maquis": "Sur un grand pion repéré",
+"effortLog": "Dès que la BSC baisse",
+"appuiClose": "Chaque tour",
+"justice": "Dès que possible",
+"x_pc": "Bascule de PC",
+"x_bsc": "Bascule BSC",
+"x_div": "Mouvement de la DIV",
+"x_pow": "Ignore",
+"x_art": "Renseigne l'ART ENI",
+"x_repere": "Frappe tout de suite",
+"x_engENI": "Renforce ce fuseau",
+"x_recule": "Renforce ce fuseau",
+"x_percer": "Pousse ce fuseau",
+"x_coupe": "Ouverture d'itinéraire",
+"x_jauge": "Joue plus prudent",
+"x_dsa": "Déplace le grand pion couvert",
+"x_echec": "Change de carte",
+"x_finMene": "Continue pareil",
+"x_finMen": "Continue pareil",
+"e_danger": "Rarement",
+"e_pow": "Jamais",
+"e_sansFlux": "Jamais",
+"e_memeFus": "Rarement",
+"e_vieux": "Rarement",
+"e_bascule": "Souvent",
+"e_divLoin": "Jamais",
+"b_sead": "Souvent",
+"b_cb": "Souvent",
+"b_garde": "Souvent",
+"remarques": "Très intelligent",
+"depRetouche": "infFus"
+},
+{
+"id": "yako",
+"rang": 8,
+"nom": "Tonton Yako",
+"desc": "Vous allez voir que la tactique n'est pas que théorique.",
+"niveau": 4,
+"camps": "Bleu",
+"cache": "Oui",
+"msgDep": "Camp : Bleu\nPC : Kropyvnytskyï 0\nBSC : Kryvyï Rih 0\nPOW : Mykolaïv 0\nDIV+ : Lysanka 0\nINF : Poltava 2, Krementchouk 1, Izioum Bleu 3, Donetsk Bleu 3, Dnipro 2\nMP : Lysanka 2, Garde POW, Kropyvnytskyï 2, Kryvyï Rih 2, Poltava 1\nCIMIC : Kharkiv Bleu 1, Izioum Bleu 1, Donetsk Bleu 1, Dnipro 1, Tcherkassy 1\nDSA : Lysanka 1, Kropyvnytskyï 1, Kryvyï Rih 1, Tcherkassy 3, Kharkiv Bleu 3\nGEN : Lysanka 3, Kropyvnytskyï 3, Kryvyï Rih 3\nART CA : Krementchouk 2, Tcherkassy 2, Mykolaïv 2\nEW : Kharkiv Bleu 2, Izioum Bleu 2, Donetsk Bleu 2\nGAM : Dnipro 3\nRéseau LOG : U1 5, U2 2, B2 2, BK 2, U4 3, B13 3, B14 2, BD 2, U3 3, B9 2, B10 2, BI 2",
+"msgT1": "ORDRES BLEU | TOUR 1 | PC : 100 % | 5 carte(s) | Prêt à envoyer || 1;Travaux du GEN;effet T4;retour T5;;;;Fortifier Lysanka 0 · Fortifier Kropyvnytskyï 0 · Fortifier Kryvyï Rih 0 || 2;Renseignement SAT;effet T2;retour T4;Kalatch;;; || 3;Renseignement drone;effet T2;retour T4;Vechenskaïa;;; || 4;OSINT;effet T5;retour T6;Sovetskaya;;; || 5;Ecoute GE;effet T3;retour T5;Izioum;;;",
+"agress": 3,
+"prudence": 4,
+"imprevu": 0,
+"constance": "S'adapte beaucoup",
+"effort": "Deux fuseaux",
+"fuseau": "Izioum (centre)",
+"mobilite": "Très mobile",
+"ruse": 4,
+"critique": 0.9,
+"raisonne": "Anticipe l'ENI",
+"calcule": "Souvent",
+"imperatifs": "Toujours",
+"enchaine": "Toujours",
+"reserve": "Toujours le maximum",
+"memoire": "5 tours",
+"tourBlanc": 0,
+"r_percer": 2,
+"r_tenir": 4,
+"r_div": 9,
+"r_bsc": 11,
+"r_pc": 10,
+"r_cb": 7,
+"r_rens": 6,
+"r_proteger": 3,
+"r_log": 5,
+"r_env": 8,
+"r_accu": 1,
+"posPC": "Loin du front",
+"posBSC": "Milieu du Rear",
+"posDIV": "Loin du front",
+"gardePOW": 1,
+"gardeMP": "Oui",
+"dsa": "Les ART CA",
+"posART": "En retrait",
+"reseau": "Équilibrée",
+"fortifie": "Dès le tour 1",
+"seuilDiv": "Jamais sauf pour percer",
+"fusDiv": "Celui où il gagne",
+"salve": "Sur une cible de valeur",
+"rensAvant": "Souvent",
+"rensMin": 1,
+"scoot": "Souvent",
+"assautBP": "En dernier recours",
+"maquis": "Sur un grand pion repéré",
+"effortLog": "Dès que la BSC baisse",
+"appuiClose": "Quand un fuseau recule",
+"justice": "Dès que possible",
+"x_pc": "Bascule de PC",
+"x_bsc": "Bascule BSC",
+"x_div": "Mouvement de la DIV",
+"x_pow": "Ignore",
+"x_art": "Renseigne l'ART ENI",
+"x_repere": "Confirme puis frappe",
+"x_engENI": "Frappe la DIV+ ENI",
+"x_recule": "Ajoute des flux LOG",
+"x_percer": "Engage la DIV+ pour percer",
+"x_coupe": "Retrace le réseau",
+"x_jauge": "Joue plus prudent",
+"x_dsa": "Déplace le grand pion couvert",
+"x_echec": "Change de carte",
+"x_finMene": "Continue pareil",
+"x_finMen": "Continue pareil",
+"e_danger": "Rarement",
+"e_pow": "Jamais",
+"e_sansFlux": "Jamais",
+"e_memeFus": "Rarement",
+"e_vieux": "Rarement",
+"e_bascule": "Souvent",
+"e_divLoin": "Jamais",
+"b_sead": "Souvent",
+"b_cb": "Souvent",
+"b_garde": "Souvent",
+"remarques": "Modéré et très intelligent",
+"depRetouche": "cimic+ew"
+},
+{
+"id": "beaufre",
+"rang": 9,
+"nom": "Général Beaufre",
+"desc": "Vous irez rapidement de l'introduction à la conclusion de votre stratégie.",
+"niveau": 4,
+"camps": "Bleu",
+"cache": "Oui",
+"msgDep": "Camp : Bleu\nPC : Kropyvnytskyï 0\nBSC : Kryvyï Rih 0\nPOW : Tcherkassy 0\nDIV+ : Lysanka 0\nINF : Bobrynets 1, Tcherkassy 2, Kryvyï Rih 2, Zaporijjia 2, Mykolaïv 2\nMP : Kharkiv Bleu 3, Izioum Bleu 3, Donetsk Bleu 3, Lysanka 1, Poltava 1\nCIMIC : Kharkiv Bleu 1, Izioum Bleu 1, Donetsk Bleu 1, Poltava 3, Krementchouk 2\nDSA : Kropyvnytskyï 2, Dnipro 2, Lysanka 2, Tcherkassy 1, Tcherkassy 3\nGEN : Dnipro 3, Kropyvnytskyï 3, Lysanka 3\nART CA : Poltava 2, Krementchouk 1, Zaporijjia 1\nEW : Kharkiv Bleu 2, Izioum Bleu 2, Donetsk Bleu 2\nGAM : Kryvyï Rih 1\nRéseau LOG : U3 3, B9 3, B10 3, U4 2, B13 2, B14 2, BD 2, BI 2, U2 2, B2 2, BK 2, U1 5",
+"msgT1": "ORDRES BLEU | TOUR 1 | PC : 100 % | 5 carte(s) | Prêt à envoyer || 1;Travaux du GEN;effet T4;retour T5;;;;Fortifier Kryvyï Rih 0 · Fortifier Kropyvnytskyï 0 · Fortifier Lysanka 0 || 2;Frappe en profondeur;effet T2;retour T4;;Kharkiv Rouge ART Nord;Poltava 2; || 3;Frappe en profondeur;effet T2;retour T4;;Kharkiv Rouge ART Nord;Krementchouk 1; || 4;Frappe en profondeur;effet T2;retour T4;;Kharkiv Rouge ART Nord;Zaporijjia 1; || 5;Ordre à la B.ART;effet T3;retour T4;;;;ART CA 1 -> Poltava 3 · ART CA 2 -> Krementchouk 3 · ART CA 3 -> Zaporijjia 3 || 6;Renseignement SAT;effet T2;retour T4;Kalatch;;; || 7;OSINT;effet T5;retour T6;Vechenskaïa;;;",
+"agress": 4,
+"prudence": 3,
+"imprevu": 0,
+"constance": "S'adapte un peu",
+"effort": "Un seul fuseau",
+"fuseau": "Le plus favorable",
+"mobilite": "Mobile",
+"ruse": 2,
+"critique": 0.9,
+"raisonne": "Anticipe l'ENI",
+"calcule": "Souvent",
+"imperatifs": "Toujours",
+"enchaine": "Toujours",
+"reserve": "Toujours le maximum",
+"memoire": "3 tours",
+"tourBlanc": 0,
+"r_percer": 1,
+"r_tenir": 4,
+"r_div": 9,
+"r_bsc": 10,
+"r_pc": 8,
+"r_cb": 6,
+"r_rens": 7,
+"r_proteger": 3,
+"r_log": 5,
+"r_env": 11,
+"r_accu": 2,
+"posPC": "Loin du front",
+"posBSC": "Milieu du Rear",
+"posDIV": "Milieu du Rear",
+"gardePOW": 2,
+"gardeMP": "Oui",
+"dsa": "DIV+",
+"posART": "En retrait",
+"reseau": "Équilibrée",
+"fortifie": "Dès le tour 1",
+"seuilDiv": 90,
+"fusDiv": "Celui où il gagne",
+"salve": "Toujours",
+"rensAvant": "Souvent",
+"rensMin": 1,
+"scoot": "Souvent",
+"assautBP": "En dernier recours",
+"maquis": "Tôt dans la partie",
+"effortLog": "Dès que la BSC baisse",
+"appuiClose": "Chaque tour",
+"justice": "Dès que possible",
+"x_pc": "Bascule de PC",
+"x_bsc": "Bascule BSC",
+"x_div": "Mouvement de la DIV",
+"x_pow": "Ignore",
+"x_art": "Contre-batterie en retour",
+"x_repere": "Frappe en salve",
+"x_engENI": "Renforce ce fuseau",
+"x_recule": "Ajoute des flux LOG",
+"x_percer": "Engage la DIV+ pour percer",
+"x_coupe": "Retrace le réseau",
+"x_jauge": "Va au plus offensif",
+"x_dsa": "Déplace le grand pion couvert",
+"x_echec": "Change de carte",
+"x_finMene": "Accélère",
+"x_finMen": "Tout pour percer",
+"e_danger": "Rarement",
+"e_pow": "Jamais",
+"e_sansFlux": "Jamais",
+"e_memeFus": "Rarement",
+"e_vieux": "Rarement",
+"e_bascule": "Souvent",
+"e_divLoin": "Jamais",
+"b_sead": "Souvent",
+"b_cb": "Souvent",
+"b_garde": "Souvent",
+"remarques": "Agressif et très intelligent",
+"depRetouche": "fus+bscKR"
+},
+{
+"id": "foch",
+"rang": 10,
+"nom": "Maréchal Foch",
+"desc": "En principes, vous allez perdre.",
+"niveau": 5,
+"camps": "Bleu",
+"cache": "Non",
+"msgDep": "Camp : Bleu\nPC : Kropyvnytskyï 0\nBSC : Kryvyï Rih 0\nPOW : Mykolaïv 0\nDIV+ : Bobrynets 0\nINF : Lysanka 3, Poltava 2, Dnipro 1, Zaporijjia 1, Krementchouk 1\nMP : Kharkiv Bleu 3, Izioum Bleu 3, Donetsk Bleu 3, Garde POW, Poltava 1\nCIMIC : Kharkiv Bleu 1, Izioum Bleu 1, Donetsk Bleu 1, Poltava 3, Tcherkassy 2\nDSA : Lysanka 2, Kropyvnytskyï 2, Kryvyï Rih 2, Tcherkassy 1, Kropyvnytskyï 3\nGEN : Lysanka 1, Kropyvnytskyï 1, Kryvyï Rih 1\nART CA : Tcherkassy 3, Zaporijjia 2, Dnipro 2\nEW : Kharkiv Bleu 2, Izioum Bleu 2, Donetsk Bleu 2\nGAM : Bobrynets 1\nRéseau LOG : U2 2, B2 2, BK 2, U3 5, U4 5, B13 5, B14 2, BD 2, B10 2, BI 2, U1 1",
+"msgT1": "ORDRES BLEU | TOUR 1 | PC : 100 % | 5 carte(s) | Prêt à envoyer || 1;SEAD;effet T3;retour T8;Donetsk;;; || 2;Travaux du GEN;effet T4;retour T5;;;;Fortifier Kryvyï Rih 0 · Fortifier Kropyvnytskyï 0 · Fortifier Bobrynets 0 || 3;Effort LOG;effet T4;retour T8;DIV+;;; || 4;Renseignement SAT;effet T2;retour T4;Morozovsk;;; || 5;OSINT;effet T5;retour T6;Sovetskaya;;;",
+"agress": 3,
+"prudence": 4,
+"imprevu": 0,
+"constance": "S'adapte beaucoup",
+"effort": "Un seul fuseau",
+"fuseau": "Donetsk (sud)",
+"mobilite": "Mobile",
+"ruse": 3,
+"critique": 1,
+"raisonne": "Anticipe l'ENI",
+"calcule": "Toujours",
+"imperatifs": "Toujours",
+"enchaine": "Toujours",
+"reserve": "Toujours le maximum",
+"memoire": "5 tours",
+"tourBlanc": 0,
+"r_percer": null,
+"r_tenir": null,
+"r_div": null,
+"r_bsc": null,
+"r_pc": null,
+"r_cb": null,
+"r_rens": null,
+"r_proteger": null,
+"r_log": null,
+"r_env": null,
+"r_accu": null,
+"posPC": "Loin du front",
+"posBSC": "Milieu du Rear",
+"posDIV": "Loin du front",
+"gardePOW": 2,
+"gardeMP": "Oui",
+"dsa": "Réparties",
+"posART": "En retrait",
+"reseau": "Équilibrée",
+"fortifie": "Dès le tour 1",
+"seuilDiv": "Jamais sauf pour percer",
+"fusDiv": "Celui où il gagne",
+"salve": "Sur une cible de valeur",
+"rensAvant": "Souvent",
+"rensMin": 1,
+"scoot": "Souvent",
+"assautBP": "En dernier recours",
+"maquis": "Tôt dans la partie",
+"effortLog": "Dès que la BSC baisse",
+"appuiClose": "Chaque tour",
+"justice": "Dès que possible",
+"x_pc": "Bascule de PC",
+"x_bsc": "Bascule BSC",
+"x_div": "Mouvement de la DIV",
+"x_pow": "Ignore",
+"x_art": "Contre-batterie en retour",
+"x_repere": "Frappe en salve",
+"x_engENI": "Frappe la DIV+ ENI",
+"x_recule": "Ajoute des flux LOG",
+"x_percer": "Engage la DIV+ pour percer",
+"x_coupe": "Retrace le réseau",
+"x_jauge": "Joue plus prudent",
+"x_dsa": "Déplace le grand pion couvert",
+"x_echec": "Change de carte",
+"x_finMene": "Continue pareil",
+"x_finMen": "Assaut de la BP et Maquis",
+"e_danger": "Jamais",
+"e_pow": "Jamais",
+"e_sansFlux": "Jamais",
+"e_memeFus": "Jamais",
+"e_vieux": "Jamais",
+"e_bascule": "Toujours",
+"e_divLoin": "Jamais",
+"b_sead": "Toujours",
+"b_cb": "Souvent",
+"b_garde": "Souvent",
+"remarques": "Le meilleur possible",
+"depRetouche": "fus+div"
 }
 ];
 
@@ -849,6 +1691,14 @@ function RaspBotCore(R, PROFILS) {
   const ACC = { B: { Kharkiv: 'Poltava', Izioum: 'Dnipro', Donetsk: 'Zaporijjia' }, R: { Kharkiv: 'Valouïki', Izioum: 'Novoaïdar', Donetsk: 'Louhansk' } };
   const PIV = { Kharkiv: [['Izioum', 'Nord'], ['Izioum', 'Sud']], Izioum: [['Kharkiv', 'Sud'], ['Donetsk', 'Nord']], Donetsk: [['Izioum', 'Sud'], ['Izioum', 'Nord']] };
   const CAMPN = { B: 'BLEU', R: 'ROUGE' };
+  // 10 nov. : le bot joue le camp de son profil (Bleu pour les bots français, Rouge pour les bots russes)
+  const campOf = p => /bleu/i.test(String(p.camps || '')) && !/deux/i.test(String(p.camps || '')) ? 'B' : 'R';
+  const EMB = { B: ['B9', 'B10', 'B14', 'B2'], R: ['R11', 'R10', 'R13', 'R1'] };   // corridors ENI visés par défaut par une Embuscade
+  const GUESS = {   // où chercher les grands pions ENI quand on ne sait rien (régions du camp visé)
+    B: { 'DIV+': ['Lysanka', 'Dnipro', 'Poltava', 'Zaporijjia', 'Mykolaïv', 'Tcherkassy'], BSC: ['Bobrynets', 'Mykolaïv', 'Tcherkassy', 'Lysanka', 'Kryvyï Rih'],
+      PC: ['Kropyvnytskyï', 'Krementchouk', 'Kryvyï Rih', 'Tcherkassy'], 'ART CA': ['Dnipro', 'Kryvyï Rih', 'Poltava', 'Krementchouk'], POW: ['Mykolaïv', 'Bobrynets', 'Lysanka'] },
+    R: { 'DIV+': ['Kalatch', 'Novoaïdar', 'Valouïki', 'Louhansk', 'Morozovsk', 'Vechenskaïa'], BSC: ['Sovetskaya', 'Vechenskaïa', 'Morozovsk', 'Kalatch', 'Milerovo'],
+      PC: ['Pavlosk', 'Bogoutchar', 'Milerovo', 'Vechenskaïa'], 'ART CA': ['Novoaïdar', 'Milerovo', 'Valouïki', 'Bogoutchar'], POW: ['Morozovsk', 'Milerovo', 'Bogoutchar'] } };
   const LOGT = R.LOG_TOTAL || 30, PER = R.LOG_PER_COR || 5;
   const BREAK = R.BREAK || 50;
   function rng(str) { let h = 2166136261; for (const ch of str) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } let x = h >>> 0 || 1; return () => { x ^= x << 13; x >>>= 0; x ^= x >> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; }; }
@@ -938,7 +1788,7 @@ function RaspBotCore(R, PROFILS) {
     q.ranks = ranks.every(([, r]) => isFinite(r)) ? ranks.sort((a, b) => a[1] - b[1]).map(x => x[0]) : null;   // null : choix libre à chaque tour (Joukov)
     if (!q.ranks) { q.nFus = 2; q.fuseau = 'Le plus favorable'; }   // choix libre (Joukov) : effort sur les deux fuseaux les plus favorables
     q.seuil = p.seuilDiv === 'Jamais sauf pour percer' ? Infinity : num(p.seuilDiv, 50);
-    q.rensMin = num(p.rensMin, 0); q.garde = num(p.gardePOW, 1); q.gardeMP = p.gardeMP === 'Oui';   // renforce aussi la garde du POW avec des MP (5 meilleurs bots)
+    q.c = p.campBot || campOf(p); q.rensMin = num(p.rensMin, 0); q.garde = num(p.gardePOW, 1); q.gardeMP = p.gardeMP === 'Oui';   // renforce aussi la garde du POW avec des MP (5 meilleurs bots)
     for (const k of ['rensAvant', 'scoot', 'e_danger', 'e_pow', 'e_sansFlux', 'e_memeFus', 'e_vieux', 'e_bascule', 'e_divLoin', 'b_sead', 'b_cb', 'b_garde']) q['p_' + k] = fq(p[k]);
     return q;
   }
@@ -954,7 +1804,7 @@ function RaspBotCore(R, PROFILS) {
   }
 
   function makeAgent(P, mem, st, T) {
-    const c = 'R', en = 'B';
+    const c = P.c, en = c === 'R' ? 'B' : 'R';
     const A = Object.assign({ c, en, P, T, L: [], st }, clone(mem));
     A.rnd = rng(mem.seed + '|T' + T);
     A.p = x => A.rnd() < x;
@@ -1006,8 +1856,7 @@ function RaspBotCore(R, PROFILS) {
     A.gamOk = () => { const g = A.mine('GAM')[0]; if (!g) return false; if (!A.p(P.imp)) return true; return R.zoneOfSlot(g.slot) && A.act(g) && A.sup(g); };
     A.ewIn = f => A.mine('EW').find(u => (R.zoneOfSlot(u.slot) || {}).fus === f && (!A.p(P.imp) || (A.act(u) && A.sup(u))));
     A.artRear = () => A.mine('ART CA').filter(u => A.act(u) && A.sup(u) && A.reg(u.slot));
-    A.guess0 = t => ({ 'DIV+': ['Lysanka', 'Dnipro', 'Poltava', 'Zaporijjia', 'Mykolaïv', 'Tcherkassy'], BSC: ['Bobrynets', 'Mykolaïv', 'Tcherkassy', 'Lysanka', 'Kryvyï Rih'],
-      PC: ['Kropyvnytskyï', 'Krementchouk', 'Kryvyï Rih', 'Tcherkassy'], 'ART CA': ['Dnipro', 'Kryvyï Rih', 'Poltava', 'Krementchouk'], POW: ['Mykolaïv', 'Bobrynets', 'Lysanka'] })[t] || R.REG[en];
+    A.guess0 = t => GUESS[en][t] || R.REG[en];
     A.guess = t => { const base = A.guess0(t); if (P.iq < 1) return base;
       const other = ['PC', 'BSC', 'DIV+'].filter(x => x !== t).map(x => A.known(x)).filter(k => k && T - k.day <= 6).map(k => A.reg(k.slot));
       const ok = r => !(A.cleared[r] >= T - 5) && !other.includes(r);
@@ -1250,7 +2099,7 @@ function RaspBotCore(R, PROFILS) {
     cb: A => {
       if (A.p(A.P.p_b_cb)) A.counterArt();
       const order = [A.worst(), ...FUS.filter(x => x !== A.worst())];
-      const watched = FUS.filter(f => Object.values(A.st.cb).some(m => m.camp === 'R' && m.zone.fus === f)).length;
+      const watched = FUS.filter(f => Object.values(A.st.cb).some(m => m.camp === A.c && m.zone.fus === f)).length;
       if (watched < 2) for (const f of order.slice(0, 2)) if (A.cbOn(f)) break;
       A.fepClose(A.focus);
     },
@@ -1273,19 +2122,19 @@ function RaspBotCore(R, PROFILS) {
       const P = A.P;
       if (A.M.relogAt && A.T >= A.M.relogAt) { if (A.net(A.tpl())) A.M.relogAt = null; }
       else if (A.T % 4 === 0 || A.M.focusChanged) { if (A.net(A.tpl())) A.M.focusChanged = false; }
-      const b = A.st.bscg.R;
+      const b = A.st.bscg[A.c];
       if ((P.effortLog === 'Dès que la BSC baisse' && b < 100) || (P.effortLog === 'Seulement sous 50 %' && b < 50)) A.add('Effort LOG', 'BSC');
-      else if (A.st.pcg.R <= 60 && P.effortLog !== 'Jamais') A.add('Effort LOG', 'PC');
+      else if (A.st.pcg[A.c] <= 60 && P.effortLog !== 'Jamais') A.add('Effort LOG', 'PC');
     },
     env: A => {
       const P = A.P;
       if (P.maquis === 'Tôt dans la partie' && A.T <= 10) { const k = A.known('BSC') || A.known('PC'); A.add('Maquis de partisans', k ? A.reg(k.slot) : A.guess('BSC')[0]); }
       if (A.p(P.ruse / 6)) { const k = A.known('PC'); A.add('Intox L2I', k ? A.reg(k.slot) : A.pick(A.guess('DIV+'))); }
       if (A.p(P.ruse / 8)) { for (const f of ['Kharkiv', 'Donetsk']) { const sl = `${f} ${A.X} 3`; if (!R.unitAt(A.st, sl) && A.ewIn(f)) { A.add('Déception GE', '', sl); break; } } }
-      if (P.justice === 'Dès que possible' && A.st.pow.R >= 3) A.add('Transfert à la justice');
+      if (P.justice === 'Dès que possible' && A.st.pow[A.c] >= 3) A.add('Transfert à la justice');
     },
     accu: A => {
-      if (A.st.divp.R < 95 && A.P.effortLog !== 'Jamais') A.add('Effort LOG', 'DIV+');
+      if (A.st.divp[A.c] < 95 && A.P.effortLog !== 'Jamais') A.add('Effort LOG', 'DIV+');
     },
   };
 
@@ -1299,7 +2148,7 @@ function RaspBotCore(R, PROFILS) {
     sc.bsc = A.known('BSC') ? 80 : 40; sc.pc = A.known('PC') ? 75 : 30;
     sc.cb = A.knownAll('ART CA').some(k => A.T - k.day <= 1) ? 70 : 38;
     sc.rens = ['BSC', 'PC', 'DIV+'].filter(t => !A.known(t)).length * (A.T >= 15 ? 8 : 15);
-    sc.proteger = A.M.wasHit ? 65 : 25; sc.log = A.st.bscg.R < 80 || A.M.relogAt ? 66 : 32;
+    sc.proteger = A.M.wasHit ? 65 : 25; sc.log = A.st.bscg[A.c] < 80 || A.M.relogAt ? 66 : 32;
     sc.env = 20 + (A.T <= 8 ? 10 : 0); sc.accu = A.T < 15 ? 45 : 20;
     return STRATS.slice().sort((a, b) => sc[b] - sc[a]);
   }
@@ -1331,7 +2180,7 @@ function RaspBotCore(R, PROFILS) {
     if (ev.powNeut) { if (P.x_pow === 'Renforce la garde') A.M.moreGuard = true; else if (P.x_pow === 'Riposte') A.retaliate(); }
     if (ev.artNeut) {
       if (P.x_art === 'Contre-batterie en retour') A.counterArt();
-      else if (P.x_art === 'Déplace les autres ART CA') { const moves = {}; for (const u of A.mine('ART CA').filter(u => A.act(u) && A.reg(u.slot))) { const r = R.REG.R.find(x => x !== A.reg(u.slot) && A.freeSlot(x) && !A.bigRegs().includes(x)); if (r) { const s = A.freeSlot(r); moves[u.id] = s; A.reserved.add(s); } } if (Object.keys(moves).length) A.moveUnits('Ordre à la B.ART', 'ART CA', moves); }
+      else if (P.x_art === 'Déplace les autres ART CA') { const moves = {}; for (const u of A.mine('ART CA').filter(u => A.act(u) && A.reg(u.slot))) { const r = R.REG[A.c].find(x => x !== A.reg(u.slot) && A.freeSlot(x) && !A.bigRegs().includes(x)); if (r) { const s = A.freeSlot(r); moves[u.id] = s; A.reserved.add(s); } } if (Object.keys(moves).length) A.moveUnits('Ordre à la B.ART', 'ART CA', moves); }
       else if (P.x_art === "Renseigne l'ART ENI") { const ka = A.knownAll('ART CA').sort((a, b) => b.day - a.day)[0]; A.intelOn(ka ? A.reg(ka.slot) || A.guess('ART CA')[0] : A.guess('ART CA')[0], 'ART CA'); }
     }
     if (ev.repere && ev.repere.length && P.x_repere !== 'Ignore') {
@@ -1344,8 +2193,8 @@ function RaspBotCore(R, PROFILS) {
       const f = e.fus;
       if (P.x_engENI === 'Renforce ce fuseau') { A.defendFus(f, 99, 4); A.M.reinforce = { f, until: e.effet }; A.net(A.tpl()); }
       else if (P.x_engENI === 'Engage sa propre DIV+ ailleurs') A.divTry({ f: FUS.filter(x => x !== f).sort((a, b) => A.est[b] - A.est[a])[0], force: A.dp() >= 15 });
-      else if (P.x_engENI === 'Frappe la DIV+ ENI') { const kd = A.known('DIV+'); const zr = ACC.B[f]; if (kd) A.strikeBig(kd, 'now'); else { A.intelOn(zr, 'DIV+'); A.add('Frappe drone', '', zr + ' 0'); A.salvo([zr + ' 0'], A.salvoN(true)); } }
-      if (A.p(P.p_e_memeFus) && R.distance('R', A.divR(), ACC.R[f]) <= 1) A.engage(f);   // mauvais choix : contre-engagement dans le même fuseau
+      else if (P.x_engENI === 'Frappe la DIV+ ENI') { const kd = A.known('DIV+'); const zr = ACC[A.en][f]; if (kd) A.strikeBig(kd, 'now'); else { A.intelOn(zr, 'DIV+'); A.add('Frappe drone', '', zr + ' 0'); A.salvo([zr + ' 0'], A.salvoN(true)); } }
+      if (A.p(P.p_e_memeFus) && R.distance(A.c, A.divR(), ACC[A.c][f]) <= 1) A.engage(f);   // mauvais choix : contre-engagement dans le même fuseau
     }
     if (e && e.effet < T) A.M.engSeen = 0;
     if (ev.recule && ev.recule.length) {
@@ -1362,10 +2211,10 @@ function RaspBotCore(R, PROFILS) {
     }
     if (ev.cuts && ev.cuts.length) {
       if (P.x_coupe === 'Retrace le réseau') A.net(A.tpl());
-      else if (P.x_coupe === "Ouverture d'itinéraire") { for (const k of ev.cuts) { const regs = R.COR.R[k].filter(r => r && !r.startsWith('F:')); const g = A.mine('GEN').find(u => A.act(u) && regs.includes(A.reg(u.slot))); if (g && A.add("Ouverture d'itinéraire", '', g.slot)) break; } }
-      else if (P.x_coupe === 'Riposte') { const seen = Object.keys(A.seenNet); A.add('Embuscade', seen.length ? A.pick(seen) : A.pick(['B9', 'B10', 'B14', 'B2'])); }
+      else if (P.x_coupe === "Ouverture d'itinéraire") { for (const k of ev.cuts) { const regs = R.COR[A.c][k].filter(r => r && !r.startsWith('F:')); const g = A.mine('GEN').find(u => A.act(u) && regs.includes(A.reg(u.slot))); if (g && A.add("Ouverture d'itinéraire", '', g.slot)) break; } }
+      else if (P.x_coupe === 'Riposte') { const seen = Object.keys(A.seenNet); A.add('Embuscade', seen.length ? A.pick(seen) : A.pick(EMB[A.en])); }
     }
-    if (st.pcg.R < 40) {
+    if (st.pcg[A.c] < 40) {
       if (P.x_jauge === 'Joue plus prudent') { A.P = Object.assign({}, A.P, { agress: Math.max(1, A.P.agress - 2) }); }
       else if (P.x_jauge === 'Va au plus offensif') { A.P = Object.assign({}, A.P, { agress: 5 }); A.M.noReserve = true; }
     }
@@ -1387,7 +2236,7 @@ function RaspBotCore(R, PROFILS) {
     const crit = FUS.filter(f => A.est[f] <= -(BREAK - 12)).sort((a, b) => A.est[a] - A.est[b])[0];
     if (crit && A.p(P.critique)) {
       A.defendFus(crit, 99, 4); A.M.reinforce = { f: crit, until: T + 4 };
-      if (A.dp() >= 15 && R.distance('R', A.divR(), ACC.R[crit]) <= 1) A.engage(crit);
+      if (A.dp() >= 15 && R.distance(A.c, A.divR(), ACC[A.c][crit]) <= 1) A.engage(crit);
       else A.prepare(crit);
     }
     // fin de partie
@@ -1401,7 +2250,7 @@ function RaspBotCore(R, PROFILS) {
     // choix libre (Joukov) : la victoire aux points se joue sur la somme des curseurs ; la DIV+ ne doit pas finir la partie inemployée
     if (!P.ranks && T >= 24 && T <= 27 && A.dp() >= 9 && !(A.M.engaged && T <= A.M.engaged + 3)) {
       const f = FUS.slice().sort((a, b) => (A.est[b] + A.casesIf(b)) - (A.est[a] + A.casesIf(a)))[0];
-      if (T >= 26 || A.divR() === ACC.R[f]) A.divTry({ f, force: true }); else A.prepare(f);
+      if (T >= 26 || A.divR() === ACC[A.c][f]) A.divTry({ f, force: true }); else A.prepare(f);
     }
     if (!P.ranks && T >= 26) for (const f of FUS.slice().sort((a, b) => Math.abs(A.est[a]) - Math.abs(A.est[b])).slice(0, 2)) A.burst(f, 2);
     // anticipation (raisonnement « Anticipe l'ENI »)
@@ -1415,8 +2264,8 @@ function RaspBotCore(R, PROFILS) {
   // entretien : garde du POW, transfert, réseau après mouvement de la DIV+, orientation des ART DIV
   function upkeep(A) {
     const st = A.st, P = A.P, T = A.T;
-    const guards = 1 + st.units.filter(u => u.camp === 'R' && !u.dead && u.slot === 'Garde POW').length;
-    const wantMore = st.pow.R >= 5 * guards - 2 || (A.M.moreGuard && guards < 4);
+    const guards = 1 + st.units.filter(u => u.camp === A.c && !u.dead && u.slot === 'Garde POW').length;
+    const wantMore = st.pow[A.c] >= 5 * guards - 2 || (A.M.moreGuard && guards < 4);
     if (wantMore && !(A.M.guardOrder >= T)) {
       const free = u => u.slot !== 'Garde POW' && A.act(u) && A.reg(u.slot) && !['BSC', 'DIV+', 'PC'].some(t => A.reg(A.big(t).slot) === A.reg(u.slot));
       const viaINF = () => {
@@ -1435,15 +2284,15 @@ function RaspBotCore(R, PROFILS) {
       };
       let ok = false;
       if (P.gardeMP) {
-        const g = st.units.filter(u => u.camp === 'R' && !u.dead && u.slot === 'Garde POW');
+        const g = st.units.filter(u => u.camp === A.c && !u.dead && u.slot === 'Garde POW');
         const mpG = g.filter(u => u.type === 'MP').length, infG = 1 + g.filter(u => u.type === 'INF').length;
         ok = mpG <= infG ? (viaMP() || viaINF()) : (viaINF() || viaMP());
       } else ok = viaINF();
       if (ok) { A.M.guardOrder = T + 2; A.M.moreGuard = false; }
     }
-    if (P.justice === 'Quand le POW est plein' && st.pow.R >= 5 * guards - 1) A.add('Transfert à la justice');
-    if (P.justice !== 'Jamais' && st.pow.R >= 10) A.add('Transfert à la justice');
-    if (A.M.moving && A.M.moving < T && A.M.moveF && A.divR() === ACC.R[A.M.moveF]) { if (A.net(A.tpl())) A.M.moveF = null; }
+    if (P.justice === 'Quand le POW est plein' && st.pow[A.c] >= 5 * guards - 1) A.add('Transfert à la justice');
+    if (P.justice !== 'Jamais' && st.pow[A.c] >= 10) A.add('Transfert à la justice');
+    if (A.M.moving && A.M.moving < T && A.M.moveF && A.divR() === ACC[A.c][A.M.moveF]) { if (A.net(A.tpl())) A.M.moveF = null; }
     if (P.assautBP === 'Dès que possible' && T >= 2) { const k = A.known('BSC') || A.known('PC') || A.known('DIV+'); A.add('Assaut de la BP', k ? A.reg(k.slot) : A.pick(A.guess('BSC'))); }
     if (P.assautBP === 'En dernier recours' && FUS.some(f => A.est[f] <= -(BREAK - 10))) { const k = A.known('DIV+') || A.known('BSC'); if (k) A.add('Assaut de la BP', A.reg(k.slot)); }
     A.orient();
@@ -1458,7 +2307,7 @@ function RaspBotCore(R, PROFILS) {
       () => A.add('Frappe drone', '', `${f} ${XE} ART ${T % 2 ? 'Sud' : 'Nord'}`),
       () => A.add('Effort COM', f), () => { if (A.ewIn(f)) A.add('Brouillage GE', f); },
       () => { const k = A.known('BSC') || A.known('PC') || A.known('DIV+'); if (k) A.strikeBig(k); },
-      () => { const seen = Object.entries(A.seenNet).sort((a, b) => b[1] - a[1]).map(x => x[0]).filter(k => R.COR.B[k] && R.COR.B[k][0]); A.add('Embuscade', seen[0] || A.nxt('emb', ['B9', 'B10', 'B14', 'B2'])); A.adv('emb'); },
+      () => { const seen = Object.entries(A.seenNet).sort((a, b) => b[1] - a[1]).map(x => x[0]).filter(k => R.COR[A.en][k] && R.COR[A.en][k][0]); A.add('Embuscade', seen[0] || A.nxt('emb', EMB[A.en])); A.adv('emb'); },
       () => { if (A.dp() < 95 && A.P.effortLog !== 'Jamais') A.add('Effort LOG', 'DIV+'); },
       () => { const g = A.nxt('fi', FUS); A.adv('fi'); if (A.ewIn(g)) A.add('Ecoute GE', g); },
       () => A.add('Renseignement SAT', A.pick(A.guess('BSC'))),
@@ -1472,23 +2321,23 @@ function RaspBotCore(R, PROFILS) {
     const st = A.st; const names = Object.keys(R.CARDS).filter(k => A.avail(k) && !A.L.some(l => l[0] === k) && !['Ordre à la B.LOG', 'Ordre à la DSA', 'Ordre à la B.ZARR', 'Ordre aux MP et CIMIC', 'Ordre à la B.GEN', 'Ordre à la B.ART', 'Travaux du GEN', 'Engagement de la DIV'].includes(k));
     for (let i = 0; i < 12; i++) {
       const card = A.pick(names); if (!card) return null; const C = R.CARDS[card];
-      const eReg = A.pick(R.REG.B), f = A.pick(FUS);
+      const eReg = A.pick(R.REG[A.en]), f = A.pick(FUS);
       let l;
       switch (C.tgt) {
         case 'fuseau': l = [card, f, '', '', '']; if (card === 'Renfort de feu') { const u = A.mine('ART DIV').find(x => A.act(x)); if (!u) continue; l[3] = u.slot; } break;
         case 'zoneEnemy': case 'regionEnemy': l = [card, eReg, '', '', '']; break;
         case 'slotEnemy': case 'slotEnemyDeep': l = [card, '', `${eReg} ${Math.floor(A.rnd() * 4)}`, '', '']; if (card === 'Frappe en profondeur') { const a = A.artRear()[0]; if (!a) continue; l[3] = a.slot; } break;
-        case 'corridorEnemy': l = [card, A.pick(Object.keys(R.COR.B)), '', '', '']; break;
+        case 'corridorEnemy': l = [card, A.pick(Object.keys(R.COR[A.en])), '', '', '']; break;
         case 'logEffort': l = [card, A.pick(['DIV+', 'PC', 'BSC']), '', '', '']; break;
         case 'none': l = [card, '', '', '', '']; break;
         default: continue;
       }
-      if (txtOf(A.T, [l]) && R.checkOrders(st, 'R', txtOf(A.T, [l]), null).lines.every(o => o.status === 'ok')) return l;
+      if (txtOf(A.T, [l], A.c) && R.checkOrders(st, A.c, txtOf(A.T, [l], A.c), null).lines.every(o => o.status === 'ok')) return l;
     }
     return null;
   }
 
-  const txtOf = (T, L) => [`ORDRES ${CAMPN.R} | TOUR ${T} | ${L.filter(l => !l[5]).length} carte(s) | Prêt à envoyer`, ...L.map((l, i) => `${i + 1};${l[0]};;;${l[1] || ''};${l[2] || ''};${l[3] || ''};${l[4] || ''}`)].join(' || ');
+  const txtOf = (T, L, c = 'R') => [`ORDRES ${CAMPN[c]} | TOUR ${T} | ${L.filter(l => !l[5]).length} carte(s) | Prêt à envoyer`, ...L.map((l, i) => `${i + 1};${l[0]};;;${l[1] || ''};${l[2] || ''};${l[3] || ''};${l[4] || ''}`)].join(' || ');
 
   // 10 nov. : ordres préparés du tour 1 — rien n'est encore repéré chez l'ENI, la Frappe en profondeur ne peut viser qu'une ART DIV ENI ; les autres tirs sont retirés
   const fepFilterT1 = msg => {
@@ -1512,7 +2361,7 @@ function RaspBotCore(R, PROFILS) {
       const A = makeAgent(P, mem, st, T);
       if (T === 1 && raw.msgT1) {
         const msg1 = fepFilterT1(raw.msgT1);   // 10 nov. : au tour 1, la Frappe en profondeur ne peut viser que les ART DIV ENI
-        const ch = R.checkOrders(st, 'R', msg1, null);
+        const ch = R.checkOrders(st, P.c, msg1, null);
         if (ch.lines.every(o => o.status !== 'ignored')) { saveMem(bot, A); return msg1; }
       }
       const blank = A.p(P.tourBlanc);
@@ -1543,17 +2392,17 @@ function RaspBotCore(R, PROFILS) {
         L = A.L;
       }
       // contrôle final : les lignes refusées par le moteur sont retirées
-      let txt = txtOf(T, L);
-      const ch = R.checkOrders(st, 'R', txt, null);
+      let txt = txtOf(T, L, P.c);
+      const ch = R.checkOrders(st, P.c, txt, null);
       const rk = rng(bot.mem.seed + '|chk' + T); const bad = new Set(ch.lines.filter(o => o.status === 'ignored' || o.status === 'cancel' || (o.status === 'void' && rk() < P.imp)).map(o => o.n));
-      if (bad.size) { L = L.filter((l, i) => !bad.has(i + 1)); txt = txtOf(T, L); }
+      if (bad.size) { L = L.filter((l, i) => !bad.has(i + 1)); txt = txtOf(T, L, P.c); }
       A.log = (A.log || []).concat([`T${T}: ${L.filter(l => !l[5]).map(l => l[0]).join(', ') || '(aucun ordre)'}`]).slice(-40);
       saveMem(bot, A);
       return txt;
     };
     // ce que le bot apprend de la résolution (son compte rendu, les combats, les curseurs)
     bot.observe = (out, before) => {
-      const st = out.state, T = before.turn, m = bot.mem, c = 'R', en = 'B';
+      const st = out.state, T = before.turn, m = bot.mem, c = bot.P.c, en = c === 'R' ? 'B' : 'R';
       const reg = s => { const z = R.zoneOfSlot(s); return z ? z.region || null : null; };
       const ev = { repere: [], fails: [], cuts: [], dsaDead: [] };
       for (const [slot, type, neut] of out.rep[c].seen) {
@@ -1583,7 +2432,7 @@ function RaspBotCore(R, PROFILS) {
         if (u.type === 'POW' && u.neut >= T && u.neut !== b.neut) ev.powNeut = true;
       }
       ev.cuts = Object.keys(st.cut).filter(k => R.COR[c][k] && st.cut[k] >= T + 1 && st.cut[k] !== before.cut[k] && (st.net[c][k] || 0) > 0);
-      const s = -1; ev.recule = [];
+      const s = c === 'B' ? 1 : -1; ev.recule = [];
       for (const f of FUS) {
         const rr = out.combat && out.combat[f]; if (!rr) continue;
         const v = rr.win === c ? 1 : rr.win === en ? -1 : 0; if (v < 0) { m.pressure[f] += 0.5; ev.recule.push(f); }
@@ -1600,7 +2449,7 @@ function RaspBotCore(R, PROFILS) {
     const keep = ['seed', 'focus', 'focusAt', 'M', 'plan', 'knownU', 'est', 'pressure', 'seenNet', 'enemyEngage', 'rot', 'wantDir', 'cleared', 'enDp', 'hitNow', 'hitCount', 'ev', 'fails', 'avoid', 'secure', 'log'];
     const m = {}; for (const k of keep) m[k] = A[k]; bot.mem = clone(m);
   }
-  const list = () => PROFILS.map(p => ({ id: p.id, nom: p.nom, desc: p.desc, niveau: +p.niveau, rang: p.rang, cache: p.cache === 'Oui', camps: p.camps }));
+  const list = () => PROFILS.map(p => ({ id: p.id, nom: p.nom, desc: p.desc, niveau: +p.niveau, rang: p.rang, cache: p.cache === 'Oui', camps: p.camps, camp: p.campBot || campOf(p) }));
   return { create, list, PROFILS, norm, netPlan, netTxt };
 }
 
