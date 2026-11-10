@@ -458,6 +458,7 @@ const RASP_BOT_PROFILS = [
 "posBSC": "Milieu du Rear",
 "posDIV": "Milieu du Rear",
 "gardePOW": 2,
+"gardeMP": "Oui",
 "dsa": "Réparties",
 "posART": "En retrait",
 "reseau": "Équilibrée",
@@ -541,6 +542,7 @@ const RASP_BOT_PROFILS = [
 "posBSC": "Milieu du Rear",
 "posDIV": "Région d'accès d'un fuseau",
 "gardePOW": 2,
+"gardeMP": "Oui",
 "dsa": "PC",
 "posART": "En retrait",
 "reseau": "Équilibrée",
@@ -624,6 +626,7 @@ const RASP_BOT_PROFILS = [
 "posBSC": "Milieu du Rear",
 "posDIV": "Loin du front",
 "gardePOW": 1,
+"gardeMP": "Oui",
 "dsa": "Les ART CA",
 "posART": "En retrait",
 "reseau": "Équilibrée",
@@ -707,6 +710,7 @@ const RASP_BOT_PROFILS = [
 "posBSC": "Milieu du Rear",
 "posDIV": "Milieu du Rear",
 "gardePOW": 2,
+"gardeMP": "Oui",
 "dsa": "DIV+",
 "posART": "En retrait",
 "reseau": "Équilibrée",
@@ -790,6 +794,7 @@ const RASP_BOT_PROFILS = [
 "posBSC": "Milieu du Rear",
 "posDIV": "Loin du front",
 "gardePOW": 2,
+"gardeMP": "Oui",
 "dsa": "Réparties",
 "posART": "En retrait",
 "reseau": "Équilibrée",
@@ -933,7 +938,7 @@ function RaspBotCore(R, PROFILS) {
     q.ranks = ranks.every(([, r]) => isFinite(r)) ? ranks.sort((a, b) => a[1] - b[1]).map(x => x[0]) : null;   // null : choix libre à chaque tour (Joukov)
     if (!q.ranks) { q.nFus = 2; q.fuseau = 'Le plus favorable'; }   // choix libre (Joukov) : effort sur les deux fuseaux les plus favorables
     q.seuil = p.seuilDiv === 'Jamais sauf pour percer' ? Infinity : num(p.seuilDiv, 50);
-    q.rensMin = num(p.rensMin, 0); q.garde = num(p.gardePOW, 1);
+    q.rensMin = num(p.rensMin, 0); q.garde = num(p.gardePOW, 1); q.gardeMP = p.gardeMP === 'Oui';   // renforce aussi la garde du POW avec des MP (5 meilleurs bots)
     for (const k of ['rensAvant', 'scoot', 'e_danger', 'e_pow', 'e_sansFlux', 'e_memeFus', 'e_vieux', 'e_bascule', 'e_divLoin', 'b_sead', 'b_cb', 'b_garde']) q['p_' + k] = fq(p[k]);
     return q;
   }
@@ -1413,9 +1418,28 @@ function RaspBotCore(R, PROFILS) {
     const guards = 1 + st.units.filter(u => u.camp === 'R' && !u.dead && u.slot === 'Garde POW').length;
     const wantMore = st.pow.R >= 5 * guards - 2 || (A.M.moreGuard && guards < 4);
     if (wantMore && !(A.M.guardOrder >= T)) {
-      const infs = A.mine('INF');
-      const cand = infs.find(u => u.slot !== 'Garde POW' && A.act(u) && A.reg(u.slot) && !['BSC', 'DIV+', 'PC'].some(t => A.reg(A.big(t).slot) === A.reg(u.slot))) || infs.find(u => u.slot === 'Réserve');
-      if (cand) { const disp = infs.map((u, i) => `INF ${i + 1} → ${u.id === cand.id ? 'Garde POW' : u.slot}`).join(' · '); if (A.add('Ordre à la B.ZARR', '', '', '', disp)) { A.M.guardOrder = T + 2; A.M.moreGuard = false; } }
+      const free = u => u.slot !== 'Garde POW' && A.act(u) && A.reg(u.slot) && !['BSC', 'DIV+', 'PC'].some(t => A.reg(A.big(t).slot) === A.reg(u.slot));
+      const viaINF = () => {
+        const infs = A.mine('INF');
+        const cand = infs.find(free) || infs.find(u => u.slot === 'Réserve');
+        if (!cand) return false;
+        const disp = infs.map((u, i) => `INF ${i + 1} → ${u.id === cand.id ? 'Garde POW' : u.slot}`).join(' · ');
+        return A.add('Ordre à la B.ZARR', '', '', '', disp);
+      };
+      // 5 meilleurs bots : un MP rejoint la garde tant qu'elle ne compte pas plus de MP que d'INF (INF d'office compris),
+      // ce qui garde Transfert à la justice sans pénalité ; sinon, ou faute de MP libre ou de carte, un INF.
+      const viaMP = () => {
+        const mps = A.mine('MP');
+        const cand = mps.find(u => A.act(u) && u.slot === 'Réserve') || mps.find(free);
+        return !!cand && A.moveUnits('Ordre aux MP et CIMIC', 'MP', { [cand.id]: 'Garde POW' });
+      };
+      let ok = false;
+      if (P.gardeMP) {
+        const g = st.units.filter(u => u.camp === 'R' && !u.dead && u.slot === 'Garde POW');
+        const mpG = g.filter(u => u.type === 'MP').length, infG = 1 + g.filter(u => u.type === 'INF').length;
+        ok = mpG <= infG ? (viaMP() || viaINF()) : (viaINF() || viaMP());
+      } else ok = viaINF();
+      if (ok) { A.M.guardOrder = T + 2; A.M.moreGuard = false; }
     }
     if (P.justice === 'Quand le POW est plein' && st.pow.R >= 5 * guards - 1) A.add('Transfert à la justice');
     if (P.justice !== 'Jamais' && st.pow.R >= 10) A.add('Transfert à la justice');
