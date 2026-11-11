@@ -278,7 +278,8 @@ const CARDS = {
   'Mouvement de la DIV': { ph: 'M', base: 100, mep: 2, ret: 4, g: [], rev: 'none', tgt: 'regionOwn' },
   'Transfert à la justice': { ph: 'M', base: 80, mep: 5, ret: 8, g: [], rev: 'none', tgt: 'none' },
   'Ordre à la B.LOG': { ph: 'L', base: 100, mep: 1, ret: 3, g: [], rev: 'none', tgt: 'net' },
-  'Effort LOG': { ph: 'L', base: 90, mep: 3, ret: 7, g: [], rev: 'none', tgt: 'logEffort' },
+  'Effort LOG': { ph: 'L', base: 80, mep: 5, ret: 7, g: [], rev: 'none', tgt: 'logEffort' },   // 11 nov. : +2 RAPLOG à un fuseau pendant 3 tours, ou +10 points à la DIV+
+  'REMEC': { ph: 'L', base: 90, mep: 5, ret: 10, g: [], rev: 'none', tgt: 'remec' },   // 11 nov. : nouvelle carte du G4 : +3 crans ALAT (sur le GAM), +30 % au PC ou +30 % à la BSC
   "Ouverture d'itinéraire": { ph: 'L', base: 100, mep: 1, ret: 3, g: [], rev: 'none', tgt: 'genOwn' },
   'CAS': { ph: 'C', base: 60, mep: 2, ret: 5, g: ['AAE'], rev: 'always', tgt: 'fuseau', dg: ['DSA'] },
   'Engagement GAM': { ph: 'C', base: 60, mep: 1, ret: 4, g: ['ALAT'], rev: 'always', tgt: 'fuseau', dg: ['DSA'] },
@@ -288,6 +289,7 @@ const CARDS = {
   'Engagement de la DIV': { ph: 'C', base: 100, mep: 3, ret: 7, g: [], rev: 'played', tgt: 'fuseau' },
   'Assaut de la BP': { ph: 'F', base: 70, mep: 3, ret: 0, once: true, g: ['AAE'], rev: 'always', tgt: 'regionEnemy', dg: ['INF', 'DSA'] },   // 7 nov. : carte à usage unique
 };
+const LOGEFF_RAP = 2, LOGEFF_TURNS = 3, LOGEFF_DIV = 10, REMEC_ALAT = 3;   // 11 nov. : Effort LOG (+2 RAPLOG pendant 3 tours ou +10 DIV+) ; REMEC (+3 crans ALAT)
 const NEVER = 999;                   // tour de retour d'une carte à usage unique (elle ne revient pas)
 const retOf = (C, T) => C.once ? NEVER : T + C.ret;
 const retTxt = n => n >= NEVER ? 'carte à usage unique, elle ne revient pas' : `retour au tour ${n}`;
@@ -838,9 +840,16 @@ function checkOrders(st, camp, text, excluded) {
       case 'logEffort': {
         const z = String(L.zone || L.slot || L.prec || '').trim();
         if (/^div\s*\+|^div\+|réserve|reserve/i.test(z) || deacc(z) === 'div+') { tg.divp = true; break; }
-        if (/^pc$/i.test(z)) { tg.pcg = true; break; }   // 8 nov. : +30 % à la jauge du PC ou de la BSC
-        if (/^(bsc|gsc)$/i.test(z)) { tg.bscg = true; break; }
-        const f = fuseauOf(z); if (!f) e(`il faut viser un fuseau (+3 RAPLOG), « DIV+ » (+3 points), « PC » ou « BSC » (+30 %) : « ${z} »`); else tg.fus = f; break;
+        const f = fuseauOf(z); if (!f) e(`il faut viser un fuseau (+2 RAPLOG pendant 3 tours) ou « DIV+ » (+10 points) : « ${z} »`); else tg.fus = f; break;
+      }
+      case 'remec': {   // 11 nov. : REMEC : le GAM (+3 crans ALAT), le PC ou la BSC (+30 %)
+        const z = String(L.zone || L.slot || L.prec || '').trim(); const zp = parseSlot(z);
+        const zu = zp && zp.kind === 'region' ? st.units.find(u => u.camp === camp && !u.dead && u.slot === zp.name && ['GAM', 'PC', 'BSC'].includes(u.type)) : null;
+        const k = zu ? zu.type : deacc(z).toUpperCase().replace(/\s+/g, '');
+        if (k === 'GAM' || k === 'ALAT') { tg.alat = true; break; }
+        if (k === 'PC') { tg.pcg = true; break; }
+        if (k === 'BSC' || k === 'GSC') { tg.bscg = true; break; }
+        e(`il faut viser « GAM » (+3 crans ALAT), « PC » ou « BSC » (+30 %) : « ${z} »`); break;
       }
       case 'genOwn': {   // Ouverture d'itinéraire : le GEN choisi (son emplacement, ou à défaut sa région)
         const s = String(L.slot || L.prec || L.zone || '').trim(); const ps = parseSlot(s);
@@ -890,6 +899,10 @@ function checkOrders(st, camp, text, excluded) {
     if (o.card === 'Engagement GAM' || o.card === 'Raid aéro' || o.card === 'Out of contact Attack') {
       const g = st.units.find(u => u.camp === camp && u.type === 'GAM');
       if (!g || g.dead) e('GAM détruit');   // GAM en réserve : vérifié au tour d'effet
+    }
+    if (o.card === 'REMEC' && tg.alat) {   // 11 nov. : REMEC sur le GAM impossible si le GAM est détruit
+      const g = st.units.find(u => u.camp === camp && u.type === 'GAM');
+      if (!g || g.dead) e('GAM détruit : REMEC ne peut viser que le PC ou la BSC');
     }
   });
   res.count = count;
@@ -1009,9 +1022,14 @@ function resolveTurn(st0, ordersText, excluded, forced) {
       info && info.push(`ATTENTION : votre frappe a touché le camp de prisonniers ennemi, où sont gardés nos propres soldats. Les images circulent : nos trois divisions perdent leur marqueur FM et ne pourront plus en gagner pendant 5 tours.`);
     }
     if (u.type === 'ART CA') endCB(u, 'neutralisée');
+    if (u.type === 'GAM' && was) {   // 11 nov. : un GAM actif qui est neutralisé fait perdre un cran ALAT (pas s'il était déjà neutralisé)
+      const b = st.gauges[u.camp].ALAT; st.gauges[u.camp].ALAT = Math.min(4, b + 1);
+      if (st.gauges[u.camp].ALAT !== b) { u.alatTxt = `jauge ALAT ${gaugeTxt('ALAT', b)} → ${gaugeTxt('ALAT', st.gauges[u.camp].ALAT)}`; lines.push(`la jauge ALAT ENI perd un cran`);
+        RD(`Jauge ALAT ${ADJF[u.camp]} : ${gaugeTxt('ALAT', st.gauges[u.camp].ALAT)} (GAM neutralisé)`); }
+    }
     return lines.join(' ; ');
   };
-  const neutTxt = u => GAUGED.includes(u.type) ? `Notre ${u.type} de ${u.slot} a été touché${u.type === 'PC' ? '' : 'e'} : ${u.lastLoss}.` + (u.type === 'PC' ? ` Nous pourrons jouer ${PC_CARDS(st.pcg[u.camp])} carte${PC_CARDS(st.pcg[u.camp]) > 1 ? 's' : ''} par message.` : '') : `Notre ${u.type} de ${u.slot} est neutralisé jusqu'à la fin du tour ${u.neut}.`;
+  const neutTxt = u => GAUGED.includes(u.type) ? `Notre ${u.type} de ${u.slot} a été touché${u.type === 'PC' ? '' : 'e'} : ${u.lastLoss}.` + (u.type === 'PC' ? ` Nous pourrons jouer ${PC_CARDS(st.pcg[u.camp])} carte${PC_CARDS(st.pcg[u.camp]) > 1 ? 's' : ''} par message.` : '') : `Notre ${u.type} de ${u.slot} est neutralisé jusqu'à la fin du tour ${u.neut}.` + (u.alatTxt ? ((t => (delete u.alatTxt, ` Nous perdons un cran ALAT : ${t}.`))(u.alatTxt)) : '');
   // fin d'une mission de contre-batterie
   const endCB = (u, why) => { const m = st.cb[u.id]; if (!m) return; delete st.cb[u.id]; const z = m.zone.fus ? 'le fuseau ' + DE_FUS[m.zone.fus] : m.zone.region;
     rep[u.camp].own.push(`Contre-batterie : l'ART CA de ${u.slot} cesse de surveiller ${z} (${why}).`); J(`    contre-batterie ${ADJF[u.camp]} de ${u.slot} sur ${z} terminée (${why})`); };
@@ -1114,6 +1132,8 @@ function resolveTurn(st0, ordersText, excluded, forced) {
 
   // ---------------- phases
   const bonus = { B: {}, R: {} }; FUS.forEach(f => { bonus.B[f] = { rap: 0, fm: 0, src: [] }; bonus.R[f] = { rap: 0, fm: 0, src: [] }; });
+  for (const x of (st.logEff || []).filter(x => x.from < T && x.to >= T)) { const b = bonus[x.camp][x.fus]; b.raplog = (b.raplog || 0) + LOGEFF_RAP; b.src.push(`Effort LOG +${LOGEFF_RAP} RAPLOG (tour ${T - x.from + 1}/${LOGEFF_TURNS})`); }   // 11 nov. : Effort LOG dure 3 tours
+  if (st.logEff) st.logEff = st.logEff.filter(x => x.to > T);
   const renfort = { B: [], R: [] }; const engage = []; const draw = { B: [], R: [] };
   for (const x of (st.bpFM || []).filter(x => x.t === T)) { FUS.forEach(f => { bonus[x.camp][f].fm -= BP_FM; bonus[x.camp][f].src.push(`Assaut de la BP −${BP_FM} FM`); });
     rep[x.camp].own.push(`Contrecoup de l'Assaut de la BP : nos trois divisions perdent ${BP_FM} FM pendant ce tour.`); J(`  ${CAMP[x.camp]} : contrecoup de l'Assaut de la BP, −${BP_FM} FM à chaque division ce tour`); }
@@ -1307,9 +1327,18 @@ function resolveTurn(st0, ordersText, excluded, forced) {
         else { st.net[c] = p.target.net; st.netDir[c] = o.dir; st.netCons[c] = o.cons; eff.push(`nouveau réseau en place (${o.total} marqueurs)`); RD(`Réseau LOG ${ADJ[c]} : ${Object.entries(p.target.net).map(([k, v]) => k + ' ' + v).join(' · ')}`); }
       }
       if (ph === 'L' && r.ok && p.card === 'Effort LOG') {
-        if (p.target.pcg || p.target.bscg) { const k = p.target.pcg ? 'pcg' : 'bscg', nm = p.target.pcg ? 'PC' : 'BSC'; const b = st[k][c]; st[k][c] = Math.min(100, b + 30); eff.push(`jauge ${nm} ${b} % → ${st[k][c]} %`); RD(`Jauge ${nm} ${ADJF[c]} : ${st[k][c]} % (Effort LOG)`); }
-        else if (p.target.divp) { const b = st.divp[c]; st.divp[c] = Math.min(100, b + 3); eff.push(`la DIV+ gagne ${st.divp[c] - b} points (${st.divp[c]})`); RD(`Jauge DIV+ ${ADJF[c]} : ${st.divp[c]} (Effort LOG)`); }
-        else { const f = p.target.fus; bonus[c][f].raplog = (bonus[c][f].raplog || 0) + 3; bonus[c][f].src.push('Effort LOG +3 RAPLOG'); eff.push(`+3 RAPLOG à la division ${DE_FUS[f]} pour ce tour`); }
+        if (p.target.divp) { const b = st.divp[c]; st.divp[c] = Math.min(100, b + LOGEFF_DIV); eff.push(`la DIV+ gagne ${st.divp[c] - b} points (${st.divp[c]})`); RD(`Jauge DIV+ ${ADJF[c]} : ${st.divp[c]} (Effort LOG)`); }
+        else if (p.target.fus) { const f = p.target.fus; bonus[c][f].raplog = (bonus[c][f].raplog || 0) + LOGEFF_RAP; bonus[c][f].src.push(`Effort LOG +${LOGEFF_RAP} RAPLOG (tour 1/${LOGEFF_TURNS})`);
+          st.logEff = (st.logEff || []).concat([{ camp: c, fus: f, from: T, to: T + LOGEFF_TURNS - 1 }]);
+          eff.push(`+${LOGEFF_RAP} RAPLOG à la division ${DE_FUS[f]} pendant ${LOGEFF_TURNS} tours (jusqu'au tour ${T + LOGEFF_TURNS - 1})`); RD(`Effort LOG ${ADJ[c]} : +${LOGEFF_RAP} RAPLOG au fuseau ${f} jusqu'à la fin du tour ${T + LOGEFF_TURNS - 1}`); }
+        else { ef.status = 'ordre non exécuté'; eff.push('cible invalide (Effort LOG vise un fuseau ou la DIV+) : carte jouée pour rien'); }
+      }
+      if (ph === 'L' && r.ok && p.card === 'REMEC') {   // 11 nov.
+        if (p.target.alat) { const g = st.units.find(u => u.camp === c && u.type === 'GAM');
+          if (!g || g.dead) { ef.status = 'ordre non exécuté'; eff.push('GAM détruit : la jauge ALAT ne peut plus remonter, carte jouée pour rien'); }
+          else { const b = st.gauges[c].ALAT; st.gauges[c].ALAT = Math.max(0, b - REMEC_ALAT); eff.push(b === st.gauges[c].ALAT ? `jauge ALAT déjà au plus haut (${gaugeTxt('ALAT', b)})` : `jauge ALAT ${gaugeTxt('ALAT', b)} → ${gaugeTxt('ALAT', st.gauges[c].ALAT)}`); RD(`Jauge ALAT ${ADJF[c]} : ${gaugeTxt('ALAT', st.gauges[c].ALAT)} (REMEC)`); } }
+        else if (p.target.pcg || p.target.bscg) { const k = p.target.pcg ? 'pcg' : 'bscg', nm = p.target.pcg ? 'PC' : 'BSC'; const b = st[k][c]; st[k][c] = Math.min(100, b + 30); eff.push(`jauge ${nm} ${b} % → ${st[k][c]} %`); RD(`Jauge ${nm} ${ADJF[c]} : ${st[k][c]} % (REMEC)`); }
+        else { ef.status = 'ordre non exécuté'; eff.push('cible invalide (REMEC vise le GAM, le PC ou la BSC) : carte jouée pour rien'); }
       }
       if (ph === 'L' && r.ok && p.card === "Ouverture d'itinéraire") {
         const tgO = p.target || {};

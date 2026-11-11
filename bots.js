@@ -2123,8 +2123,11 @@ function RaspBotCore(R, PROFILS) {
       if (A.M.relogAt && A.T >= A.M.relogAt) { if (A.net(A.tpl())) A.M.relogAt = null; }
       else if (A.T % 4 === 0 || A.M.focusChanged) { if (A.net(A.tpl())) A.M.focusChanged = false; }
       const b = A.st.bscg[A.c];
-      if ((P.effortLog === 'Dès que la BSC baisse' && b < 100) || (P.effortLog === 'Seulement sous 50 %' && b < 50)) A.add('Effort LOG', 'BSC');
-      else if (A.st.pcg[A.c] <= 60 && P.effortLog !== 'Jamais') A.add('Effort LOG', 'PC');
+      // 11 nov. : la réparation des jauges PC, BSC et ALAT passe par la REMEC (le réglage « effortLog » des profils la gouverne)
+      const gam = A.mine('GAM').find(u => !u.dead);
+      if ((P.effortLog === 'Dès que la BSC baisse' && b < 100) || (P.effortLog === 'Seulement sous 50 %' && b < 50)) A.add('REMEC', 'BSC');
+      else if (A.st.pcg[A.c] <= 60 && P.effortLog !== 'Jamais') A.add('REMEC', 'PC');
+      else if (gam && A.st.gauges[A.c].ALAT >= 2 && P.effortLog !== 'Jamais') A.add('REMEC', 'GAM');
     },
     env: A => {
       const P = A.P;
@@ -2171,7 +2174,7 @@ function RaspBotCore(R, PROFILS) {
       const x = { PC: P.x_pc, BSC: P.x_bsc, 'DIV+': P.x_div }[t];
       if (x === 'Riposte') A.retaliate();
       else if (x === 'Fortifie') { if (!A.fortify(r)) A.protect(r); }
-      else if (x === 'Effort LOG') A.add('Effort LOG', 'BSC');
+      else if (x === 'Effort LOG') { if (t === 'DIV+') A.add('Effort LOG', 'DIV+'); else A.add('REMEC', t); }   // 11 nov. : PC et BSC réparés par la REMEC
       else if (x === 'Engage la DIV+ tout de suite') A.divTry({ force: true });
       else if (x === 'Bascule de PC' || x === 'Bascule BSC' || x === 'Mouvement de la DIV') A.relocate(t);
       // en plus : bascule systématique ou non (mauvais choix pour les faibles, sécurisée pour les forts)
@@ -2328,7 +2331,8 @@ function RaspBotCore(R, PROFILS) {
         case 'zoneEnemy': case 'regionEnemy': l = [card, eReg, '', '', '']; break;
         case 'slotEnemy': case 'slotEnemyDeep': l = [card, '', `${eReg} ${Math.floor(A.rnd() * 4)}`, '', '']; if (card === 'Frappe en profondeur') { const a = A.artRear()[0]; if (!a) continue; l[3] = a.slot; } break;
         case 'corridorEnemy': l = [card, A.pick(Object.keys(R.COR[A.en])), '', '', '']; break;
-        case 'logEffort': l = [card, A.pick(['DIV+', 'PC', 'BSC']), '', '', '']; break;
+        case 'logEffort': l = [card, A.pick(['DIV+', f]), '', '', '']; break;
+        case 'remec': l = [card, A.pick(A.mine('GAM').some(u => !u.dead) ? ['GAM', 'PC', 'BSC'] : ['PC', 'BSC']), '', '', '']; break;
         case 'none': l = [card, '', '', '', '']; break;
         default: continue;
       }
