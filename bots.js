@@ -1,6 +1,8 @@
 /* Raspoutitsa : bots du mode solo — 10 bots russes (9 nov. 2026) et 10 bots français (10 nov. 2026).
    Profils : classeur « Profils des bots » de Ben (10 bots, de Popov à Joukov), converti en données ci-dessous.
    Le cœur (RaspBotCore) reçoit le moteur d'arbitrage de la page (R) et ces profils. */
+// 12 nov. : intention navale sur le plateau Suwałki (un bot sur deux dans chaque camp) : cote = gagner le fuseau de Kaliningrad, nav = détruire le NAV adverse, raid = réussir un Raid amphibie
+var RASP_BOT_NAVI = {"popov":"cote","ivan":"raid","toukhatchevski":"nav","tchouikov":"cote","koniev":"raid","tim":"cote","jeanmichel":"nav","santo":"raid","ardant":"cote","beaufre":"nav"};
 const RASP_BOT_PROFILS = [
 {
 "id": "popov",
@@ -1688,13 +1690,27 @@ const RASP_BOT_PROFILS = [
 function RaspBotCore(R, PROFILS) {
   'use strict';
   const FUS = R.FUS;
-  const ACC = { B: { Kharkiv: 'Poltava', Izioum: 'Dnipro', Donetsk: 'Zaporijjia' }, R: { Kharkiv: 'Valouïki', Izioum: 'Novoaïdar', Donetsk: 'Louhansk' } };
-  const PIV = { Kharkiv: [['Izioum', 'Nord'], ['Izioum', 'Sud']], Izioum: [['Kharkiv', 'Sud'], ['Donetsk', 'Nord']], Donetsk: [['Izioum', 'Sud'], ['Izioum', 'Nord']] };
+  const SUW = !!R.SUW;   // 12 nov. : plateau Suwałki (4 fuseaux, côte de la Baltique, NAV)
+  const ACC = SUW ? R.ACCESS : { B: { Kharkiv: 'Poltava', Izioum: 'Dnipro', Donetsk: 'Zaporijjia' }, R: { Kharkiv: 'Valouïki', Izioum: 'Novoaïdar', Donetsk: 'Louhansk' } };
+  const PIV = SUW ? { Kaliningrad: [['Suwałki', 'Nord'], ['Suwałki', 'Sud']], 'Suwałki': [['Kaliningrad', 'Sud'], ['Białystok', 'Nord']], 'Białystok': [['Suwałki', 'Sud'], ['Brest', 'Nord']], Brest: [['Białystok', 'Sud'], ['Białystok', 'Nord']] }
+    : { Kharkiv: [['Izioum', 'Nord'], ['Izioum', 'Sud']], Izioum: [['Kharkiv', 'Sud'], ['Donetsk', 'Nord']], Donetsk: [['Izioum', 'Sud'], ['Izioum', 'Nord']] };
+  const CENTRE = SUW ? 'Suwałki' : 'Izioum';   // fuseau d'effort par défaut
+  const WINGS = [FUS[0], FUS[FUS.length - 1]];
+  const zeroF = () => Object.fromEntries(FUS.map(f => [f, 0]));
+  // fiches de déploiement Suwałki (écrites d'après chaque profil : positions des grands pions, DSA, ART, effort, intention navale ; réseau LOG calculé)
+  const SUW_DEP = {"popov":"Camp : Rouge\nPC : Kaunas 0\nBSC : Slonim 0\nPOW : Vitebsk 0\nDIV+ : Klaipėda 0\nINF : Kaliningrad Rouge 1, Suwałki Rouge 1, Białystok Rouge 1, Brest Rouge 1, Slonim 3, Pinsk 3\nMP : Kaliningrad Rouge 2, Suwałki Rouge 2, Białystok Rouge 2, Brest Rouge 2\nCIMIC : Brest Rouge 3, Pinsk 2\nDSA : Kaunas 2, Slonim 2, Klaipėda 3, Vitebsk 1, Pinsk 1\nGEN : Klaipėda 1, Kaunas 1, Slonim 1\nART CA : Kaunas 3, Liepāja 1, Šiauliai 1\nEW : Kaliningrad Rouge 3, Suwałki Rouge 3, Białystok Rouge 3\nGAM : Liepāja 2\nNAV : Klaipėda 2\nRéseau LOG : E1 5, E2 3, E4 3, R1 5, R2 5, R5 2, R7 3, R8 1, R16 1, R17 2, RKA 1, RSU 1, RBI 1, RBR 1","boris":"Camp : Rouge\nPC : Slonim 0\nBSC : Vitebsk 0\nPOW : Daugavpils 0\nDIV+ : Kaunas 0\nINF : Kaliningrad Rouge 1, Suwałki Rouge 1, Białystok Rouge 1, Brest Rouge 1, Garde POW, Vitebsk 3\nMP : Suwałki Rouge 2, Pinsk 3\nCIMIC : Kaliningrad Rouge 3, Białystok Rouge 3, Brest Rouge 3, Klaipėda 3, Pinsk 2\nDSA : Kaunas 2, Kaunas 3, Slonim 2, Vitebsk 2, Klaipėda 2, Pinsk 1\nGEN : Kaunas 1, Slonim 1, Vitebsk 1\nART CA : Slonim 3, Vilnius 1, Šiauliai 1\nEW : Suwałki Rouge 3\nGAM : Vilnius 2\nNAV : Klaipėda 1\nRéseau LOG : E1 1, E2 5, E3 1, E4 5, R1 1, R2 1, R7 5, R8 5, R9 3, R16 1, R17 4, RKA 1, RSU 4, RBI 1, RBR 1","ivan":"Camp : Rouge\nPC : Daugavpils 0\nBSC : Riga 0\nPOW : Kaunas 0\nDIV+ : Vitebsk 0\nINF : Kaliningrad Rouge 1, Suwałki Rouge 1, Białystok Rouge 1, Brest Rouge 1, Garde POW\nMP : Kaliningrad Rouge 2, Suwałki Rouge 2, Białystok Rouge 2, Brest Rouge 2, Riga 3, Vitebsk 3\nCIMIC : Brest Rouge 3, Slonim 2, Klaipėda 3, Kaunas 1, Slonim 3\nDSA : Daugavpils 2, Daugavpils 3, Riga 2, Vitebsk 2, Klaipėda 2, Slonim 1\nGEN : Vitebsk 1, Daugavpils 1, Riga 1\nART CA : Minsk 1, Vilnius 1, Šiauliai 1\nEW : Kaliningrad Rouge 3, Suwałki Rouge 3, Białystok Rouge 3\nGAM : Minsk 2\nNAV : Klaipėda 1\nRéseau LOG : E1 3, E2 5, E3 5, E4 5, R1 2, R2 2, R6 1, R10 5, R14 3, R15 3, R16 1, R17 1, RKA 1, RSU 1, RBI 1, RBR 1","svietchine":"Camp : Rouge\nPC : Daugavpils 0\nBSC : Vilnius 0\nPOW : Riga 0\nDIV+ : Vitebsk 0\nINF : Kaliningrad Rouge 1, Suwałki Rouge 1, Białystok Rouge 1, Brest Rouge 1, Garde POW, Garde POW\nMP : Kaliningrad Rouge 2, Suwałki Rouge 2, Białystok Rouge 2, Brest Rouge 2, Daugavpils 3, Vitebsk 3\nCIMIC : Brest Rouge 3, Slonim 2, Klaipėda 2, Kaunas 1, Slonim 3\nDSA : Vilnius 2, Vilnius 3, Daugavpils 2, Vitebsk 2, Slonim 1, Klaipėda 1\nGEN : Vitebsk 1, Daugavpils 1, Vilnius 1\nART CA : Minsk 1, Šiauliai 1, Liepāja 2\nEW : Kaliningrad Rouge 3, Suwałki Rouge 3, Białystok Rouge 3\nGAM : Minsk 2\nNAV : Liepāja 1\nRéseau LOG : E1 2, E2 4, E3 5, E4 5, R1 2, R2 2, R7 2, R8 2, R10 2, R15 1, R16 2, R17 2, RKA 2, RSU 2, RBI 2, RBR 2","toukhatchevski":"Camp : Rouge\nPC : Minsk 0\nBSC : Vilnius 0\nPOW : Vitebsk 0\nDIV+ : Slonim 0\nINF : Kaliningrad Rouge 1, Suwałki Rouge 1, Białystok Rouge 1, Brest Rouge 1, Garde POW, Garde POW\nMP : Białystok Rouge 2, Kaunas 2, Pinsk 2\nCIMIC : Kaliningrad Rouge 3, Suwałki Rouge 3, Brest Rouge 3, Kaunas 1, Pinsk 1\nDSA : Slonim 2, Slonim 3, Minsk 2, Vilnius 2, Klaipėda 2, Klaipėda 3\nGEN : Slonim 1, Minsk 1, Vilnius 1\nART CA : Vilnius 3, Minsk 3, Šiauliai 1\nEW : Białystok Rouge 3, Kaunas 3, Pinsk 3\nGAM : Šiauliai 2\nNAV : Klaipėda 1\nRéseau LOG : E1 1, E2 1, E3 5, E4 5, R1 1, R2 1, R7 1, R8 1, R13 4, R14 5, R16 1, R17 4, RKA 1, RSU 1, RBI 4, RBR 1","gerasimov":"Camp : Rouge\nPC : Vitebsk 0\nBSC : Vilnius 0\nPOW : Daugavpils 0\nDIV+ : Minsk 0\nINF : Kaliningrad Rouge 1, Suwałki Rouge 1, Białystok Rouge 1, Brest Rouge 1, Garde POW, Garde POW\nMP : Kaliningrad Rouge 2, Suwałki Rouge 2, Białystok Rouge 2, Brest Rouge 2, Garde POW, Vitebsk 3\nCIMIC : Kaliningrad Rouge 3, Suwałki Rouge 3, Slonim 2, Klaipėda 2, Kaunas 1\nDSA : Vitebsk 2, Vilnius 2, Minsk 2, Daugavpils 1, Slonim 1, Klaipėda 1\nGEN : Minsk 1, Vitebsk 1, Vilnius 1\nART CA : Minsk 3, Vilnius 3, Šiauliai 1\nEW : Białystok Rouge 3, Brest Rouge 3, Slonim 3\nGAM : Šiauliai 2\nNAV : Riga 1\nRéseau LOG : E1 2, E2 2, E3 4, E4 5, R1 2, R2 2, R7 2, R8 2, R13 2, R14 4, R15 1, R16 2, RKA 2, RSU 2, RBI 2, RBR 2","tchouikov":"Camp : Rouge\nPC : Kaunas 0\nBSC : Vilnius 0\nPOW : Vitebsk 0\nDIV+ : Klaipėda 0\nINF : Kaliningrad Rouge 1, Suwałki Rouge 1, Białystok Rouge 1, Brest Rouge 1, Garde POW, Garde POW\nMP : Kaliningrad Rouge 2, Suwałki Rouge 2, Białystok Rouge 2, Brest Rouge 2, Garde POW, Slonim 3\nCIMIC : Białystok Rouge 3, Brest Rouge 3, Slonim 2, Pinsk 2\nDSA : Kaunas 2, Kaunas 3, Vilnius 2, Klaipėda 3, Slonim 1, Pinsk 1\nGEN : Klaipėda 1, Kaunas 1, Vilnius 1\nART CA : Šiauliai 1, Liepāja 1, Vilnius 3\nEW : Kaliningrad Rouge 3, Suwałki Rouge 3, Pinsk 3\nGAM : Šiauliai 2\nNAV : Klaipėda 2\nRéseau LOG : E1 5, E2 2, E3 1, E4 4, R1 5, R2 5, R7 2, R8 2, R14 1, R16 2, R17 2, RKA 2, RSU 2, RBI 2, RBR 2","rokossovski":"Camp : Rouge\nPC : Daugavpils 0\nBSC : Vilnius 0\nPOW : Riga 0\nDIV+ : Vitebsk 0\nINF : Kaliningrad Rouge 1, Suwałki Rouge 1, Białystok Rouge 1, Brest Rouge 1, Garde POW, Daugavpils 2\nMP : Kaliningrad Rouge 2, Suwałki Rouge 2, Białystok Rouge 2, Brest Rouge 2, Garde POW, Daugavpils 3\nCIMIC : Kaliningrad Rouge 3, Brest Rouge 3, Kaunas 3, Klaipėda 2, Slonim 1\nDSA : Vilnius 3, Šiauliai 2, Minsk 2, Kaunas 1, Klaipėda 1, Kaunas 2\nGEN : Vitebsk 1, Daugavpils 1, Vilnius 1\nART CA : Vilnius 2, Šiauliai 1, Minsk 1\nEW : Suwałki Rouge 3, Białystok Rouge 3, Klaipėda 3\nGAM : Šiauliai 3\nNAV : Liepāja 1\nRéseau LOG : E1 2, E2 4, E3 5, E4 5, R1 2, R2 2, R7 2, R8 2, R10 2, R15 1, R16 2, R17 2, RKA 2, RSU 2, RBI 2, RBR 2","koniev":"Camp : Rouge\nPC : Vitebsk 0\nBSC : Minsk 0\nPOW : Daugavpils 0\nDIV+ : Vilnius 0\nINF : Kaliningrad Rouge 1, Suwałki Rouge 1, Białystok Rouge 1, Brest Rouge 1, Garde POW\nMP : Suwałki Rouge 2, Garde POW, Vitebsk 3, Kaunas 3, Slonim 1, Pinsk 1\nCIMIC : Kaliningrad Rouge 3, Białystok Rouge 3, Brest Rouge 3, Kaunas 2, Klaipėda 3\nDSA : Vilnius 2, Vilnius 3, Vitebsk 2, Minsk 2, Klaipėda 2, Kaunas 1\nGEN : Vilnius 1, Vitebsk 1, Minsk 1\nART CA : Šiauliai 1, Minsk 3, Liepāja 1\nEW : Suwałki Rouge 3, Slonim 2, Pinsk 2\nGAM : Šiauliai 2\nNAV : Klaipėda 1\nRéseau LOG : E1 2, E2 2, E3 5, E4 5, R1 2, R2 2, R7 2, R8 2, R14 5, R16 2, R17 2, RKA 2, RSU 2, RBI 2, RBR 2","joukov":"Camp : Rouge\nPC : Daugavpils 0\nBSC : Minsk 0\nPOW : Riga 0\nDIV+ : Vitebsk 0\nINF : Kaliningrad Rouge 1, Suwałki Rouge 1, Białystok Rouge 1, Brest Rouge 1, Garde POW, Garde POW\nMP : Kaliningrad Rouge 2, Suwałki Rouge 2, Białystok Rouge 2, Brest Rouge 2, Garde POW, Daugavpils 3\nCIMIC : Kaliningrad Rouge 3, Suwałki Rouge 3, Slonim 2, Klaipėda 2, Kaunas 1\nDSA : Daugavpils 2, Minsk 2, Vitebsk 2, Riga 1, Slonim 1, Klaipėda 1\nGEN : Vitebsk 1, Daugavpils 1, Minsk 1\nART CA : Minsk 3, Vilnius 1, Šiauliai 1\nEW : Białystok Rouge 3, Brest Rouge 3, Slonim 3\nGAM : Vilnius 2\nNAV : Liepāja 1\nRéseau LOG : E1 2, E2 5, E3 5, E4 5, R1 2, R2 2, R7 2, R8 2, R10 3, R16 2, R17 2, RKA 2, RSU 2, RBI 2, RBR 2","tim":"Camp : Bleu\nPC : Olsztyn 0\nBSC : Ostrołęka 0\nPOW : Łódź 0\nDIV+ : Gdańsk 0\nINF : Kaliningrad Bleu 1, Suwałki Bleu 1, Białystok Bleu 1, Brest Bleu 1, Ostrołęka 3, Lublin 3\nMP : Kaliningrad Bleu 2, Suwałki Bleu 2\nCIMIC : Białystok Bleu 3, Brest Bleu 3, Lublin 2\nDSA : Olsztyn 2, Ostrołęka 2, Gdańsk 3, Łódź 1, Lublin 1\nGEN : Gdańsk 1, Olsztyn 1, Ostrołęka 1\nART CA : Olsztyn 3, Bydgoszcz 1, Koszalin 1\nEW : Kaliningrad Bleu 3, Suwałki Bleu 3\nGAM : Bydgoszcz 2\nNAV : Gdańsk 2\nRéseau LOG : U1 5, U2 3, U4 3, B1 5, B2 5, B5 2, B7 3, B8 1, B16 1, B17 2, BKA 1, BSU 1, BBI 1, BBR 1","bagar":"Camp : Bleu\nPC : Ostrołęka 0\nBSC : Łódź 0\nPOW : Poznań 0\nDIV+ : Olsztyn 0\nINF : Kaliningrad Bleu 1, Suwałki Bleu 1, Białystok Bleu 1, Brest Bleu 1, Garde POW, Łódź 3\nMP : Kaliningrad Bleu 2, Suwałki Bleu 2, Białystok Bleu 2, Brest Bleu 2, Lublin 3\nCIMIC : Brest Bleu 3, Gdańsk 3, Lublin 2\nDSA : Olsztyn 2, Olsztyn 3, Ostrołęka 2, Łódź 2, Gdańsk 2, Lublin 1\nGEN : Olsztyn 1, Ostrołęka 1, Łódź 1\nART CA : Ostrołęka 3, Bydgoszcz 1, Varsovie 1\nEW : Kaliningrad Bleu 3, Suwałki Bleu 3, Białystok Bleu 3\nGAM : Varsovie 2\nNAV : Gdańsk 1\nRéseau LOG : U1 2, U2 5, U3 1, U4 4, B1 2, B2 2, B7 5, B8 5, B16 2, B17 2, BKA 2, BSU 4, BBI 2, BBR 2","jeanmichel":"Camp : Bleu\nPC : Poznań 0\nBSC : Szczecin 0\nPOW : Ostrołęka 0\nDIV+ : Łódź 0\nINF : Kaliningrad Bleu 1, Suwałki Bleu 1, Białystok Bleu 1, Brest Bleu 1, Garde POW, Garde POW\nMP : Kaliningrad Bleu 2, Suwałki Bleu 2, Białystok Bleu 2, Brest Bleu 2, Szczecin 3, Łódź 3\nCIMIC : Brest Bleu 3, Olsztyn 2, Gdańsk 3, Olsztyn 3, Ostrołęka 1\nDSA : Poznań 2, Poznań 3, Szczecin 2, Łódź 2, Gdańsk 2, Olsztyn 1\nGEN : Łódź 1, Poznań 1, Szczecin 1\nART CA : Varsovie 1, Bydgoszcz 1, Radom 1\nEW : Kaliningrad Bleu 3, Suwałki Bleu 3, Białystok Bleu 3\nGAM : Varsovie 2\nNAV : Gdańsk 1\nRéseau LOG : U1 3, U2 5, U3 5, U4 5, B1 2, B2 2, B6 1, B10 5, B14 3, B15 3, B16 1, B17 1, BKA 1, BSU 1, BBI 1, BBR 1","colo":"Camp : Bleu\nPC : Łódź 0\nBSC : Varsovie 0\nPOW : Szczecin 0\nDIV+ : Poznań 0\nINF : Kaliningrad Bleu 1, Suwałki Bleu 1, Białystok Bleu 1, Brest Bleu 1, Garde POW, Garde POW\nMP : Kaliningrad Bleu 2, Suwałki Bleu 2, Białystok Bleu 2, Brest Bleu 2, Łódź 3, Poznań 3\nCIMIC : Brest Bleu 3, Gdańsk 3, Olsztyn 1, Ostrołęka 1, Lublin 1\nDSA : Varsovie 2, Varsovie 3, Łódź 2, Poznań 2, Gdańsk 1, Gdańsk 2\nGEN : Poznań 1, Łódź 1, Varsovie 1\nART CA : Bydgoszcz 1, Koszalin 2, Radom 1\nEW : Kaliningrad Bleu 3, Suwałki Bleu 3, Białystok Bleu 3\nGAM : Bydgoszcz 2\nNAV : Koszalin 1\nRéseau LOG : U1 4, U2 5, U3 2, U4 5, B1 2, B2 2, B3 2, B9 1, B12 1, B14 2, B16 2, B17 3, BKA 2, BSU 2, BBI 2, BBR 2","santo":"Camp : Bleu\nPC : Bydgoszcz 0\nBSC : Varsovie 0\nPOW : Łódź 0\nDIV+ : Gdańsk 0\nINF : Kaliningrad Bleu 1, Suwałki Bleu 1, Białystok Bleu 1, Brest Bleu 1, Garde POW\nMP : Kaliningrad Bleu 2, Olsztyn 3, Ostrołęka 3, Lublin 2\nCIMIC : Suwałki Bleu 3, Białystok Bleu 3, Brest Bleu 3, Olsztyn 2, Ostrołęka 2\nDSA : Gdańsk 3, Bydgoszcz 2, Varsovie 2, Olsztyn 1, Ostrołęka 1, Lublin 1\nGEN : Gdańsk 1, Bydgoszcz 1, Varsovie 1\nART CA : Bydgoszcz 3, Koszalin 1, Varsovie 3\nEW : Kaliningrad Bleu 3, Lublin 3\nGAM : Koszalin 2\nNAV : Gdańsk 2\nRéseau LOG : U1 5, U2 4, U3 1, U4 2, B1 5, B2 5, B5 3, B7 4, B8 1, B14 1, B16 1, B17 1, BKA 4, BSU 1, BBI 1, BBR 1","galula":"Camp : Bleu\nPC : Łódź 0\nBSC : Radom 0\nPOW : Poznań 0\nDIV+ : Varsovie 0\nINF : Kaliningrad Bleu 1, Suwałki Bleu 1, Białystok Bleu 1, Brest Bleu 1, Garde POW, Garde POW\nMP : Kaliningrad Bleu 2, Suwałki Bleu 2, Białystok Bleu 2, Brest Bleu 2, Garde POW, Łódź 3\nCIMIC : Kaliningrad Bleu 3, Brest Bleu 3, Olsztyn 2, Gdańsk 2, Olsztyn 3\nDSA : Łódź 2, Radom 2, Varsovie 2, Poznań 1, Olsztyn 1, Gdańsk 1\nGEN : Varsovie 1, Łódź 1, Radom 1\nART CA : Varsovie 3, Bydgoszcz 1, Radom 3\nEW : Suwałki Bleu 3, Białystok Bleu 3, Gdańsk 3\nGAM : Bydgoszcz 2\nNAV : Szczecin 1\nRéseau LOG : U1 2, U2 2, U3 5, U4 5, B1 2, B2 2, B7 2, B8 2, B14 5, B16 2, B17 2, BKA 2, BSU 2, BBI 2, BBR 2","ardant":"Camp : Bleu\nPC : Olsztyn 0\nBSC : Bydgoszcz 0\nPOW : Łódź 0\nDIV+ : Gdańsk 0\nINF : Kaliningrad Bleu 1, Suwałki Bleu 1, Białystok Bleu 1, Brest Bleu 1, Garde POW, Garde POW\nMP : Kaliningrad Bleu 2, Suwałki Bleu 2, Białystok Bleu 2, Brest Bleu 2, Garde POW, Ostrołęka 3\nCIMIC : Białystok Bleu 3, Brest Bleu 3, Ostrołęka 2, Lublin 2\nDSA : Olsztyn 2, Olsztyn 3, Bydgoszcz 2, Gdańsk 3, Ostrołęka 1, Lublin 1\nGEN : Gdańsk 1, Olsztyn 1, Bydgoszcz 1\nART CA : Koszalin 1, Bydgoszcz 3, Varsovie 1\nEW : Kaliningrad Bleu 3, Suwałki Bleu 3, Lublin 3\nGAM : Koszalin 2\nNAV : Gdańsk 2\nRéseau LOG : U1 5, U2 3, U4 4, B1 5, B2 5, B7 3, B8 2, B16 2, B17 2, BKA 2, BSU 2, BBI 2, BBR 2","yako":"Camp : Bleu\nPC : Poznań 0\nBSC : Radom 0\nPOW : Szczecin 0\nDIV+ : Łódź 0\nINF : Kaliningrad Bleu 1, Suwałki Bleu 1, Białystok Bleu 1, Brest Bleu 1, Garde POW, Poznań 2\nMP : Kaliningrad Bleu 2, Suwałki Bleu 2, Białystok Bleu 2, Brest Bleu 2, Garde POW, Poznań 3\nCIMIC : Kaliningrad Bleu 3, Brest Bleu 3, Olsztyn 3, Gdańsk 2, Ostrołęka 1\nDSA : Varsovie 2, Bydgoszcz 2, Radom 3, Olsztyn 1, Gdańsk 1, Olsztyn 2\nGEN : Łódź 1, Poznań 1, Radom 1\nART CA : Varsovie 1, Bydgoszcz 1, Radom 2\nEW : Suwałki Bleu 3, Białystok Bleu 3, Gdańsk 3\nGAM : Varsovie 3\nNAV : Koszalin 1\nRéseau LOG : U1 2, U2 5, U3 5, U4 5, B1 2, B2 2, B7 2, B8 2, B10 3, B16 2, B17 2, BKA 2, BSU 2, BBI 2, BBR 2","beaufre":"Camp : Bleu\nPC : Łódź 0\nBSC : Varsovie 0\nPOW : Poznań 0\nDIV+ : Radom 0\nINF : Kaliningrad Bleu 1, Suwałki Bleu 1, Białystok Bleu 1, Brest Bleu 1, Garde POW, Garde POW\nMP : Brest Bleu 2, Garde POW, Łódź 3, Lublin 3, Olsztyn 1, Ostrołęka 1\nCIMIC : Kaliningrad Bleu 3, Suwałki Bleu 3, Białystok Bleu 3, Lublin 2, Gdańsk 3\nDSA : Radom 2, Radom 3, Łódź 2, Varsovie 2, Gdańsk 2, Lublin 1\nGEN : Radom 1, Łódź 1, Varsovie 1\nART CA : Varsovie 3, Bydgoszcz 1, Koszalin 1\nEW : Brest Bleu 3, Olsztyn 2, Ostrołęka 2\nGAM : Bydgoszcz 2\nNAV : Gdańsk 1\nRéseau LOG : U1 2, U2 2, U3 4, U4 5, B1 2, B2 2, B7 2, B8 2, B13 2, B14 4, B15 1, B16 2, BKA 2, BSU 2, BBI 2, BBR 2","foch":"Camp : Bleu\nPC : Poznań 0\nBSC : Radom 0\nPOW : Szczecin 0\nDIV+ : Łódź 0\nINF : Kaliningrad Bleu 1, Suwałki Bleu 1, Białystok Bleu 1, Brest Bleu 1, Garde POW, Garde POW\nMP : Kaliningrad Bleu 2, Suwałki Bleu 2, Białystok Bleu 2, Brest Bleu 2, Garde POW, Poznań 3\nCIMIC : Kaliningrad Bleu 3, Suwałki Bleu 3, Lublin 2, Gdańsk 2, Olsztyn 1\nDSA : Poznań 2, Radom 2, Łódź 2, Szczecin 1, Lublin 1, Gdańsk 1\nGEN : Łódź 1, Poznań 1, Radom 1\nART CA : Radom 3, Varsovie 1, Bydgoszcz 1\nEW : Brest Bleu 3, Białystok Bleu 3, Lublin 3\nGAM : Varsovie 2\nNAV : Koszalin 1\nRéseau LOG : U1 2, U2 5, U3 5, U4 5, B1 2, B2 2, B7 2, B8 2, B10 3, B16 2, B17 2, BKA 2, BSU 2, BBI 2, BBR 2"};
+  const SUW_F = {"popov":"Kaliningrad","boris":"Suwałki","ivan":"Białystok","svietchine":"Białystok","toukhatchevski":"Białystok","gerasimov":"Białystok","tchouikov":"Kaliningrad","rokossovski":"Suwałki","koniev":"Suwałki","joukov":"Białystok","tim":"Kaliningrad","bagar":"Suwałki","jeanmichel":"Suwałki","colo":"Kaliningrad","santo":"Kaliningrad","galula":"Suwałki","ardant":"Kaliningrad","yako":"Suwałki","beaufre":"Brest","foch":"Brest"};   // fuseau d'effort de la fiche
+  const NAVI = SUW ? (typeof RASP_BOT_NAVI !== 'undefined' ? RASP_BOT_NAVI : {}) : {};
+  const KAL = SUW ? R.COAST_FUS : null;
   const CAMPN = { B: 'BLEU', R: 'ROUGE' };
   // 10 nov. : le bot joue le camp de son profil (Bleu pour les bots français, Rouge pour les bots russes)
   const campOf = p => /bleu/i.test(String(p.camps || '')) && !/deux/i.test(String(p.camps || '')) ? 'B' : 'R';
-  const EMB = { B: ['B9', 'B10', 'B14', 'B2'], R: ['R11', 'R10', 'R13', 'R1'] };   // corridors ENI visés par défaut par une Embuscade
-  const GUESS = {   // où chercher les grands pions ENI quand on ne sait rien (régions du camp visé)
+  const EMB = SUW ? { B: ['B12', 'B13', 'B14', 'B10'], R: ['R12', 'R13', 'R14', 'R10'] } : { B: ['B9', 'B10', 'B14', 'B2'], R: ['R11', 'R10', 'R13', 'R1'] };   // corridors ENI visés par défaut par une Embuscade
+  const GUESS = SUW ? {
+    B: { 'DIV+': ['Olsztyn', 'Ostrołęka', 'Gdańsk', 'Lublin', 'Varsovie', 'Bydgoszcz'], BSC: ['Łódź', 'Bydgoszcz', 'Varsovie', 'Radom', 'Poznań'],
+      PC: ['Varsovie', 'Łódź', 'Bydgoszcz', 'Radom'], 'ART CA': ['Olsztyn', 'Ostrołęka', 'Lublin', 'Gdańsk'], POW: ['Poznań', 'Łódź', 'Koszalin'] },
+    R: { 'DIV+': ['Kaunas', 'Slonim', 'Klaipėda', 'Pinsk', 'Vilnius', 'Šiauliai'], BSC: ['Vitebsk', 'Šiauliai', 'Vilnius', 'Minsk', 'Daugavpils'],
+      PC: ['Vilnius', 'Vitebsk', 'Šiauliai', 'Minsk'], 'ART CA': ['Kaunas', 'Slonim', 'Pinsk', 'Klaipėda'], POW: ['Daugavpils', 'Vitebsk', 'Liepāja'] } } : {   // où chercher les grands pions ENI quand on ne sait rien (régions du camp visé)
     B: { 'DIV+': ['Lysanka', 'Dnipro', 'Poltava', 'Zaporijjia', 'Mykolaïv', 'Tcherkassy'], BSC: ['Bobrynets', 'Mykolaïv', 'Tcherkassy', 'Lysanka', 'Kryvyï Rih'],
       PC: ['Kropyvnytskyï', 'Krementchouk', 'Kryvyï Rih', 'Tcherkassy'], 'ART CA': ['Dnipro', 'Kryvyï Rih', 'Poltava', 'Krementchouk'], POW: ['Mykolaïv', 'Bobrynets', 'Lysanka'] },
     R: { 'DIV+': ['Kalatch', 'Novoaïdar', 'Valouïki', 'Louhansk', 'Morozovsk', 'Vechenskaïa'], BSC: ['Sovetskaya', 'Vechenskaïa', 'Morozovsk', 'Kalatch', 'Milerovo'],
@@ -1766,7 +1782,7 @@ function RaspBotCore(R, PROFILS) {
     NCACHE.set(key, out); return out;
   }
   const netTxt = mk => Object.entries(mk).filter(([, v]) => v > 0).map(([k, v]) => `${k} ${v}`).join(', ');
-  const B3 = [['F:Kharkiv', 1], ['F:Izioum', 1], ['F:Donetsk', 1]];
+  const B3 = FUS.map(f => ['F:' + f, 1]);
 
   // ================================================================== lecture des profils
   const FQ = { Toujours: 1, Souvent: 0.75, Parfois: 0.5, Rarement: 0.2, Jamais: 0 };
@@ -1788,7 +1804,7 @@ function RaspBotCore(R, PROFILS) {
     q.ranks = ranks.every(([, r]) => isFinite(r)) ? ranks.sort((a, b) => a[1] - b[1]).map(x => x[0]) : null;   // null : choix libre à chaque tour (Joukov)
     if (!q.ranks) { q.nFus = 2; q.fuseau = 'Le plus favorable'; }   // choix libre (Joukov) : effort sur les deux fuseaux les plus favorables
     q.seuil = p.seuilDiv === 'Jamais sauf pour percer' ? Infinity : num(p.seuilDiv, 50);
-    q.c = p.campBot || campOf(p); q.rensMin = num(p.rensMin, 0); q.garde = num(p.gardePOW, 1); q.gardeMP = p.gardeMP === 'Oui';   // renforce aussi la garde du POW avec des MP (5 meilleurs bots)
+    q.navi = NAVI[p.id] || null; q.c = p.campBot || campOf(p); q.rensMin = num(p.rensMin, 0); q.garde = num(p.gardePOW, 1); q.gardeMP = p.gardeMP === 'Oui';   // renforce aussi la garde du POW avec des MP (5 meilleurs bots)
     for (const k of ['rensAvant', 'scoot', 'e_danger', 'e_pow', 'e_sansFlux', 'e_memeFus', 'e_vieux', 'e_bascule', 'e_divLoin', 'b_sead', 'b_cb', 'b_garde']) q['p_' + k] = fq(p[k]);
     return q;
   }
@@ -1798,8 +1814,8 @@ function RaspBotCore(R, PROFILS) {
   // mem : tout ce que le bot retient d'un tour à l'autre (sérialisable)
   function freshMem(P, seed) {
     const rnd = rng(seed + '|init');
-    let f0 = { 'Izioum (centre)': 'Izioum', 'Donetsk (sud)': 'Donetsk', 'Kharkiv (nord)': 'Kharkiv' }[P.fuseau] || FUS[Math.floor(rnd() * 3)];
-    return { seed, focus: f0, focusAt: 0, M: {}, plan: {}, knownU: {}, est: { Kharkiv: 0, Izioum: 0, Donetsk: 0 }, pressure: { Kharkiv: 0, Izioum: 0, Donetsk: 0 }, seenNet: {}, enemyEngage: null,
+    let f0 = SUW && SUW_F[P.id] ? SUW_F[P.id] : (SUW ? { 'Izioum (centre)': 'Suwałki', 'Donetsk (sud)': 'Brest', 'Kharkiv (nord)': 'Kaliningrad' } : { 'Izioum (centre)': 'Izioum', 'Donetsk (sud)': 'Donetsk', 'Kharkiv (nord)': 'Kharkiv' })[P.fuseau] || FUS[Math.floor(rnd() * FUS.length)];
+    return { seed, focus: f0, focusAt: 0, M: {}, plan: {}, knownU: {}, est: zeroF(), pressure: zeroF(), seenNet: {}, enemyEngage: null,
       rot: {}, wantDir: {}, cleared: {}, enDp: 0, hitNow: {}, hitCount: {}, ev: {}, fails: [], avoid: {}, secure: [], log: [] };
   }
 
@@ -1825,8 +1841,8 @@ function RaspBotCore(R, PROFILS) {
     A.knownAll = type => Object.values(A.knownU).filter(k => k.type === type && A.fresh(k));
     A.worst = () => FUS.slice().sort((a, b) => A.est[a] - A.est[b])[0];
     // fuseau le plus favorable pour l'effort : le centre (deux voisins, deux ART DIV en appui) sauf si une aile est nettement mieux partie
-    A.favFus = () => { const b = A.bestFus(); return A.est[b] >= A.est.Izioum + 8 ? b : 'Izioum'; };
-    A.bestFus = () => FUS.slice().sort((a, b) => A.est[b] - A.est[a] || (a === 'Izioum' ? -1 : 1))[0];
+    A.favFus = () => { const b = A.bestFus(); return A.est[b] >= A.est[CENTRE] + 8 ? b : CENTRE; };
+    A.bestFus = () => FUS.slice().sort((a, b) => A.est[b] - A.est[a] || (a === CENTRE ? -1 : 1))[0];
     A.avail = card => !(st.cards[c][card] > T);
     A.cardsUsed = () => A.L.filter(l => !l[5]).length;
     A.cap = () => Math.max(1, A.lim - (A.M.noReserve ? 0 : P.reserveN));
@@ -1842,9 +1858,11 @@ function RaspBotCore(R, PROFILS) {
       if (card === 'Engagement de la DIV' && A.dp() <= 0) return false;
       if (card === 'Ordre à la B.LOG' && st.bscg[c] < 50) return false;
       if ((card === 'Engagement GAM' || card === 'Raid aéro' || card === 'Out of contact Attack') && !A.gamOk()) return false;
+      if (SUW && R.NAV_CARDS.includes(card) && !A.navOk()) return false;
+      if (card === 'Raid amphibie' && !A.mine('INF').some(u => u.slot === 'Réserve' && A.act(u))) return false;
       // Danger rempli (pion ENI connu dans la zone visée) : le bot prudent renonce
       const z = A.zoneOf(card, zone, slot);
-      if (C.dg && C.dg.length && z && C.dg.some(t => A.enemyTypesIn(z).includes(t))) {
+      if (!A.force && C.dg && C.dg.length && z && C.dg.some(t => A.enemyTypesIn(z).includes(t))) {
         const avoid = (P.calc + (1 - P.p_e_danger)) / 2;
         if (A.p(avoid)) return false;
       }
@@ -1853,6 +1871,8 @@ function RaspBotCore(R, PROFILS) {
       A.L.push([card, zone, slot, prec, disp]); return true;
     };
     // impératifs : un bot négligent ne vérifie pas que le pion est actif et ravitaillé
+    A.navOk = () => { const n = A.mine('NAV')[0]; if (!n) return false; if (!A.p(P.imp)) return true; return n.slot !== 'Réserve' && A.act(n) && A.sup(n); };
+    A.coast = r => SUW && !!r && R.COAST[en].includes(r);
     A.gamOk = () => { const g = A.mine('GAM')[0]; if (!g) return false; if (!A.p(P.imp)) return true; return R.zoneOfSlot(g.slot) && A.act(g) && A.sup(g); };
     A.ewIn = f => A.mine('EW').find(u => (R.zoneOfSlot(u.slot) || {}).fus === f && (!A.p(P.imp) || (A.act(u) && A.sup(u))));
     A.artRear = () => A.mine('ART CA').filter(u => A.act(u) && A.sup(u) && A.reg(u.slot));
@@ -1873,7 +1893,7 @@ function RaspBotCore(R, PROFILS) {
         case "Concentrée sur l'effort": t = [...B3, ...fs.map(x => ['F:' + x, x === f ? 3 : 1]), ['DIV', 12]]; break;
         case 'Priorité à la DIV+': t = [...B3, ['DIV', 20]]; break;
         case 'Minimum partout': t = [...B3, ['DIV', 6]]; break;
-        default: t = [...B3, ['F:Kharkiv', 1], ['F:Izioum', 1], ['F:Donetsk', 1], ['DIV', 12]];
+        default: t = [...B3, ...B3, ['DIV', 12]];
       }
       if (A.M.reinforce && A.M.reinforce.until >= T) t.splice(3, 0, ['F:' + A.M.reinforce.f, 2]);
       // mauvais choix : laisser un fuseau sans flux
@@ -1892,7 +1912,7 @@ function RaspBotCore(R, PROFILS) {
     A.focusList = () => {
       const f = A.focus; if (P.nFus >= 3) return FUS.slice();
       if (P.nFus === 1) return [f];
-      const nb = { Kharkiv: ['Izioum'], Izioum: [A.est.Kharkiv >= A.est.Donetsk ? 'Kharkiv' : 'Donetsk'], Donetsk: ['Izioum'] }[f];
+      const i = FUS.indexOf(f), ns = [FUS[i - 1], FUS[i + 1]].filter(Boolean); const nb = [ns.length > 1 && A.est[ns[1]] > A.est[ns[0]] ? ns[1] : ns[0]];
       return [f, nb[0]];
     };
     A.pivotTo = (f, n) => { const want = {}; for (const [h, s] of PIV[f].slice(0, n)) want[`${h} ${A.X} ART ${s}`] = f; A.wantDir = want; };
@@ -1907,7 +1927,7 @@ function RaspBotCore(R, PROFILS) {
     // ---------- combat au Close
     A.burst = (f, n) => {
       const L0 = A.cardsUsed();
-      const seq = ['Effort COM', 'CAS', 'Engagement GAM', 'Brouillage GE'];
+      const seq = SUW && f === R.COAST_FUS ? ['Effort COM', 'Appui naval', 'CAS', 'Engagement GAM', 'Brouillage GE'] : ['Effort COM', 'CAS', 'Engagement GAM', 'Brouillage GE'];
       for (const card of seq) { if (A.cardsUsed() - L0 >= n) break; if (card === 'Brouillage GE' && !A.ewIn(f)) continue; A.add(card, f); }
     };
     A.sched = (E, f) => { for (const [card, mep] of [['Effort COM', 4], ['CAS', 2], ['Engagement GAM', 1], ['Brouillage GE', 1]]) { const d = E - mep; if (d >= T) (A.plan[d] = A.plan[d] || []).push([card, f]); } };
@@ -1925,6 +1945,7 @@ function RaspBotCore(R, PROFILS) {
     A.engage = f => { if (T > 28) return false; if (A.M.engaged && T <= A.M.engaged + 3) return false;
       if (A.add('Engagement de la DIV', f)) { A.M.engaged = T; A.M.engF = f; if (A.p(P.chain)) A.sched(T + 3, f); A.ev.engagedNow = f; return true; } return false; };
     A.divFus = () => {
+      if (P.navi === 'cote') return KAL;
       switch (P.fusDiv) {
         case 'Celui où il gagne': return A.bestFus();
         case 'Celui où il perd': return A.worst();
@@ -1974,6 +1995,7 @@ function RaspBotCore(R, PROFILS) {
       const n = mode === 'salve' ? 3 : A.salvoN(true);
       A.salvo([k.slot], n);
       A.add('Frappe drone', '', k.slot);
+      if (A.coast(r)) A.add('Bombardement naval', '', k.slot);
       if (r) { A.add('Sabotage', '', k.slot); A.add('Out of contact Attack', '', k.slot);
         if (T >= 3) { const dsa = A.enemyTypesIn(r).includes('DSA'); if (!dsa || !A.p(P.p_b_sead)) A.add('Bombardement', r); else A.add('SEAD', r); }
         if (P.maquis === 'Sur un grand pion repéré') A.add('Maquis de partisans', r);
@@ -1981,7 +2003,8 @@ function RaspBotCore(R, PROFILS) {
     };
     A.intelOn = (r, t) => {
       if (!r) return false;
-      const cards = t === 'PC' ? ['ROHUM', 'Renseignement SAT', 'OSINT', 'Renseignement drone'] : ['Renseignement drone', 'Renseignement SAT', 'Renseignement aérien', 'OSINT', 'ROHUM'];
+      let cards = t === 'PC' ? ['ROHUM', 'Renseignement SAT', 'OSINT', 'Renseignement drone'] : ['Renseignement drone', 'Renseignement SAT', 'Renseignement aérien', 'OSINT', 'ROHUM'];
+      if (A.coast(r) && A.p(0.6)) cards = ['Reco de plage', ...cards];
       for (const card of cards) if (A.add(card, r)) return true;
       return false;
     };
@@ -2133,7 +2156,7 @@ function RaspBotCore(R, PROFILS) {
       const P = A.P;
       if (P.maquis === 'Tôt dans la partie' && A.T <= 10) { const k = A.known('BSC') || A.known('PC'); A.add('Maquis de partisans', k ? A.reg(k.slot) : A.guess('BSC')[0]); }
       if (A.p(P.ruse / 6)) { const k = A.known('PC'); A.add('Intox L2I', k ? A.reg(k.slot) : A.pick(A.guess('DIV+'))); }
-      if (A.p(P.ruse / 8)) { for (const f of ['Kharkiv', 'Donetsk']) { const sl = `${f} ${A.X} 3`; if (!R.unitAt(A.st, sl) && A.ewIn(f)) { A.add('Déception GE', '', sl); break; } } }
+      if (A.p(P.ruse / 8)) { for (const f of WINGS) { const sl = `${f} ${A.X} 3`; if (!R.unitAt(A.st, sl) && A.ewIn(f)) { A.add('Déception GE', '', sl); break; } } }
       if (P.justice === 'Dès que possible' && A.st.pow[A.c] >= 3) A.add('Transfert à la justice');
     },
     accu: A => {
@@ -2273,7 +2296,7 @@ function RaspBotCore(R, PROFILS) {
       const free = u => u.slot !== 'Garde POW' && A.act(u) && A.reg(u.slot) && !['BSC', 'DIV+', 'PC'].some(t => A.reg(A.big(t).slot) === A.reg(u.slot));
       const viaINF = () => {
         const infs = A.mine('INF');
-        const cand = infs.find(free) || infs.find(u => u.slot === 'Réserve');
+        const cand = infs.find(free) || (A.P.navi === 'raid' ? null : infs.find(u => u.slot === 'Réserve'));
         if (!cand) return false;
         const disp = infs.map((u, i) => `INF ${i + 1} → ${u.id === cand.id ? 'Garde POW' : u.slot}`).join(' · ');
         return A.add('Ordre à la B.ZARR', '', '', '', disp);
@@ -2301,6 +2324,56 @@ function RaspBotCore(R, PROFILS) {
     A.orient();
   }
 
+  // intention navale (Suwałki) : passe avant la stratégie du profil
+  function navPlan(A) {
+    const P = A.P, T = A.T, st = A.st, en = A.en;
+    const smallIn = z => Object.values(A.knownU).filter(k => A.fresh(k) && !k.dead && k.type in R.SMALL && k.type !== 'ART DIV' && (A.reg(k.slot) === z || ((R.zoneOfSlot(k.slot) || {}).fus === z && (R.parseSlot(k.slot) || {}).camp === en)));
+    // le bot du raid ramène une INF en réserve si la sienne est perdue
+    if (P.navi === 'raid' && T <= 22 && !A.mine('INF').some(u => u.slot === 'Réserve') && !(A.M.infBack >= T)) {
+      const infs = A.mine('INF'); const big = A.bigRegs(); const cand = infs.find(u => A.act(u) && A.reg(u.slot) && !big.includes(A.reg(u.slot))) || infs.find(u => A.act(u) && A.reg(u.slot));
+      if (cand && A.add('Ordre à la B.ZARR', '', '', '', infs.map((u, i) => `INF ${i + 1} → ${u.id === cand.id ? 'Réserve' : u.slot}`).join(' · '))) A.M.infBack = T + 2;
+    }
+    if (!A.navOk()) return;
+    if (P.navi === 'cote') {
+      A.add('Appui naval', KAL);
+      const k = smallIn(KAL).sort((a, b) => b.day - a.day)[0]; if (k) A.add('Commando marine', '', k.slot);
+      if (!smallIn(KAL).length && (T <= 4 || A.p(0.4))) A.add('Reco de plage', KAL);
+      if (A.est[KAL] < 0) A.add('Effort COM', KAL);
+      return;
+    }
+    if (P.navi === 'nav') {
+      if (Object.values(A.knownU).some(k => k.type === 'NAV' && k.dead)) A.M.navKilled = T;
+      if (A.M.navKilled) { A.add('Appui naval', KAL); return; }   // NAV adverse détruit : on garde l'avantage sur la côte
+      const k = A.known('NAV');
+      if (k && T - k.day <= 4) {   // NAV repéré : on frappe avec tout ce qui peut le détruire ou le neutraliser
+        A.force = true;
+        A.add('Commando marine', '', k.slot);
+        A.add('Raid aéro', '', k.slot);
+        A.add('Frappe drone', '', k.slot);
+        if (A.reg(k.slot)) A.add('Bombardement naval', '', k.slot);
+        if (A.fepOk(k.slot)) A.salvo([k.slot], 2);
+        A.force = false;
+      } else {   // on fouille la côte ennemie, un port par tour
+        const g = [R.ACCESS[en][KAL], KAL, ...R.COAST[en].filter(r => r !== R.ACCESS[en][KAL])];
+        const z = k ? (A.reg(k.slot) || KAL) : A.nxt('navH', g); if (!k) A.adv('navH');
+        for (const card of z === KAL ? ['Reco de plage'] : ['Reco de plage', 'Renseignement drone', 'Renseignement aérien', 'Renseignement SAT']) if (A.add(card, z)) break;
+      }
+      return;
+    }
+    if (P.navi === 'raid') {
+      if (T < 3) return;
+      // cible : la région côtière où un grand pion ENI est connu, sinon celle où l'on connaît le moins de défenseurs
+      const regs = R.COAST[en].slice();
+      const bigK = Object.values(A.knownU).find(k => A.fresh(k) && !k.dead && R.BIG.includes(k.type) && regs.includes(A.reg(k.slot)));
+      const tgt = bigK ? A.reg(bigK.slot) : (A.M.raidT && regs.includes(A.M.raidT) ? A.M.raidT : regs.sort((a, b) => smallIn(a).length - smallIn(b).length || (a === R.ACCESS[en][KAL] ? 1 : -1))[0]);
+      A.M.raidT = tgt;
+      const scouted = (A.M.raidScout || 0) >= T - 4;
+      if (!scouted && !bigK) { if (A.add('Reco de plage', tgt)) A.M.raidScout = T + 4; return; }   // reconnaître la plage avant de débarquer
+      if (smallIn(tgt).some(k => k.type === 'INF' || k.type === 'NAV') && A.p(P.calc)) { const k = smallIn(tgt).find(x => x.type === 'INF' || x.type === 'NAV'); A.force = true; A.add('Commando marine', '', k.slot); A.add('Bombardement naval', '', k.slot); A.force = false; }   // dangers du raid : on les traite d'abord
+      A.force = true; if (A.mine('INF').some(u => u.slot === 'Réserve' && A.act(u))) A.add('Raid amphibie', tgt); A.force = false;
+    }
+  }
+
   // remplissage : cartes utiles qui restent, jusqu'à la limite (hors réserve)
   function fill(A) {
     A.filling = true;
@@ -2314,6 +2387,11 @@ function RaspBotCore(R, PROFILS) {
       () => { if (A.dp() < 95 && A.P.effortLog !== 'Jamais') A.add('Effort LOG', 'DIV+'); },
       () => { const g = A.nxt('fi', FUS); A.adv('fi'); if (A.ewIn(g)) A.add('Ecoute GE', g); },
       () => A.add('Renseignement SAT', A.pick(A.guess('BSC'))),
+      ...(SUW ? [
+        () => A.add('Appui naval', R.COAST_FUS),
+        () => { const k = Object.values(A.knownU).filter(x => A.fresh(x) && !x.dead && x.type in R.SMALL && (A.coast(A.reg(x.slot)) || (R.zoneOfSlot(x.slot) || {}).fus === R.COAST_FUS && (R.parseSlot(x.slot) || {}).camp === A.en)).sort((a, b) => b.day - a.day)[0]; if (k) A.add('Commando marine', '', k.slot); },
+        () => { if (A.T >= 4 && A.p(0.2 + A.P.ruse / 10)) A.add('Raid amphibie', A.pick(R.COAST[A.en])); },
+      ] : []),
     ];
     for (const fn of steps) { if (A.cardsUsed() >= A.cap()) break; fn(); }
     A.filling = false;
@@ -2352,18 +2430,61 @@ function RaspBotCore(R, PROFILS) {
     return [head.replace(/\d+ carte\(s\)/, n + ' carte(s)'), ...keep.map((l, i) => l.replace(/^\d+;/, `${i + 1};`))].join(' || ');
   };
 
+  // ================================================================== Suwałki : transposition des fiches de déploiement (12 nov.)
+  // Chaque région ukrainienne prend la place d'une région de même rôle (accès d'un fuseau, deuxième ligne, arrière) ;
+  // Kharkiv → Kaliningrad, Izioum → Suwałki, Donetsk → Brest ; les pions en plus (Suwałki en a davantage) tiennent Białystok ;
+  // le NAV se poste sur la côte ; le réseau LOG est recalculé.
+  const SUW_REG = {
+    B: { Poltava: 'Gdańsk', Dnipro: 'Olsztyn', Zaporijjia: 'Lublin', Krementchouk: 'Varsovie', 'Kryvyï Rih': 'Radom', 'Kropyvnytskyï': 'Łódź', Tcherkassy: 'Bydgoszcz', Lysanka: 'Poznań', Bobrynets: 'Koszalin', 'Mykolaïv': 'Szczecin' },
+    R: { 'Valouïki': 'Klaipėda', 'Novoaïdar': 'Kaunas', Louhansk: 'Pinsk', Pavlosk: 'Šiauliai', Bogoutchar: 'Vilnius', Milerovo: 'Minsk', Kalatch: 'Daugavpils', 'Vechenskaïa': 'Vitebsk', Sovetskaya: 'Riga', Morozovsk: 'Liepāja' } };
+  const SUW_FUS = { Kharkiv: 'Kaliningrad', Izioum: 'Suwałki', Donetsk: 'Brest' };
+  const SUW_SPARE = { B: 'Ostrołęka', R: 'Slonim' };
+  const mirrorDep = (txt, c) => { const o = c === 'B' ? 'R' : 'B'; const m = {}; R.REG[c].forEach((r, i) => { m[r] = R.REG[o][i]; });
+    const re = new RegExp(Object.keys(m).sort((a, b) => b.length - a.length).join('|'), 'g');
+    return txt.replace(re, x => m[x]).replace(new RegExp('\\b' + R.CAMP[c] + '\\b', 'g'), R.CAMP[o]).replace(/^Réseau LOG :.*$/m, 'Réseau LOG :')
+      .replace(/^Camp : .*$/m, 'Camp : ' + (o === 'B' ? 'Bleu' : 'Rouge')); };
+  function suwDeploy(raw, P, seed) {
+    const c = P.c, X = R.CAMP[c]; const rnd = rng(seed + '|dep');
+    const rows = []; const used = new Set(); const cnt = {};
+    const max = Object.assign({}, R.SMALL); for (const t of R.BIG) max[t] = 1;
+    const put = (type, slot) => { if (slot !== 'Garde POW' && used.has(slot)) return false; if (max[type] != null && (cnt[type] || 0) >= max[type]) return false; if (slot !== 'Garde POW') used.add(slot); cnt[type] = (cnt[type] || 0) + 1; rows.push([type, slot]); return true; };
+    const map = s => { if (s === 'Garde POW') return s; const m = s.match(/^(.+?) (Bleu|Rouge) (.+)$/); if (m) return SUW_FUS[m[1]] ? `${SUW_FUS[m[1]]} ${m[2]} ${m[3]}` : null; const k = s.match(/^(.+) (\d)$/); return k && SUW_REG[c][k[1]] ? `${SUW_REG[c][k[1]]} ${k[2]}` : null; };
+    const src = []; for (const line of String(raw.msgDep || '').split('\n')) { const i = line.indexOf(' : '); if (i < 0) continue; const t = line.slice(0, i).trim(); if (t === 'Camp' || t === 'Réseau LOG') continue;
+      for (const s of line.slice(i + 3).split(',').map(x => x.trim()).filter(Boolean)) { const n = map(s); if (n) src.push([t, n]); } }
+    // d'abord les grands pions et les fuseaux (Białystok reprend le dispositif de Suwałki), puis l'arrière avec les pions qui restent
+    const isF = s => / (Bleu|Rouge) \d$/.test(s);
+    for (const [t, n] of src) if (R.BIG.includes(t)) put(t, n);
+    for (const [t, n] of src) if (isF(n)) { put(t, n); const m = n.match(/^Suwałki (Bleu|Rouge) (\d)$/); if (m) put(t, `Białystok ${m[1]} ${m[2]}`); }
+    for (const [t, n] of src) if (!R.BIG.includes(t) && !isF(n)) put(t, n);
+    // région d'accès de Białystok : pions restants
+    for (const t of ['DSA', 'EW', 'MP', 'INF']) for (const k of [1, 2, 3]) { if ((cnt[t] || 0) >= (max[t] || 0)) break; if (!used.has(`${SUW_SPARE[c]} ${k}`)) put(t, `${SUW_SPARE[c]} ${k}`); }
+    // NAV : région côtière d'accès d'abord (emplacements 1 à 3), sinon une autre région côtière
+    const coast = [ACC[c][R.COAST_FUS], ...R.COAST[c].filter(r => r !== ACC[c][R.COAST_FUS])];
+    let nav = false; for (const r of coast) { for (const k of [2, 1, 3]) if (!nav && !used.has(`${r} ${k}`)) nav = put('NAV', `${r} ${k}`); }
+    const by = {}; for (const [t, s] of rows) (by[t] = by[t] || []).push(s);
+    let txt = Object.entries(by).map(([t, l]) => `${t} : ${l.join(', ')}`).join('\n');
+    // réseau LOG : sur l'état de départ (camp adverse en miroir, sans réseau)
+    try {
+      const other = mirrorDep(txt, c);
+      const g = R.setupGame('dep-' + seed, c === 'B' ? txt : other, c === 'B' ? other : txt);
+      const st = g && g.state;
+      if (st) { const p = netPlan(st, c, [...B3, ...(P.reseau === 'Priorité à la DIV+' ? [['DIV', 20]] : P.reseau === 'Minimum partout' ? [['DIV', 6]] : [...B3, ['DIV', 12]])]); if (p.mk) txt += '\nRéseau LOG : ' + netTxt(p.mk); }
+    } catch (e) { }
+    void rnd; return 'Camp : ' + (c === 'B' ? 'Bleu' : 'Rouge') + '\n' + txt;
+  }
+
   // ================================================================== API
   function create(id, seed, mem0) {
     const raw = BYID[id]; if (!raw) throw new Error('bot inconnu : ' + id);
     const P = norm(raw);
     const bot = { id, P, raw, mem: mem0 || freshMem(P, seed || String(Date.now())) };
-    bot.deploy = () => raw.msgDep;
+    bot.deploy = () => SUW ? (SUW_DEP[id] || suwDeploy(raw, P, bot.mem.seed)) : raw.msgDep;
     // ordres du tour T sur l'état réel (le bot n'en lit que son propre camp)
     bot.orders = st => {
       const T = st.turn, mem = bot.mem;
       let L = [];
       const A = makeAgent(P, mem, st, T);
-      if (T === 1 && raw.msgT1) {
+      if (T === 1 && raw.msgT1 && !SUW) {
         const msg1 = fepFilterT1(raw.msgT1);   // 10 nov. : au tour 1, la Frappe en profondeur ne peut viser que les ART DIV ENI
         const ch = R.checkOrders(st, P.c, msg1, null);
         if (ch.lines.every(o => o.status !== 'ignored')) { saveMem(bot, A); return msg1; }
@@ -2371,13 +2492,15 @@ function RaspBotCore(R, PROFILS) {
       const blank = A.p(P.tourBlanc);
       if (!blank && A.lim > 0) {
         // remise à jour de l'effort selon la constance du plan
-        if (T - mem.focusAt >= P.period || mem.focusAt === 0) {
+        if (P.navi === 'cote') A.focus = KAL;   // intention navale : l'effort reste sur le fuseau côtier
+        else if (T - mem.focusAt >= P.period || mem.focusAt === 0) {
           let nf = A.focus;
           if (P.fuseau === 'Le plus menacé') nf = A.worst(); else if (P.fuseau === 'Le plus favorable') nf = A.favFus();
           else if (P.period < 99 && A.est[A.focus] <= -15 && A.p(0.5)) nf = A.bestFus();
           if (nf !== A.focus) { A.focus = nf; A.M.focusChanged = true; A.pivotTo(nf, P.nFus === 1 ? 2 : 1); }
           A.focusAt = T;
         }
+        if (SUW && P.navi) navPlan(A);   // l'intention navale passe en premier
         react(A);
         upkeep(A);
         A.divTry({ quiet: true });   // la décision d'engager la DIV+ ne dépend pas des cartes qui restent
