@@ -457,11 +457,11 @@ dialog::backdrop { background: rgba(0,0,0,.4); }
   };
 })();
 </script>
-<script src="reseau.js?v=202611121340"></script>
+<script src="reseau.js?v=202611121420"></script>
 <script>window.RN = window.RN || { active: false }; if (window.RASP_SOLO && RN.active) RN.mode = 'solo';</script>
-<script src="bots.js?v=202611121340"></script>
-<script src="moteur.js?v=202611121340"></script>
-<script src="plateaux.js?v=202611121340"></script>
+<script src="bots.js?v=202611121420"></script>
+<script src="moteur.js?v=202611121420"></script>
+<script src="plateaux.js?v=202611121420"></script>
 <script>
 // ------------------------------------------------------------------ données de la page
 const ZONES = PLATEAUX[R.PLATEAU].zones;
@@ -1574,7 +1574,7 @@ const DIV_POS = R.FOC ? { Carpates: 'ouest', 'Focșani': 'centre', Boudjak: 'est
 function divMoods(text) {
   const out = [];
   for (const f of R.FUS) {
-    const m = String(text).match(new RegExp(`Division (?:de |d')${f} : (.*)`));
+    const m = String(text).match(new RegExp(`Division (?:de |d'|des |du )${f} : (.*)`));
     if (!m) continue;
     const md = divMood(m[1]); const k = md.k === 'up' ? 'victorieux' : md.k === 'down' ? 'difficiles' : 'indécis'; out.push({ f, pos: DIV_POS[f], mood: k === 'victorieux' ? 'optimiste' : k === 'difficiles' ? 'pessimiste' : 'indécis', color: k === 'victorieux' ? 'var(--ok)' : k === 'difficiles' ? 'var(--err)' : 'var(--muted)' });
   }
@@ -1677,7 +1677,7 @@ function crHtml(text) {
     if (/^Jauges\s*:/.test(t)) { body.append(el('h3', { text: 'Jauges' })); const gz = el('div', { class: 'gz' });
       t.replace(/^Jauges\s*:\s*/, '').split(' · ').forEach(x => { const [k, ...v] = x.split(' : '); const sp = el('span'); sp.innerHTML = `${escH(k)} : <b>${escH(v.join(' : '))}</b>`; gz.append(sp); }); body.append(gz); ul = null; continue; }
     const li = t.replace(/^-\s*/, '');
-    const dm = sec === '5' && li.match(/^Division (?:de |d')(\S+) : (.*)$/);
+    const dm = sec === '5' && li.match(/^Division (?:de |d'|des |du )(\S+) : (.*)$/);
     if (dm) { const md = divMood(dm[2]); const d = el('div', { class: 'div ' + md.k }); const q = el('span', { class: 'q' }); q.innerHTML = boldify(md.q);
       d.append(el('span', { class: 'n', text: `Division ${dm[1]}` }), q, md.m ? el('span', { class: 'm', style: `color:${md.k === 'up' ? 'var(--ok)' : md.k === 'down' ? 'var(--err)' : 'var(--muted)'}`, text: md.m }) : null); body.append(d); ul = null; continue; }
     if (!ul) { ul = el('ul'); body.append(ul); }
