@@ -112,7 +112,7 @@ body.surcarte .veil { background: radial-gradient(ellipse 75% 75% at 55% 50%, rg
 .carte .zone text { font: 400 22px/1 "Black Ops One", Impact, sans-serif; letter-spacing: .06em; text-transform: uppercase; fill: #fff; paint-order: stroke; stroke: rgba(0, 0, 0, .85); stroke-width: 5px; text-anchor: middle; }
 .carte .zone text.s { font: 700 12px/1 system-ui, sans-serif; letter-spacing: .14em; fill: var(--c); }
 .carte .zone:hover polygon, .carte .zone:focus-visible polygon, .carte .zone.hot polygon { fill: color-mix(in srgb, var(--c) 28%, transparent); stroke-width: 3.4; }
-.carte .zone.UA { --c: #e0b44a; } .carte .zone.SU { --c: #4fd0e0; }
+.carte .zone.UA { --c: #e0b44a; } .carte .zone.SU { --c: #4fd0e0; } .carte .zone.FO { --c: #ef7d5a; }
 body.surcarte #camp { justify-content: flex-start; pointer-events: none; }
 body.surcarte #camp > * { pointer-events: auto; }
 body.surcarte #camp .ct { margin-top: clamp(8px, 4vh, 40px); }
@@ -226,7 +226,7 @@ body.fr #bot .nm.on { background: rgba(16, 34, 84, .78); }
   <div class="med" id="botMed"></div>
 </section>
 <div class="black" aria-hidden="true"></div>
-<script src="bots.js"></script>
+<script src="bots.js?v=202611121340"></script>
 
 <script>
 (() => {
@@ -241,8 +241,9 @@ body.fr #bot .nm.on { background: rgba(16, 34, 84, .78); }
   const PLATEAUX = {
     ukraine: { cl: 'UA', n: 'Front ukrainien', u: '', ic: FIELDS, q: '' },
     suwalki: { cl: 'SU', n: 'Trouée de Suwałki', u: '', ic: ANCHOR, q: 'plateau=suwalki' },
+    focsani: { cl: 'FO', n: 'Porte de Focșani', u: '', ic: ANCHOR, q: 'plateau=focsani' },   // 12 nov. : Roumanie, Moldavie, Ukraine, avec la mer Noire
   };
-  const ZONES_CARTE = {"frames": {"ukraine": "305,29 320,26 335,23 349,20 364,17 379,14 394,11 408,7 423,4 438,0 452,-4 467,-8 481,-12 496,-16 510,-20 525,-25 539,-29 554,-34 568,-39 582,-43 596,-49 591,-63 586,-77 581,-92 576,-106 570,-121 565,-135 560,-149 555,-164 550,-178 545,-193 532,-188 519,-184 506,-179 492,-175 479,-171 466,-167 453,-163 440,-159 426,-155 413,-152 400,-148 386,-145 373,-142 360,-139 346,-136 333,-133 319,-130 306,-127 292,-125 279,-122 281,-107 284,-92 286,-77 289,-62 292,-47 294,-32 297,-17 300,-2 302,13", "suwalki": "-74,-103 -55,-102 -36,-102 -17,-102 2,-101 21,-102 39,-102 58,-102 77,-103 96,-104 115,-106 133,-107 152,-109 171,-111 190,-113 208,-115 227,-118 246,-120 264,-123 283,-126 301,-130 297,-153 293,-175 288,-198 284,-221 280,-244 275,-267 271,-290 267,-313 262,-336 258,-359 242,-356 226,-353 210,-350 194,-348 178,-346 162,-344 146,-342 130,-340 114,-339 98,-338 82,-337 66,-336 50,-335 34,-335 18,-334 1,-334 -15,-334 -31,-335 -47,-335 -63,-336 -64,-312 -65,-289 -66,-266 -67,-242 -68,-219 -69,-196 -70,-173 -71,-149 -73,-126"}, "lbl": {"ukraine": [455, 10], "suwalki": [97, -348]}, "vb": [-796, -538, 1592, 990]};   // cadres des plateaux sur la carte (projection conique de Lambert)
+  const ZONES_CARTE = {"frames": {"ukraine": "305,29 320,26 335,23 349,20 364,17 379,14 394,11 408,7 423,4 438,0 452,-4 467,-8 481,-12 496,-16 510,-20 525,-25 539,-29 554,-34 568,-39 582,-43 596,-49 591,-63 586,-77 581,-92 576,-106 570,-121 565,-135 560,-149 555,-164 550,-178 545,-193 532,-188 519,-184 506,-179 492,-175 479,-171 466,-167 453,-163 440,-159 426,-155 413,-152 400,-148 386,-145 373,-142 360,-139 346,-136 333,-133 319,-130 306,-127 292,-125 279,-122 281,-107 284,-92 286,-77 289,-62 292,-47 294,-32 297,-17 300,-2 302,13", "suwalki": "-74,-103 -55,-102 -36,-102 -17,-102 2,-101 21,-102 39,-102 58,-102 77,-103 96,-104 115,-106 133,-107 152,-109 171,-111 190,-113 208,-115 227,-118 246,-120 264,-123 283,-126 301,-130 297,-153 293,-175 288,-198 284,-221 280,-244 275,-267 271,-290 267,-313 262,-336 258,-359 242,-356 226,-353 210,-350 194,-348 178,-346 162,-344 146,-342 130,-340 114,-339 98,-338 82,-337 66,-336 50,-335 34,-335 18,-334 1,-334 -15,-334 -31,-335 -47,-335 -63,-336 -64,-312 -65,-289 -66,-266 -67,-242 -68,-219 -69,-196 -70,-173 -71,-149 -73,-126", "focsani": "128,186 297,160 444,135 425,10 395,17 300,36 278,-93 92,-63"}, "lbl": {"ukraine": [455, 10], "suwalki": [97, -348], "focsani": [227, 93]}, "vb": [-796, -538, 1592, 990]};   // cadres des plateaux sur la carte (projection conique de Lambert)
   const withP = (url, P) => { const q = PLATEAUX[P].q; return q ? url + (url.includes('?') ? '&' : '?') + q : url; };
   const MODES = {
     wargame: { sub: 'Mode wargame', note: "L'arbitre ouvre la partie depuis son poste. Chaque CMI se connecte avec le mot de passe de son camp.",
@@ -310,7 +311,8 @@ body.fr #bot .nm.on { background: rgba(16, 34, 84, .78); }
       const z = document.createElementNS(NS, 'g'); z.setAttribute('class', 'zone ' + T.cl); z.setAttribute('tabindex', '0'); z.setAttribute('role', 'button'); z.setAttribute('aria-label', T.n);
       const poly = document.createElementNS(NS, 'polygon'); poly.setAttribute('points', ZONES_CARTE.frames[k]); z.append(poly);
       const pts = ZONES_CARTE.frames[k].split(' ').map(p => p.split(',').map(Number));   // nom de la zone au centre de son cadre
-      const lx = pts.reduce((a, p) => a + p[0], 0) / pts.length, ly = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+      let lx = pts.reduce((a, p) => a + p[0], 0) / pts.length, ly = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+      if (k === 'focsani') [lx, ly] = ZONES_CARTE.lbl.focsani;   // cadre échancré par celui du front ukrainien : nom posé sur la Roumanie
       const t = document.createElementNS(NS, 'text'); t.setAttribute('x', lx); t.setAttribute('y', ly + 8); t.textContent = T.n; z.append(t);
       const open = () => enter(base + k, true);
       z.addEventListener('click', open); z.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
@@ -342,7 +344,7 @@ body.fr #bot .nm.on { background: rgba(16, 34, 84, .78); }
   const campOf = p => /bleu/i.test(String(p.camps || '')) && !/deux/i.test(String(p.camps || '')) ? 'B' : 'R';
   const stars = n => '★'.repeat(n) + '☆'.repeat(5 - n);
   const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
-  const SFX = P => P === 'suwalki' ? '-suwalki' : '';   // une partie solo par plateau dans ce navigateur
+  const SFX = P => P && P !== 'ukraine' ? '-' + P : '';   // une partie solo par plateau dans ce navigateur
   function soloSaved(P) {   // partie solo en cours sur ce plateau dans ce navigateur (même origine que la page joueur)
     try { const db = JSON.parse(localStorage.getItem('rasp-solo-partie' + SFX(P)) || '{}') || {}; const i = db.solo; if (!i || !i.id) return null;
       let ended = false; try { const sv = JSON.parse(db.arbitre && db.arbitre.sauvegarde || 'null'); ended = !!(sv && sv.state && sv.state.ended); } catch (e) {}
@@ -397,7 +399,7 @@ body.fr #bot .nm.on { background: rgba(16, 34, 84, .78); }
       try { const d = JSON.parse(await f.text());
         if (!d || d.app !== 'raspoutitsa-joueur' || !d.S || !d.S.camp) throw new Error("Ce fichier n'est pas une sauvegarde de la page joueur.");
         if (!d.solo || !d.solo.solo || !d.solo.arbitre) throw new Error("Ce fichier n'est pas une sauvegarde de partie solo complète : enregistrez-la avec « Sauvegarder » depuis la page solo (version du 10 novembre ou plus récente).");
-        const c = d.S.camp, P = PLATEAUX[d.solo.solo.plateau] ? d.solo.solo.plateau : (d.S.units || []).some(u => /^(Kaliningrad|Suwałki|Białystok|Brest) /.test(u.slot || '')) ? 'suwalki' : 'ukraine';
+        const c = d.S.camp, P = PLATEAUX[d.solo.solo.plateau] ? d.solo.solo.plateau : (d.S.units || []).some(u => /^(Kaliningrad|Suwałki|Białystok|Brest) /.test(u.slot || '')) ? 'suwalki' : (d.S.units || []).some(u => /^(Carpates|Focșani|Boudjak) /.test(u.slot || '')) ? 'focsani' : 'ukraine';
         const sv = soloSaved(P); if (sv && !sv.ended && !confirm('La partie solo en cours sur ce plateau dans ce navigateur sera remplacée. Continuer ?')) return;
         localStorage.setItem('rasp-solo-partie' + SFX(P), JSON.stringify(d.solo));
         localStorage.removeItem('rasp-joueur-solo-v1-B' + SFX(P)); localStorage.removeItem('rasp-joueur-solo-v1-R' + SFX(P));
