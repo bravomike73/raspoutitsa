@@ -113,7 +113,7 @@ const CARDS = {
   'Ordre aux MP et CIMIC': { ph: 'M', base: 100, mep: 2, ret: 3, g: [], rev: 'none', tgt: 'disp', types: ['MP', 'CIMIC'] },
   'Ordre à la B.GEN': { ph: 'M', base: 100, mep: 2, ret: 3, g: [], rev: 'none', tgt: 'disp', types: ['GEN'] },
   'Ordre à la B.ART': { ph: 'M', base: 100, mep: 2, ret: 3, g: [], rev: 'none', tgt: 'disp', types: ['ART CA'] },
-  'Contre-batterie': { ph: 'F', base: 100, mep: 2, ret: 4, g: [], rev: 'none', tgt: 'cb' },   // 13 nov. : une ou plusieurs ART CA sur la même zone (une ligne par ART CA), retour 4 jours
+  'Contre-batterie': { ph: 'F', base: 100, mep: 2, ret: 4, g: [], rev: 'none', tgt: 'cb' },   // 13 nov. : une ou plusieurs ART CA, chacune face à la zone de son choix (une ligne par ART CA), retour 4 jours
   'Travaux du GEN': { ph: 'M', base: 100, mep: 3, ret: 4, g: [], rev: 'none', tgt: 'works' },
   'Bascule de PC': { ph: 'M', base: 90, mep: 2, ret: 4, g: [], rev: 'none', tgt: 'regionOwn' },   // 13 nov. : MEP 2 jours, retour 4 jours (avant : 3 et 6)
   'Bascule BSC': { ph: 'M', base: 90, mep: 4, ret: 8, g: [], rev: 'none', tgt: 'regionOwn' },
@@ -210,12 +210,19 @@ const DIV_ENG = {   // fin du compte rendu de la DIV+ engagée, selon le curseur
   '-40': "Notre contre-attaque a péniblement dégagé un infime espace de manœuvre dans le fuseau. L'ENI est toujours largement en position de force et susceptible de percer dans les prochains jours.",
   '-45': "Notre engagement s'est brisé sur l'offensive ENI. Nos troupes sont actuellement imbriquées avec les défenseurs du fuseau : nous les avons rejoints pour leur ultime combat.",
 };
-// palier du curseur v (du point de vue du camp) : de 0 à 45, le plus haut atteint (v ≥ palier) ; en dessous de 0, le plus bas atteint (v ≤ palier), et −10 entre −1 et −9
-const divEngStep = v => v >= 0 ? [45, 40, 30, 20, 10, 0].find(t => v >= t) : ([-45, -40, -30, -20, -10].find(t => v <= t) ?? -10);
+// palier du curseur v (du point de vue du camp qui engage) : toujours le plus haut atteint, v ≥ palier (on monte forcément) ; −45 sous −45
+const divEngStep = v => DIV_TH.find(t => v >= t) ?? -45;
+// palier du camp qui subit l'engagement : le plus bas atteint, v ≤ palier ; 45 au-dessus de 45
+const divSubStep = v => [...DIV_TH].reverse().find(t => v <= t) ?? 45;
 // compte rendu de la DIV+ engagée (13 nov.) : fuseau, kilomètres gagnés (3 par case de curseur), estimation du front
 function divEngCR(f, cases, v) {
   const km = 3 * cases;
   return `DIV+ : « Avons été engagés dans le fuseau ${DE_FUS[f]}. Nos brigades ont attaqué l'ENI avec brutalité ${km > 0 ? `et l'ont repoussé sur ${km} kilomètres` : "mais n'ont pas pu le faire reculer"}. ${DIV_ENG[divEngStep(v)]} »`;
+}
+// message du fuseau pour le camp qui n'a pas engagé sa DIV+ (13 nov.) : kilomètres perdus et fin défensive du palier le plus bas atteint
+function divSubCR(f, cases, v) {
+  const km = 3 * cases;
+  return `Division ${DE_FUS[f]} : « L'ENI a engagé une division supplémentaire dans notre fuseau. ${km > 0 ? `Pour encaisser son attaque, nous avons dû reculer de ${km} kilomètres.` : "Nous avons encaissé son attaque sans reculer."} ${DIV_DEF[divSubStep(v)]} »`;
 }
 const DIV_MSG = DIV_OFF;   // ancien nom, gardé pour les pages
 // seuil franchi entre v0 et v1 (du point de vue du camp) : le plus avancé dans le sens du mouvement, ou null
@@ -656,7 +663,7 @@ function checkOrders(st, camp, text, excluded) {
   const limit = cardLimit(st, camp);
   res.limit = limit;
   const seen = new Set(); let count = 0; const fepFrom = new Set(); let fepN = 0;   // Frappe en profondeur : une carte, jusqu'à 3 ART CA (une ligne par ART CA)
-  const cbFrom = new Set(); let cbN = 0; let cbZone = null;   // 13 nov. : Contre-batterie : une carte, une ou plusieurs ART CA qui surveillent la même zone (une ligne par ART CA)
+  const cbFrom = new Set(); let cbN = 0;   // 13 nov. : Contre-batterie : une carte, une ou plusieurs ART CA, chacune face à sa zone (une ligne par ART CA)
   P.lines.forEach((L, i) => {
     const o = { idx: i, n: L.n || i + 1, raw: L, card: cardName(L.card), status: 'ok', errors: [], notes: [], target: {} };
     res.lines.push(o);
@@ -726,7 +733,6 @@ function checkOrders(st, camp, text, excluded) {
         tg.from = a.name;
         if (cbFrom.has(a.name)) { e(`l'ART CA de ${a.name} est déjà dans cette Contre-batterie`); break; } cbFrom.add(a.name);
         if (z.err) { const f = fuseauOf(L.zone); if (f) { tg.fus = f; } else { e(z.err); break; } } else Object.assign(tg, z);
-        { const zk = tg.fus ? 'fuseau ' + DE_FUS[tg.fus] : tg.region; if (cbZone === null) cbZone = zk; else if (zk !== cbZone) e(`une Contre-batterie vise une seule zone : ses ART CA surveillent toutes ${cbZone.startsWith('fuseau') ? 'le ' + cbZone : cbZone}`); }   // 13 nov.
         break;
       }
       case 'slotOwnEmpty': {
@@ -1387,6 +1393,8 @@ function resolveTurn(st0, ordersText, excluded, forced) {
     for (const c of ['B', 'R']) {
       const s = c === 'B' ? 1 : -1; const v0 = cur0[f] * s; const v1 = st.cursor[f] * s; const rr = res[f];
       // un seuil franchi remplace le message habituel du fuseau
+      const sub = engRes.filter(e => e.f === f && e.c === EN[c]);   // 13 nov. : l'ENI a engagé sa DIV+ dans ce fuseau, et nous pas
+      if (sub.length && !engRes.some(e => e.f === f && e.c === c)) { st.carry[c].push(divSubCR(f, sub.reduce((k, e) => k + e.cases, 0), v1)); continue; }
       const x = divCross(v0, v1);
       if (x) st.carry[c].push(`Division ${DE_FUS[f]} : « ${x.txt} »`);
       else if (rr.win === c) st.carry[c].push(`Division ${DE_FUS[f]} : combats victorieux. Pouvons exploiter nos succès si nous gardons l'appui du corps.`);
@@ -1673,7 +1681,7 @@ function syncRead(text) {
   try { const d = syncUnpack(JSON.parse(unutf8(b32dec(body)))); return { data: d }; } catch (e) { return { err: 'bloc de synchronisation illisible : ' + e.message }; }
 }
 
-return { SALVO, DIV_ENG, divEngStep, divEngCR, PLATEAU, SUW, FOC, NAVAL, ART_SIDES, ACCESS_ALL, ACCESS_CORS, COAST, COAST_FUS, NAV_CARDS, GAUGES, GAUGES_TXT, NDIV, FUS_NOM, DE_FUS, ACCESS, navSlotOk, NEVER, retOf, retTxt, REGEN_TURNS, BP_INF, migrate, divCross, DIV_OFF, DIV_DEF, PC_CARDS, BSC_DIE, BSC_NEED, BIG_LOSS, MINOR_TYPES, TYPE_ALIAS, cardLimit, minorRoute, gameId, syncData, syncText, syncRead, SY_SLOTS, LOG_TOTAL, LOG_PER_COR, FUS, REG, COR, CARDS, BREAK, DIV_MSG, PAIR, CAMP, PL, ADJ, ADJF, GAUGE, SMALL, BIG, EN, ACCESS_COR, newState, setupGame, parseOrders, checkOrders, resolveTurn, logistics, orientNetwork, parseSlot, normSlot, divisionScore, d10, active, zoneOfSlot, parseDeployment, adjacent, distance, openDistance, unitAt, unitsInZone, fmt1, gaugeTxt, parseNet, clean };
+return { SALVO, DIV_ENG, divEngStep, divEngCR, divSubStep, divSubCR, PLATEAU, SUW, FOC, NAVAL, ART_SIDES, ACCESS_ALL, ACCESS_CORS, COAST, COAST_FUS, NAV_CARDS, GAUGES, GAUGES_TXT, NDIV, FUS_NOM, DE_FUS, ACCESS, navSlotOk, NEVER, retOf, retTxt, REGEN_TURNS, BP_INF, migrate, divCross, DIV_OFF, DIV_DEF, PC_CARDS, BSC_DIE, BSC_NEED, BIG_LOSS, MINOR_TYPES, TYPE_ALIAS, cardLimit, minorRoute, gameId, syncData, syncText, syncRead, SY_SLOTS, LOG_TOTAL, LOG_PER_COR, FUS, REG, COR, CARDS, BREAK, DIV_MSG, PAIR, CAMP, PL, ADJ, ADJF, GAUGE, SMALL, BIG, EN, ACCESS_COR, newState, setupGame, parseOrders, checkOrders, resolveTurn, logistics, orientNetwork, parseSlot, normSlot, divisionScore, d10, active, zoneOfSlot, parseDeployment, adjacent, distance, openDistance, unitAt, unitsInZone, fmt1, gaugeTxt, parseNet, clean };
 })();
 if (typeof module !== 'undefined') module.exports = R;
 

@@ -2029,7 +2029,7 @@ function RaspBotCore(R, PROFILS) {
     A.fepClose = f => { const a = A.artRear().find(u => !A.usedArt().has(u.slot)); if (!a) return false; const [S0, S1] = R.ART_SIDES || ['Nord', 'Sud']; const side = T % 2 ? S0 : S1; let sl = `${f} ${A.XE} ART ${side}`; if (!A.alive(sl)) sl = `${f} ${A.XE} ART ${side === S0 ? S1 : S0}`;
       if (!A.fepOk(sl)) return false;
       return P.salve === 'Toujours' ? A.salvo([sl, `${f} ${A.XE} ART ${side === S0 ? S1 : S0}`], 3) > 0 : A.add('Frappe en profondeur', '', sl, a.slot); };
-    // 13 nov. : une Contre-batterie peut placer plusieurs ART CA sur la même zone (les lignes ajoutées ne comptent pas comme des cartes)
+    // 13 nov. : une Contre-batterie peut placer plusieurs ART CA, chacune sur sa zone (les lignes ajoutées ne comptent pas comme des cartes)
     A.cbPlace = (zone, n) => { const used = A.usedArt(); const free = A.artRear().filter(u => !st.cb[u.id] && !used.has(u.slot)); if (!free.length) return false;
       if (!A.add('Contre-batterie', zone, '', free[0].slot)) return false;
       for (const u of free.slice(1, Math.max(1, n))) A.L.push(['Contre-batterie', zone, '', u.slot, '', true]);
