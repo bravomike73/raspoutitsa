@@ -262,7 +262,7 @@ const RASP_BOT_PROFILS = [
 "camps": "Rouge",
 "cache": "Oui",
 "msgDep": "Camp : Rouge\nPC : Sovetskaya 0\nBSC : Milerovo 0\nPOW : Pavlosk 0\nDIV+ : Vechenskaïa 0\nINF : Garde POW, Kharkiv Rouge 3, Donetsk Rouge 3, Novoaïdar 3, Louhansk 2\nMP : Vechenskaïa 3, Sovetskaya 3, Milerovo 3, Garde POW, Valouïki 3\nCIMIC : Kharkiv Rouge 1, Izioum Rouge 2, Donetsk Rouge 2, Novoaïdar 2, Bogoutchar 2\nDSA : Vechenskaïa 1, Milerovo 1, Sovetskaya 1, Donetsk Rouge 1, Izioum Rouge 1\nGEN : Sovetskaya 2, Vechenskaïa 2, Milerovo 2\nART CA : Valouïki 1, Novoaïdar 1, Louhansk 1\nEW : Kharkiv Rouge 2, Izioum Rouge 3, Valouïki 2\nGAM : Bogoutchar 3\nRéseau LOG : RD 2, R15 2, E4 3, E3 3, R11 3, R10 2, RI 2, E1 2, R2 2, R1 2, RK 2, E2 5",
-"msgT1": "ORDRES ROUGE | TOUR 1 | PC : 100 % | 5 carte(s) | Prêt à envoyer || 1;Travaux du GEN;effet T4;retour T5;;;;Fortifier Milerovo 0 · Fortifier Sovetskaya 0 · Fortifier Vechenskaïa 0 || 2;Effort LOG;effet T4;retour T8;Donetsk;;; || 3;Renseignement drone;effet T2;retour T4;Poltava;;; || 4;Renseignement SAT;effet T2;retour T4;Dnipro;;; || 5;Contre-batterie;effet T3;retour T6;Poltava;;Valouïki 1;",
+"msgT1": "ORDRES ROUGE | TOUR 1 | PC : 100 % | 5 carte(s) | Prêt à envoyer || 1;Travaux du GEN;effet T4;retour T5;;;;Fortifier Milerovo 0 · Fortifier Sovetskaya 0 · Fortifier Vechenskaïa 0 || 2;Effort LOG;effet T4;retour T8;Donetsk;;; || 3;Renseignement drone;effet T2;retour T4;Poltava;;; || 4;Renseignement SAT;effet T2;retour T4;Dnipro;;; || 5;Contre-batterie;effet T3;retour T5;Poltava;;Valouïki 1;",
 "agress": 2,
 "prudence": 4,
 "imprevu": 0.1,
@@ -2029,13 +2029,17 @@ function RaspBotCore(R, PROFILS) {
     A.fepClose = f => { const a = A.artRear().find(u => !A.usedArt().has(u.slot)); if (!a) return false; const [S0, S1] = R.ART_SIDES || ['Nord', 'Sud']; const side = T % 2 ? S0 : S1; let sl = `${f} ${A.XE} ART ${side}`; if (!A.alive(sl)) sl = `${f} ${A.XE} ART ${side === S0 ? S1 : S0}`;
       if (!A.fepOk(sl)) return false;
       return P.salve === 'Toujours' ? A.salvo([sl, `${f} ${A.XE} ART ${side === S0 ? S1 : S0}`], 3) > 0 : A.add('Frappe en profondeur', '', sl, a.slot); };
-    A.cbOn = f => { if (Object.values(st.cb).some(m => m.camp === c && m.zone.fus === f)) return false; const used = A.usedArt(); const free = A.artRear().filter(u => !st.cb[u.id] && !used.has(u.slot)); if (!free.length) return false; return A.add('Contre-batterie', f, '', free[0].slot); };
+    // 13 nov. : une Contre-batterie peut placer plusieurs ART CA sur la même zone (les lignes ajoutées ne comptent pas comme des cartes)
+    A.cbPlace = (zone, n) => { const used = A.usedArt(); const free = A.artRear().filter(u => !st.cb[u.id] && !used.has(u.slot)); if (!free.length) return false;
+      if (!A.add('Contre-batterie', zone, '', free[0].slot)) return false;
+      for (const u of free.slice(1, Math.max(1, n))) A.L.push(['Contre-batterie', zone, '', u.slot, '', true]);
+      return true; };
+    A.cbOn = f => { if (Object.values(st.cb).some(m => m.camp === c && m.zone.fus === f)) return false; return A.cbPlace(f, P.salve === 'Toujours' ? 2 : 1); };
     A.counterArt = () => {
       const ka = A.knownAll('ART CA').filter(k => !k.dead && T - k.day <= 1)[0]; if (!ka) return false;
       const z = R.zoneOfSlot(ka.slot); const zone = z.region || z.fus; if (!zone) return false;
       if (Object.values(st.cb).some(m => m.camp === c && (m.zone.region === zone || m.zone.fus === zone))) return false;
-      const used = A.usedArt(); const a = A.artRear().find(u => !st.cb[u.id] && !used.has(u.slot)); if (!a) return false;
-      return A.add('Contre-batterie', zone, '', a.slot);
+      return A.cbPlace(zone, P.salve === 'Jamais' ? 1 : 2);
     };
     // ---------- déplacements de pions
     A.reserved = new Set();

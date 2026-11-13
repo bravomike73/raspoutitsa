@@ -226,7 +226,7 @@ body.fr #bot .nm.on { background: rgba(16, 34, 84, .78); }
   <div class="med" id="botMed"></div>
 </section>
 <div class="black" aria-hidden="true"></div>
-<script src="bots.js?v=202611121340"></script>
+<script src="bots.js?v=202611131000"></script>
 
 <script>
 (() => {
@@ -243,7 +243,7 @@ body.fr #bot .nm.on { background: rgba(16, 34, 84, .78); }
     suwalki: { cl: 'SU', n: 'Trouée de Suwałki', u: '', ic: ANCHOR, q: 'plateau=suwalki' },
     focsani: { cl: 'FO', n: 'Porte de Focșani', u: '', ic: ANCHOR, q: 'plateau=focsani' },   // 12 nov. : Roumanie, Moldavie, Ukraine, avec la mer Noire
   };
-  const ZONES_CARTE = {"frames": {"ukraine": "305,29 320,26 335,23 349,20 364,17 379,14 394,11 408,7 423,4 438,0 452,-4 467,-8 481,-12 496,-16 510,-20 525,-25 539,-29 554,-34 568,-39 582,-43 596,-49 591,-63 586,-77 581,-92 576,-106 570,-121 565,-135 560,-149 555,-164 550,-178 545,-193 532,-188 519,-184 506,-179 492,-175 479,-171 466,-167 453,-163 440,-159 426,-155 413,-152 400,-148 386,-145 373,-142 360,-139 346,-136 333,-133 319,-130 306,-127 292,-125 279,-122 281,-107 284,-92 286,-77 289,-62 292,-47 294,-32 297,-17 300,-2 302,13", "suwalki": "-74,-103 -55,-102 -36,-102 -17,-102 2,-101 21,-102 39,-102 58,-102 77,-103 96,-104 115,-106 133,-107 152,-109 171,-111 190,-113 208,-115 227,-118 246,-120 264,-123 283,-126 301,-130 297,-153 293,-175 288,-198 284,-221 280,-244 275,-267 271,-290 267,-313 262,-336 258,-359 242,-356 226,-353 210,-350 194,-348 178,-346 162,-344 146,-342 130,-340 114,-339 98,-338 82,-337 66,-336 50,-335 34,-335 18,-334 1,-334 -15,-334 -31,-335 -47,-335 -63,-336 -64,-312 -65,-289 -66,-266 -67,-242 -68,-219 -69,-196 -70,-173 -71,-149 -73,-126", "focsani": "128,186 297,160 444,135 425,10 395,17 300,36 278,-93 92,-63"}, "lbl": {"ukraine": [455, 10], "suwalki": [97, -348], "focsani": [227, 93]}, "vb": [-796, -538, 1592, 990]};   // cadres des plateaux sur la carte (projection conique de Lambert)
+  const ZONES_CARTE = {"frames": {"ukraine": "305,29 320,26 335,23 349,20 364,17 379,14 394,11 408,7 423,4 438,0 452,-4 467,-8 481,-12 496,-16 510,-20 525,-25 539,-29 554,-34 568,-39 582,-43 596,-49 591,-63 586,-77 581,-92 576,-106 570,-121 565,-135 560,-149 555,-164 550,-178 545,-193 532,-188 519,-184 506,-179 492,-175 479,-171 466,-167 453,-163 440,-159 426,-155 413,-152 400,-148 386,-145 373,-142 360,-139 346,-136 333,-133 319,-130 306,-127 292,-125 279,-122 281,-107 284,-92 286,-77 289,-62 292,-47 294,-32 297,-17 300,-2 302,13", "suwalki": "-74,-103 -55,-102 -36,-102 -17,-102 2,-101 21,-102 39,-102 58,-102 77,-103 96,-104 115,-106 133,-107 152,-109 171,-111 190,-113 208,-115 227,-118 246,-120 264,-123 283,-126 301,-130 297,-153 293,-175 288,-198 284,-221 280,-244 275,-267 271,-290 267,-313 262,-336 258,-359 242,-356 226,-353 210,-350 194,-348 178,-346 162,-344 146,-342 130,-340 114,-339 98,-338 82,-337 66,-336 50,-335 34,-335 18,-334 1,-334 -15,-334 -31,-335 -47,-335 -63,-336 -64,-312 -65,-289 -66,-266 -67,-242 -68,-219 -69,-196 -70,-173 -71,-149 -73,-126", "focsani": "113,85 246,-108 375,-19 242,174"}, "lbl": {"ukraine": [455, 10], "suwalki": [97, -348], "focsani": [231, 41]}, "vb": [-796, -538, 1592, 990]};   // cadres des plateaux sur la carte (projection conique de Lambert)
   const withP = (url, P) => { const q = PLATEAUX[P].q; return q ? url + (url.includes('?') ? '&' : '?') + q : url; };
   const MODES = {
     wargame: { sub: 'Mode wargame', note: "L'arbitre ouvre la partie depuis son poste. Chaque CMI se connecte avec le mot de passe de son camp.",
@@ -307,12 +307,12 @@ body.fr #bot .nm.on { background: rgba(16, 34, 84, .78); }
   const NS = 'http://www.w3.org/2000/svg';
   function drawZones(base) {
     const g = $('#zones'); g.replaceChildren();
-    for (const [k, T] of Object.entries(PLATEAUX)) {
+    for (const [k, T] of Object.entries(PLATEAUX).sort((a, b) => (b[0] === 'focsani') - (a[0] === 'focsani'))) {   // Focșani dessous : le front ukrainien reste cliquable là où les cadres se recouvrent
       const z = document.createElementNS(NS, 'g'); z.setAttribute('class', 'zone ' + T.cl); z.setAttribute('tabindex', '0'); z.setAttribute('role', 'button'); z.setAttribute('aria-label', T.n);
       const poly = document.createElementNS(NS, 'polygon'); poly.setAttribute('points', ZONES_CARTE.frames[k]); z.append(poly);
       const pts = ZONES_CARTE.frames[k].split(' ').map(p => p.split(',').map(Number));   // nom de la zone au centre de son cadre
       let lx = pts.reduce((a, p) => a + p[0], 0) / pts.length, ly = pts.reduce((a, p) => a + p[1], 0) / pts.length;
-      if (k === 'focsani') [lx, ly] = ZONES_CARTE.lbl.focsani;   // cadre échancré par celui du front ukrainien : nom posé sur la Roumanie
+      if (k === 'focsani') [lx, ly] = ZONES_CARTE.lbl.focsani;   // nom posé hors du cadre du front ukrainien, qui recouvre un coin du cadre
       const t = document.createElementNS(NS, 'text'); t.setAttribute('x', lx); t.setAttribute('y', ly + 8); t.textContent = T.n; z.append(t);
       const open = () => enter(base + k, true);
       z.addEventListener('click', open); z.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });

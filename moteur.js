@@ -113,9 +113,9 @@ const CARDS = {
   'Ordre aux MP et CIMIC': { ph: 'M', base: 100, mep: 2, ret: 3, g: [], rev: 'none', tgt: 'disp', types: ['MP', 'CIMIC'] },
   'Ordre à la B.GEN': { ph: 'M', base: 100, mep: 2, ret: 3, g: [], rev: 'none', tgt: 'disp', types: ['GEN'] },
   'Ordre à la B.ART': { ph: 'M', base: 100, mep: 2, ret: 3, g: [], rev: 'none', tgt: 'disp', types: ['ART CA'] },
-  'Contre-batterie': { ph: 'F', base: 100, mep: 2, ret: 5, g: [], rev: 'none', tgt: 'cb' },
+  'Contre-batterie': { ph: 'F', base: 100, mep: 2, ret: 4, g: [], rev: 'none', tgt: 'cb' },   // 13 nov. : une ou plusieurs ART CA sur la même zone (une ligne par ART CA), retour 4 jours
   'Travaux du GEN': { ph: 'M', base: 100, mep: 3, ret: 4, g: [], rev: 'none', tgt: 'works' },
-  'Bascule de PC': { ph: 'M', base: 90, mep: 3, ret: 6, g: [], rev: 'none', tgt: 'regionOwn' },
+  'Bascule de PC': { ph: 'M', base: 90, mep: 2, ret: 4, g: [], rev: 'none', tgt: 'regionOwn' },   // 13 nov. : MEP 2 jours, retour 4 jours (avant : 3 et 6)
   'Bascule BSC': { ph: 'M', base: 90, mep: 4, ret: 8, g: [], rev: 'none', tgt: 'regionOwn' },
   'Mouvement de la DIV': { ph: 'M', base: 100, mep: 2, ret: 4, g: [], rev: 'none', tgt: 'regionOwn' },
   'Transfert à la justice': { ph: 'M', base: 80, mep: 5, ret: 8, g: [], rev: 'none', tgt: 'none' },
@@ -139,6 +139,8 @@ if (NAVAL) Object.assign(CARDS, {   // 12 nov. : les 6 cartes navales (chapitre 
   'Appareillez !': { ph: 'M', base: 100, mep: 2, ret: 4, g: [], rev: 'none', tgt: 'disp', types: ['NAV'] },
   'Appui naval': { ph: 'C', base: 60, mep: 4, ret: 7, g: ['NAV'], rev: 'always', tgt: 'fuseau', dg: [], nav: true },
 });
+// 13 nov. : cartes qui font agir plusieurs ART CA (une ligne par ART CA ; les lignes ajoutées ne comptent pas comme des cartes)
+const SALVO = { 'Frappe en profondeur': 3, 'Contre-batterie': SMALL['ART CA'] };
 const NAV_CARDS = Object.keys(CARDS).filter(k => CARDS[k].nav || k === 'Appareillez !');
 const LOGEFF_RAP = 2, LOGEFF_TURNS = 3, LOGEFF_DIV = 10, REMEC_ALAT = 3;   // 11 nov. : Effort LOG (+2 RAPLOG pendant 3 tours ou +10 DIV+) ; REMEC (+3 crans ALAT)
 const NEVER = 999;                   // tour de retour d'une carte à usage unique (elle ne revient pas)
@@ -195,6 +197,26 @@ const DIV_DEF = {
   '-40': "Sommes dans une situation critique. Ne pouvons pas garantir que le front ne cédera pas dans les prochains jours.",
   '-45': "Sommes acculés sur notre dernière ligne défensive et déjà imbriqués avec les éléments ENI les plus avancés. Réclamons renforts d'urgence pour ne pas être submergés. À défaut, défendrons notre position jusqu'au bout sans espoir de succès.",
 };
+const DIV_ENG = {   // fin du compte rendu de la DIV+ engagée, selon le curseur du fuseau après l'engagement (textes de Ben, 13 nov.)
+  45: "Notre attaque a traversé le fuseau et s'est achevée très près de la percée. L'ENI mène une résistance acharnée dans son réduit défensif. Un dernier effort nous permettra de déclencher l'exploitation dans les prochains jours.",
+  40: "Notre attaque a acculé l'ENI sur un réduit défensif. Bien appuyée, la division pourra percer jusqu'à la limite de sa zone d'action.",
+  30: "Notre attaque a pénétré au cœur du dispositif ennemi et l'a fait éclater. Il se replie sur ses dernières lignes défensives.",
+  20: "Notre attaque a traversé les lignes défensives de l'ENI : nous avons définitivement pris l'avantage dans ce fuseau.",
+  10: "Notre engagement a amené l'ENI dans ses positions défensives et l'a forcé à engager tous ses moyens pour nous arrêter.",
+  0: "Notre contre-attaque a ramené la division amie sur ses positions initiales : l'ENI n'a plus aucun avantage dans ce fuseau.",
+  '-10': "Notre contre-attaque a quasiment ramené la division amie sur ses positions initiales.",
+  '-20': "Notre engagement a permis à la division amie de regagner le cœur de ses positions défensives, mais elle n'a pas débouché jusqu'aux anciennes premières lignes.",
+  '-30': "Notre contre-attaque a dégagé l'ENI des positions critiques, mais il est toujours solidement implanté au cœur du fuseau ami.",
+  '-40': "Notre contre-attaque a péniblement dégagé un infime espace de manœuvre dans le fuseau. L'ENI est toujours largement en position de force et susceptible de percer dans les prochains jours.",
+  '-45': "Notre engagement s'est brisé sur l'offensive ENI. Nos troupes sont actuellement imbriquées avec les défenseurs du fuseau : nous les avons rejoints pour leur ultime combat.",
+};
+// palier du curseur v (du point de vue du camp) : de 0 à 45, le plus haut atteint (v ≥ palier) ; en dessous de 0, le plus bas atteint (v ≤ palier), et −10 entre −1 et −9
+const divEngStep = v => v >= 0 ? [45, 40, 30, 20, 10, 0].find(t => v >= t) : ([-45, -40, -30, -20, -10].find(t => v <= t) ?? -10);
+// compte rendu de la DIV+ engagée (13 nov.) : fuseau, kilomètres gagnés (3 par case de curseur), estimation du front
+function divEngCR(f, cases, v) {
+  const km = 3 * cases;
+  return `DIV+ : « Avons été engagés dans le fuseau ${DE_FUS[f]}. Nos brigades ont attaqué l'ENI avec brutalité ${km > 0 ? `et l'ont repoussé sur ${km} kilomètres` : "mais n'ont pas pu le faire reculer"}. ${DIV_ENG[divEngStep(v)]} »`;
+}
 const DIV_MSG = DIV_OFF;   // ancien nom, gardé pour les pages
 // seuil franchi entre v0 et v1 (du point de vue du camp) : le plus avancé dans le sens du mouvement, ou null
 // un seuil positif (ou 0) est atteint quand v ≥ seuil ; un seuil négatif quand v ≤ seuil
@@ -634,6 +656,7 @@ function checkOrders(st, camp, text, excluded) {
   const limit = cardLimit(st, camp);
   res.limit = limit;
   const seen = new Set(); let count = 0; const fepFrom = new Set(); let fepN = 0;   // Frappe en profondeur : une carte, jusqu'à 3 ART CA (une ligne par ART CA)
+  const cbFrom = new Set(); let cbN = 0; let cbZone = null;   // 13 nov. : Contre-batterie : une carte, une ou plusieurs ART CA qui surveillent la même zone (une ligne par ART CA)
   P.lines.forEach((L, i) => {
     const o = { idx: i, n: L.n || i + 1, raw: L, card: cardName(L.card), status: 'ok', errors: [], notes: [], target: {} };
     res.lines.push(o);
@@ -650,14 +673,14 @@ function checkOrders(st, camp, text, excluded) {
     if (!o.card) { o.status = 'ignored'; o.errors.push(`carte inconnue « ${L.card} »`); return; }
     const C = CARDS[o.card];
     if (excluded && excluded.includes(i)) { o.status = 'ignored'; o.errors.push("écartée par l'arbitre"); return; }
-    const salvo = o.card === 'Frappe en profondeur' && seen.has(o.card);   // tir supplémentaire de la même Frappe en profondeur
-    if (salvo && ++fepN > 3) { o.status = 'ignored'; o.errors.push('trois ART CA au plus par Frappe en profondeur'); return; }
+    const salvo = !!SALVO[o.card] && seen.has(o.card);   // ART CA de plus pour la même Frappe en profondeur ou la même Contre-batterie (13 nov.)
+    if (salvo && (o.card === 'Frappe en profondeur' ? ++fepN : ++cbN) > SALVO[o.card]) { o.status = 'ignored'; o.errors.push(o.card === 'Frappe en profondeur' ? 'trois ART CA au plus par Frappe en profondeur' : `${SALVO[o.card]} ART CA au plus par Contre-batterie`); return; }
     if (seen.has(o.card) && !salvo) { o.status = 'ignored'; o.errors.push('carte en double dans le message'); return; }
     if (PAIR[o.card] && seen.has(PAIR[o.card])) { o.status = 'ignored'; o.errors.push(`${PAIR[o.card]} est déjà jouée : une seule carte de la paire`); return; }
     const back = st.cards[camp][o.card];
     if (back !== undefined && back > T) { o.status = 'ignored'; o.errors.push(`carte mise de côté jusqu'au tour ${back}`); return; }
     if (!salvo && count >= limit) { o.status = 'ignored'; o.errors.push(`au-delà de la limite de ${limit} carte${limit > 1 ? 's' : ''} (PC à ${st.pcg[camp]} %)`); return; }
-    if (!salvo) { seen.add(o.card); count++; if (o.card === 'Frappe en profondeur') fepN = 1; } else o.notes.push('tir de salve : ne compte pas comme une carte de plus');
+    if (!salvo) { seen.add(o.card); count++; if (o.card === 'Frappe en profondeur') fepN = 1; if (o.card === 'Contre-batterie') cbN = 1; } else o.notes.push(o.card === 'Contre-batterie' ? 'ART CA de plus en contre-batterie : ne compte pas comme une carte de plus' : 'tir de salve : ne compte pas comme une carte de plus');
     o.effet = T + C.mep; o.retour = retOf(C, T);
     // impératifs : vérifiés au tour d'effet seulement (règle de Ben, 7 nov.), pas à la réception
     // cible
@@ -701,7 +724,9 @@ function checkOrders(st, camp, text, excluded) {
         const a = parseSlot(L.prec); const z = zoneEnemy(L.zone);
         if (!a || !['region', 'fus'].includes(a.kind) || a.camp !== camp) { e(`emplacement de l'ART CA en contre-batterie inconnu « ${L.prec} »`); break; }
         tg.from = a.name;
+        if (cbFrom.has(a.name)) { e(`l'ART CA de ${a.name} est déjà dans cette Contre-batterie`); break; } cbFrom.add(a.name);
         if (z.err) { const f = fuseauOf(L.zone); if (f) { tg.fus = f; } else { e(z.err); break; } } else Object.assign(tg, z);
+        { const zk = tg.fus ? 'fuseau ' + DE_FUS[tg.fus] : tg.region; if (cbZone === null) cbZone = zk; else if (zk !== cbZone) e(`une Contre-batterie vise une seule zone : ses ART CA surveillent toutes ${cbZone.startsWith('fuseau') ? 'le ' + cbZone : cbZone}`); }   // 13 nov.
         break;
       }
       case 'slotOwnEmpty': {
@@ -1335,8 +1360,8 @@ function resolveTurn(st0, ordersText, excluded, forced) {
     J(`  Engagement DIV+ ${ADJF[c]} à ${f} : potentiel ${pot}${e.ok ? '' : ' engagé à 50 % (' + used + ')'} → ${cases} cases · curseur ${sgnTxt(before)} → ${sgnTxt(st.cursor[f])}`);
     RD(`Curseur ${f} après engagement de la DIV+ ${ADJF[c]} : ${sgnTxt(st.cursor[f])} · jauge DIV+ ${ADJF[c]} à 0`);
     engRes.push({ c, f, cases, ok: e.ok, pot, used });
-    st.carry[c].push(`DIV+ engagée à ${f} : ${e.ok ? 'engagement réussi' : 'engagement difficile, la DIV+ n\'a donné que la moitié de son potentiel'}. Elle a fait reculer l'ennemi et doit être reconstituée.`);
   }
+  for (const x of engRes) st.carry[x.c].push(divEngCR(x.f, x.cases, st.cursor[x.f] * (x.c === 'B' ? 1 : -1)));   // 13 nov. : compte rendu structuré de la DIV+ engagée (curseur après tous les engagements du tour)
   // percées
   const perc = [];
   for (const f of FUS) if (Math.abs(st.cursor[f]) >= BREAK) {
@@ -1648,7 +1673,7 @@ function syncRead(text) {
   try { const d = syncUnpack(JSON.parse(unutf8(b32dec(body)))); return { data: d }; } catch (e) { return { err: 'bloc de synchronisation illisible : ' + e.message }; }
 }
 
-return { PLATEAU, SUW, FOC, NAVAL, ART_SIDES, ACCESS_ALL, ACCESS_CORS, COAST, COAST_FUS, NAV_CARDS, GAUGES, GAUGES_TXT, NDIV, FUS_NOM, DE_FUS, ACCESS, navSlotOk, NEVER, retOf, retTxt, REGEN_TURNS, BP_INF, migrate, divCross, DIV_OFF, DIV_DEF, PC_CARDS, BSC_DIE, BSC_NEED, BIG_LOSS, MINOR_TYPES, TYPE_ALIAS, cardLimit, minorRoute, gameId, syncData, syncText, syncRead, SY_SLOTS, LOG_TOTAL, LOG_PER_COR, FUS, REG, COR, CARDS, BREAK, DIV_MSG, PAIR, CAMP, PL, ADJ, ADJF, GAUGE, SMALL, BIG, EN, ACCESS_COR, newState, setupGame, parseOrders, checkOrders, resolveTurn, logistics, orientNetwork, parseSlot, normSlot, divisionScore, d10, active, zoneOfSlot, parseDeployment, adjacent, distance, openDistance, unitAt, unitsInZone, fmt1, gaugeTxt, parseNet, clean };
+return { SALVO, DIV_ENG, divEngStep, divEngCR, PLATEAU, SUW, FOC, NAVAL, ART_SIDES, ACCESS_ALL, ACCESS_CORS, COAST, COAST_FUS, NAV_CARDS, GAUGES, GAUGES_TXT, NDIV, FUS_NOM, DE_FUS, ACCESS, navSlotOk, NEVER, retOf, retTxt, REGEN_TURNS, BP_INF, migrate, divCross, DIV_OFF, DIV_DEF, PC_CARDS, BSC_DIE, BSC_NEED, BIG_LOSS, MINOR_TYPES, TYPE_ALIAS, cardLimit, minorRoute, gameId, syncData, syncText, syncRead, SY_SLOTS, LOG_TOTAL, LOG_PER_COR, FUS, REG, COR, CARDS, BREAK, DIV_MSG, PAIR, CAMP, PL, ADJ, ADJF, GAUGE, SMALL, BIG, EN, ACCESS_COR, newState, setupGame, parseOrders, checkOrders, resolveTurn, logistics, orientNetwork, parseSlot, normSlot, divisionScore, d10, active, zoneOfSlot, parseDeployment, adjacent, distance, openDistance, unitAt, unitsInZone, fmt1, gaugeTxt, parseNet, clean };
 })();
 if (typeof module !== 'undefined') module.exports = R;
 
