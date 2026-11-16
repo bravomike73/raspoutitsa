@@ -1783,7 +1783,9 @@ const boldify = t => escH(t).replace(boldRx(), m => `<b>${m}</b>`);
 // humeur d'un message de division : avance (offensif, victorieux), recul (défensif, difficiles) ou statu quo
 function divMood(txt) {
   const q = (txt.match(/«\s*(.*?)\s*»/) || [])[1];
-  if (q) { if (Object.values(R.DIV_OFF).includes(q)) return { q, k: 'up', m: 'Avance' }; if (Object.values(R.DIV_DEF).includes(q)) return { q, k: 'down', m: 'Recul' }; return { q, k: '', m: '' }; }
+  if (q) { if (Object.values(R.DIV_OFF).includes(q)) return { q, k: 'up', m: 'Avance' }; if (Object.values(R.DIV_DEF).includes(q)) return { q, k: 'down', m: 'Recul' };
+    if (/^L'ENI a engagé une division supplémentaire/.test(q)) return { q, k: 'down', m: /dû reculer/.test(q) ? 'Recul' : 'DIV ENI contenue' };   // 16 nov. : DIV ENI engagée dans notre fuseau
+    return { q, k: '', m: '' }; }
   if (/combats victorieux/.test(txt)) return { q: txt, k: 'up', m: 'Combats victorieux' };
   if (/combats difficiles/.test(txt)) return { q: txt, k: 'down', m: 'Combats difficiles' };
   return { q: txt, k: '', m: /indécis/.test(txt) ? 'Front stable' : '' };
@@ -1804,7 +1806,7 @@ function crHtml(text) {
       d.append(el('span', { class: 'n', text: 'DIV+' }), q, el('span', { class: 'm', style: 'color:var(--ok)', text: 'Engagement' })); body.append(d); ul = null; continue; }
     const dm = sec === '5' && li.match(/^Division (?:de |d'|des |du )(\S+) : (.*)$/);
     if (dm) { const md = divMood(dm[2]); const d = el('div', { class: 'div ' + md.k }); const q = el('span', { class: 'q' }); q.innerHTML = boldify(md.q);
-      d.append(el('span', { class: 'n', text: `Division ${dm[1]}` }), q, md.m ? el('span', { class: 'm', style: `color:${md.k === 'up' ? 'var(--ok)' : md.k === 'down' ? 'var(--err)' : 'var(--muted)'}`, text: md.m }) : null); body.append(d); ul = null; continue; }
+      d.append(el('span', { class: 'n', text: `Division ${dm[1]}` }), q, md.m ? el('span', { class: 'm', style: `color:${md.k === 'up' ? 'var(--ok)' : md.k === 'down' ? 'var(--err)' : 'var(--muted)'}`, text: md.m }) : ''); body.append(d); ul = null; continue; }
     if (!ul) { ul = el('ul'); body.append(ul); }
     const e = el('li', { class: /^ÉVASION DE PRISONNIERS/.test(li) ? 'alert' : '' }); e.innerHTML = boldify(li); ul.append(e);
   }
