@@ -1368,31 +1368,38 @@ function resolveTurn(st0, ordersText, excluded, forced) {
   // engagements DIV+
   const engRes = [];
   for (const e of engage) {
-    const c = e.p.camp, f = e.p.target.fus; const pot = st.divp[c]; const used = e.ok ? pot : Math.floor(pot / 2); const cases = Math.floor(used / 3);
-    const before = st.cursor[f]; st.cursor[f] += (c === 'B' ? 1 : -1) * cases; st.divp[c] = 0;
-    J(`  Engagement DIV+ ${ADJF[c]} à ${f} : potentiel ${pot}${e.ok ? '' : ' engagé à 50 % (' + used + ')'} → ${cases} cases · curseur ${sgnTxt(before)} → ${sgnTxt(st.cursor[f])}`);
+    const c = e.p.camp, f = e.p.target.fus; const pot = st.divp[c]; const used = e.ok ? pot : Math.floor(pot / 2);
+    // 16 nov. : la DIV+ ne dépense que ce qu'il faut pour amener le curseur à la percée (3 points par case) ; le reste de la part engagée sert au calcul de la percée
+    const sg = c === 'B' ? 1 : -1; const need = Math.max(0, BREAK - sg * st.cursor[f]);
+    const cases = Math.min(Math.floor(used / 3), need); const reste = cases === need ? used - 3 * cases : 0;
+    const before = st.cursor[f]; st.cursor[f] += sg * cases; st.divp[c] = 0;
+    J(`  Engagement DIV+ ${ADJF[c]} à ${f} : potentiel ${pot}${e.ok ? '' : ' engagé à 50 % (' + used + ')'} → ${cases} cases · curseur ${sgnTxt(before)} → ${sgnTxt(st.cursor[f])}${cases === need ? ` · percée atteinte : ${3 * cases} points dépensés, reste ${reste} pour la percée` : ''}`);
     RD(`Curseur ${f} après engagement de la DIV+ ${ADJF[c]} : ${sgnTxt(st.cursor[f])} · jauge DIV+ ${ADJF[c]} à 0`);
-    engRes.push({ c, f, cases, ok: e.ok, pot, used });
+    engRes.push({ c, f, cases, ok: e.ok, pot, used, reste });
   }
   for (const x of engRes) st.carry[x.c].push(divEngCR(x.f, x.cases, st.cursor[x.f] * (x.c === 'B' ? 1 : -1)));   // 13 nov. : compte rendu structuré de la DIV+ engagée (curseur après tous les engagements du tour)
   // percées
   const perc = [];
+  // 16 nov. : le curseur s'arrête à la percée (±BREAK), le combat seul ne la dépasse plus
+  for (const f of FUS) if (Math.abs(st.cursor[f]) > BREAK) st.cursor[f] = Math.sign(st.cursor[f]) * BREAK;
   for (const f of FUS) if (Math.abs(st.cursor[f]) >= BREAK) {
     const w = st.cursor[f] > 0 ? 'B' : 'R'; const l = EN[w]; const s = res[f].sc[w];
-    // DIV+ du camp qui perce : non engagée, elle ne compte que pour la moitié de son potentiel, puis −5 par corridor jusqu'au fuseau ; si elle s'est engagée ce tour, sa jauge est déjà à 0
+    // DIV+ du camp qui perce : engagée ce tour dans ce fuseau, elle apporte à plein le reste de son potentiel après avoir amené le curseur à la percée (16 nov.) ;
+    // non engagée, elle ne compte que pour la moitié de son potentiel, puis −5 par corridor jusqu'au fuseau ; engagée dans un autre fuseau, sa jauge est déjà à 0
     const wdv = big(st, w, 'DIV+'); const kw = distance(w, zoneOfSlot(wdv.slot).region, ACCESS_ALL[w][f]) + 1;
-    const wpot = Math.max(0, Math.floor(st.divp[w] / 2) - 5 * kw);
+    const engHere = engRes.filter(e => e.c === w && e.f === f); const reste = engHere.reduce((k, e) => k + e.reste, 0);
+    const wpot = engHere.length ? reste : Math.max(0, Math.floor(st.divp[w] / 2) - 5 * kw);
     const off = r1(s.rap + s.raplog + s.fm + wpot);
     const ldv = big(st, l, 'DIV+'); const k = openDistance(st, l, zoneOfSlot(ldv.slot).region, f, T);   // la DIV+ qui défend contourne les corridors coupés
     const def = k === null ? null : st.divp[l] - 5 * k;
-    perc.push({ f, w, off, def, k, kw, wp: st.divp[w], eng: engRes.some(e => e.c === w), total: def === null || off > def, depth: Math.abs(st.cursor[f]) });
+    perc.push({ f, w, off, def, k, kw, wp: st.divp[w], eng: engRes.some(e => e.c === w), engHere: engHere.length > 0, reste, total: def === null || off > def, depth: Math.abs(st.cursor[f]) });
   }
   if (perc.length) {
-    // 8 nov. : deux percées au même tour → gagne celle dont le curseur est allé le plus loin, puis la plus grande force offensive
-    perc.sort((a, b) => b.depth - a.depth || b.off - a.off);
+    // 16 nov. : le curseur s'arrêtant à la percée, deux percées au même tour se départagent par la plus grande force offensive
+    perc.sort((a, b) => b.off - a.off);
     let fin;
-    if (perc.length > 1 && perc[0].depth === perc[1].depth && perc[0].off === perc[1].off && perc[0].w !== perc[1].w) fin = { kind: 'nul', txt: 'Deux percées de même profondeur et de même force au même tour : partie nulle.' };
-    else { const p = perc[0]; fin = { kind: p.total ? 'totale' : 'décisive', w: p.w, f: p.f, txt: `Percée ${ADJF[p.w]} dans le fuseau ${DE_FUS[p.f]}. Force offensive ${fmt1(p.off)} (${p.eng ? `DIV+ ${ADJF[p.w]} engagée ce tour : déjà à 0` : `DIV+ ${ADJF[p.w]} non engagée : moitié de ${p.wp}, à ${p.kw} corridor${p.kw > 1 ? 's' : ''}`}) contre ${p.def === null ? `aucune force défensive (DIV+ ${ADJF[EN[p.w]]} coupée du fuseau par les corridors neutralisés)` : `force défensive ${p.def} (DIV+ ${ADJF[EN[p.w]]} à ${p.k} corridor${p.k > 1 ? 's' : ''}, corridors coupés contournés)`} : victoire ${p.total ? 'totale' : 'décisive'} des ${PL[p.w]}.` }; const q = perc.find(x => x.w !== p.w); if (q) fin.txt = `Deux percées au même tour : percée ${ADJF[p.w]} dans le fuseau ${DE_FUS[p.f]} (curseur à ${p.depth} cases) et percée ${ADJF[q.w]} dans le fuseau ${DE_FUS[q.f]} (curseur à ${q.depth} cases)${p.depth === q.depth ? ', à même profondeur : la plus grande force offensive l\'emporte' : ' : la plus profonde l\'emporte'}. ` + fin.txt; }
+    if (perc.length > 1 && perc[0].off === perc[1].off && perc[0].w !== perc[1].w) fin = { kind: 'nul', txt: 'Deux percées de même force au même tour : partie nulle.' };
+    else { const p = perc[0]; fin = { kind: p.total ? 'totale' : 'décisive', w: p.w, f: p.f, txt: `Percée ${ADJF[p.w]} dans le fuseau ${DE_FUS[p.f]}. Force offensive ${fmt1(p.off)} (${p.engHere ? `DIV+ ${ADJF[p.w]} engagée ce tour dans ce fuseau : reste ${p.reste} de son potentiel après la percée` : p.eng ? `DIV+ ${ADJF[p.w]} engagée ce tour dans un autre fuseau : déjà à 0` : `DIV+ ${ADJF[p.w]} non engagée : moitié de ${p.wp}, à ${p.kw} corridor${p.kw > 1 ? 's' : ''}`}) contre ${p.def === null ? `aucune force défensive (DIV+ ${ADJF[EN[p.w]]} coupée du fuseau par les corridors neutralisés)` : `force défensive ${p.def} (DIV+ ${ADJF[EN[p.w]]} à ${p.k} corridor${p.k > 1 ? 's' : ''}, corridors coupés contournés)`} : victoire ${p.total ? 'totale' : 'décisive'} des ${PL[p.w]}.` }; const q = perc.find(x => x.w !== p.w); if (q) fin.txt = `Deux percées au même tour : percée ${ADJF[p.w]} dans le fuseau ${DE_FUS[p.f]} (force offensive ${fmt1(p.off)}) et percée ${ADJF[q.w]} dans le fuseau ${DE_FUS[q.f]} (force offensive ${fmt1(q.off)}) : la plus grande force offensive l'emporte. ` + fin.txt; }
     st.ended = fin; J('  ' + fin.txt); RD(fin.txt);
   }
   // messages de division (envoyés au prochain compte rendu)
