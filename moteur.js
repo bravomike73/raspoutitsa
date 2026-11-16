@@ -966,11 +966,13 @@ function resolveTurn(st0, ordersText, excluded, forced) {
   const statusOf = ef => ef.status || (ef.r.d === null && ef.rate >= 100 ? 'exécution en cours' : (ef.r.ok ? 'réussite' : 'échec'));
   const head = (p, rate, r) => `${p.card}${onTxt(p)} — réussite ${Math.max(0, rate)} %${r.d ? ' · dé ' + dTxt(r.d) : (rate >= 100 ? ' · sans jet' : ' · échec certain')} → ${r.ok ? 'réussite' : 'échec'}`;
 
-  const intelOn = (c, zone) => {
+  const intelOn = (c, zone, dead) => {   // dead : emplacements dont le pion vient d'être détruit par l'action (Assaut de la BP, 16 nov.)
     const en = EN[c]; const lines = [];
     if (zone.region) {
       for (let i = 0; i <= 5; i++) {
-        const s = `${zone.region} ${i}`; const u = unitAt(st, s); see(c, s);
+        const s = `${zone.region} ${i}`; const u = unitAt(st, s); const k = dead && dead.get(s);
+        if (k && !u) { lines.push(`${s} = ${k} détruit`); continue; }   // déjà vu détruit : on ne l'efface pas du plateau du joueur
+        see(c, s);
         let txt; if (u) txt = unitTxtShort(u, T); else if (i >= 4 && !st.opened.includes(s)) txt = 'non ouvert'; else if (i >= 4) txt = 'ouvert mais vide'; else txt = 'vide';
         lines.push(`${s} = ${txt}`);
       }
@@ -1228,6 +1230,11 @@ function resolveTurn(st0, ordersText, excluded, forced) {
           if (inf) { inf.neut = T + 4; inf.neutFrom = T; eff.push(`l'INF engagée revient en réserve, neutralisée jusqu'à la fin du tour ${T + 4}`); RD(`INF ${ADJ[c]} de la réserve (Raid amphibie) : neutralisée jusqu'à la fin du tour ${T + 4}`); }
         }
         if (p.card === 'Embuscade') { st.cut[t.cor] = T + 4; eff.push(`corridor ${t.cor} coupé jusqu'à la fin du tour ${T + 4}`); enEff.push(`Le corridor ${t.cor} est coupé jusqu'à la fin du tour ${T + 4}.`); RD(`Poser un marqueur de neutralisation sur le corridor ${t.cor} — retrait à la fin du tour ${T + 4}`); }
+      }
+      if (ph === 'F' && (p.card === 'Assaut de la BP' || p.card === 'Raid amphibie')) {   // 16 nov. (Ben) : les paras ou les marins renseignent sur la région en arrivant, que l'action réussisse ou non (état après l'action)
+        const dead = new Map(rep[c].seen.slice(seen0).filter(x => x[2] === -1).map(x => [x[0], x[1]]));
+        rep[c].intel.push(`${p.card} — ${intelOn(c, { region: p.target.region }, dead)}`); eff.push('région reconnue (voir les renseignements plus bas)');
+        if (!r.ok) out.act[c].push([p.card, p.target.region, [...new Set(rep[c].seen.slice(seen0).map(x => x[0]))], [], 2]);   // échec : l'animation (avions, bateau) a lieu quand même, marquée « échec » (held = 2)
       }
       if (p.card === 'Frappe en profondeur' && ef.actor) {
         if (!r.ok) { rep[en].enemy.push(`L'ART CA ENI qui a tiré est en ${p.target.from}.`); see(en, p.target.from); }
@@ -1650,7 +1657,7 @@ function syncPack(d) {
     u: d.u.map(([t, s, n, x]) => z36(SY_TYPES.indexOf(t), 1) + z36(sl(s), 2) + z36(n, 2) + x).join(''),
     k: Object.fromEntries(Object.entries(d.k).map(([k, v]) => [cd(k), v])),
     p: d.p.map(([k, ...r]) => [cd(k), ...r]),
-    a: (d.a || []).map(([k, z, s, h, f, fr]) => [cd(k), z, s.map(sl).filter(x => x >= 0), (h || []).map(([s2, t]) => [sl(s2), t]), ...(f || fr ? [f ? 1 : 0] : []), ...(fr ? [sl(fr)] : [])]),   // fr : ART CA qui a tiré (7 nov.)
+    a: (d.a || []).map(([k, z, s, h, f, fr]) => [cd(k), z, s.map(sl).filter(x => x >= 0), (h || []).map(([s2, t]) => [sl(s2), t]), ...(f || fr ? [f === 2 ? 2 : f ? 1 : 0] : []), ...(fr ? [sl(fr)] : [])]),   // f : 1 = arrêtée par la fortification, 2 = échec animé (16 nov.)   // fr : ART CA qui a tiré (7 nov.)
     x: (d.x || []).map(([k, z, h, zr, zc, ok, fr]) => [k ? cd(k) : -1, z, h.map(([s2, t]) => [sl(s2), t]), zr, zc, ok, ...(fr ? [sl(fr)] : [])]),
     i: d.i.map(([s, t, n, o]) => [sl(s), t ? SY_TYPES.indexOf(t) : -1, n, o]),
   };
@@ -1660,7 +1667,7 @@ function syncUnpack(d) {
   return { ...d, u,
     k: Object.fromEntries(Object.entries(d.k).map(([k, v]) => [SY_CARDS[k], v])),
     p: d.p.map(([k, ...r]) => [SY_CARDS[k], ...r]),
-    a: d.a ? d.a.map(([k, z, s, h, f, fr]) => [SY_CARDS[k], z, s.map(x => SY_SLOTS[x]), (h || []).map(([x, t]) => [SY_SLOTS[x], t]), ...(f || fr !== undefined ? [f ? 1 : 0] : []), ...(fr !== undefined ? [SY_SLOTS[fr]] : [])]) : undefined,
+    a: d.a ? d.a.map(([k, z, s, h, f, fr]) => [SY_CARDS[k], z, s.map(x => SY_SLOTS[x]), (h || []).map(([x, t]) => [SY_SLOTS[x], t]), ...(f || fr !== undefined ? [f === 2 ? 2 : f ? 1 : 0] : []), ...(fr !== undefined ? [SY_SLOTS[fr]] : [])]) : undefined,
     x: d.x ? d.x.map(([k, z, h, zr, zc, ok, fr]) => [k < 0 ? '' : SY_CARDS[k], z, h.map(([x, t]) => [SY_SLOTS[x], t]), zr, zc, ok, ...(fr !== undefined ? [SY_SLOTS[fr]] : [])]) : undefined,
     i: d.i.map(([s, t, n, o]) => [SY_SLOTS[s], t < 0 ? '' : SY_TYPES[t], n, o]),
   };
