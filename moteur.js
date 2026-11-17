@@ -222,7 +222,7 @@ function divEngCR(f, cases, v) {
 // message du fuseau pour le camp qui n'a pas engagé sa DIV+ (13 nov.) : kilomètres perdus et fin défensive du palier le plus bas atteint
 function divSubCR(f, cases, v) {
   const km = 3 * cases;
-  return `Division ${DE_FUS[f]} : « L'ENI a engagé une division supplémentaire dans notre fuseau. ${km > 0 ? `Pour encaisser son attaque, nous avons dû reculer de ${km} kilomètres.` : "Nous avons encaissé son attaque sans reculer."} ${DIV_DEF[divSubStep(v)]} »`;
+  return `Division ${DE_FUS[f]} : « L'ENI a engagé une division supplémentaire dans notre fuseau. ${km > 0 ? `Pour encaisser son attaque, nous avons dû reculer de ${km} kilomètres. ${DIV_DEF[divSubStep(v)]}` : "Nous avons encaissé son attaque sans reculer."} »`;   // 17 nov. : sans recul, pas de message de recul
 }
 const DIV_MSG = DIV_OFF;   // ancien nom, gardé pour les pages
 // seuil franchi entre v0 et v1 (du point de vue du camp) : le plus avancé dans le sens du mouvement, ou null
@@ -1408,7 +1408,7 @@ function resolveTurn(st0, ordersText, excluded, forced) {
       const s = c === 'B' ? 1 : -1; const v0 = cur0[f] * s; const v1 = st.cursor[f] * s; const rr = res[f];
       // un seuil franchi remplace le message habituel du fuseau
       const sub = engRes.filter(e => e.f === f && e.c === EN[c]);   // 13 nov. : l'ENI a engagé sa DIV+ dans ce fuseau, et nous pas
-      if (sub.length && !engRes.some(e => e.f === f && e.c === c)) { st.carry[c].push(divSubCR(f, sub.reduce((k, e) => k + e.cases, 0), v1)); continue; }
+      if (sub.length && !engRes.some(e => e.f === f && e.c === c)) { const kc = sub.reduce((k, e) => k + e.cases, 0); st.carry[c].push(divSubCR(f, kc, v1)); if (kc > 0) continue; }   // 17 nov. : sans recul, le compte rendu habituel du combat suit
       const x = divCross(v0, v1);
       if (x) st.carry[c].push(`Division ${DE_FUS[f]} : « ${x.txt} »`);
       else if (rr.win === c) st.carry[c].push(`Division ${DE_FUS[f]} : combats victorieux. Pouvons exploiter nos succès si nous gardons l'appui du corps.`);
